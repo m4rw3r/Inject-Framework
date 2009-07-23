@@ -38,6 +38,13 @@ class Inject_Request_HTTP implements Inject_Request
 	 */
 	protected $segments = array();
 	
+	/**
+	 * The response object tied to this instance.
+	 * 
+	 * @var Inject_Response_HTTP
+	 */
+	protected $response;
+	
 	// ------------------------------------------------------------------------
 
 	public function __construct()
@@ -437,6 +444,13 @@ class Inject_Request_HTTP implements Inject_Request
 	}
 	
 	// ------------------------------------------------------------------------
+	
+	public function get_response()
+	{
+		return $this->response ? $this->response : $this->response = new Inject_Response_HTTP;
+	}
+	
+	// ------------------------------------------------------------------------
 
 	/**
 	 * Returns true if this is an XMLHttpRequest (ie. Javascript).
@@ -444,7 +458,9 @@ class Inject_Request_HTTP implements Inject_Request
 	 * This requires a special header to be sent from the JS
 	 * (usually the Javascript frameworks' Ajax/XHR methods add it automatically):
 	 * 
+	 * <code>
 	 * X-Requested-With: XMLHttpRequest
+	 * </code>
 	 * 
 	 * @return bool
 	 */

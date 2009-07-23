@@ -8,7 +8,7 @@
 /**
  * A HTTP response.
  */
-class Inject_Response_HTTP
+class Inject_Response_HTTP implements Inject_Response
 {
 	
 	protected $content = '';

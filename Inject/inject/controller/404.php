@@ -24,7 +24,7 @@ class Inject_Controller_404 extends Inject_Controller
 	 */
 	public function __call($method, $params)
 	{
-		Inject::set_output('<h1>404 Controller Loaded</h1><p>URI: '.$this->request->get_uri().'</p><p>Inject Framework</p>');
+		$this->response->set_content('<h1>404 Controller Loaded</h1><p>URI: '.$this->request->get_uri().'</p><p>Inject Framework</p>');
 	}
 }
 

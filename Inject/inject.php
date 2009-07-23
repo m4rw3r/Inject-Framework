@@ -84,13 +84,6 @@ abstract class Inject
 	protected static $class_paths = array();
 	
 	/**
-	 * The output to serve for this request.
-	 * 
-	 * @var string
-	 */
-	protected static $output = '';
-	
-	/**
 	 * The error level which Inject Framework should respect when receiving errors.
 	 * 
 	 * @var int
@@ -319,14 +312,17 @@ abstract class Inject
 		// should we end buffering?
 		if($first_end)
 		{
-			// let the loggers write, here is their chance to do shutdown before __destruct()
-			self::terminate_loggers();
+			// output the contents
+			echo self::$main_request->get_response()->output_content();
 			
 			// clear all the buffers and finally let Inject Framework parse the result
 			while(ob_get_level() > self::$ob_level)
 			{
 				ob_end_flush();
 			}
+			
+			// let the loggers write, here is their chance to do shutdown before __destruct()
+			self::terminate_loggers();
 		}
 	}
 	
@@ -503,43 +499,6 @@ abstract class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the output which would have been printed.
-	 * 
-	 * @return string
-	 */
-	public static function get_output()
-	{
-		return self::$output;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the output.
-	 * 
-	 * @param  string
-	 * @return void
-	 */
-	public static function set_output($string)
-	{
-		self::$output = $string;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Appends a string to the output.
-	 * 
-	 * @return void
-	 */
-	public static function append_output($string)
-	{
-		self::$output .= $string;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
 	 * The method which handles the output of Inject Framework, used with ob_start().
 	 * 
 	 * @param  string
@@ -548,7 +507,7 @@ abstract class Inject
 	public static function parse_output($string)
 	{
 		// TODO: Add hooks and gzip compression
-		return $string . self::$output;
+		return $string;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -605,7 +564,8 @@ abstract class Inject
 	 */
 	public static function handle_fatal_error()
 	{
-		if(is_null($e = error_get_last()) === false) 
+		if(is_null($e = error_get_last()) === false &&
+			$e['type'] & (E_ERROR | E_COMPILE_ERROR | E_CORE_ERROR | E_PARSE | E_USER_ERROR)) 
 		{
 			// We've got a fatal error
 			self::handle_error($e['type'], 'PHP Error', $e['message'], $e['file'], $e['line'], false);
@@ -736,6 +696,8 @@ abstract class Inject
 			
 			$logger->shutdown();
 		}
+		
+		self::$loggers = array();
 	}
 }
 
