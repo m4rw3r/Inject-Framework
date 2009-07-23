@@ -1,0 +1,75 @@
+
+strong{
+	font-weight: bold;
+}
+
+tt{
+	font-family: Monaco, "DejaVu Sans Mono", "Courier New", Verdana, Sans-serif;
+}
+
+kbd{
+	font-weight: bold;
+	color: #500;
+}
+
+dfn{
+	font-weight: bold;
+	color: #494;
+}
+
+tt dfn, tt var, tt kbd{
+	font-weight: normal;
+}
+
+var{
+	font-weight: bold;
+	color: #994;
+}
+
+.important{
+	background: #422 url(exclamation_mark.png) 0 0.5em no-repeat;
+	display: block;
+	margin: 1.5em 1.5em 1.5em 2.917em;
+	padding: 1.416em;
+	padding-left: 2.916em;
+	border: 0.083em solid #744;
+	overflow: auto;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+}
+
+.tip{
+	background: #ddf url(lightbulb.png) 0 0.5em no-repeat;
+	display: block;
+	margin: 1.5em 1.5em 1.5em 2.917em;
+	padding: 1.416em;
+	padding-left: 2.916em;
+	border: 0.083em solid #bbf;
+	overflow: auto;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+}
+
+.warning{
+	background: #442 url(warning.png) 0 0.5em no-repeat;
+	display: block;
+	margin: 1.5em 1.5em 1.5em 2.917em;
+	padding: 1.416em;
+	padding-left: 2.916em;
+	border: 0.083em solid #cc7;
+	overflow: auto;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+}
+
+.function{
+	color: #77f;
+}
+
+.string{
+	color: #f77;
+}
+
+.comment{
+	color: #656565;
+}

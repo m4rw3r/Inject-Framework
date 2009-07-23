@@ -1,0 +1,241 @@
+body{
+	font-size: 1em;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, "Arial", sans-serif;
+	text-align: center;
+}
+
+a{
+	font-variant: small-caps;
+	text-decoration: underline;
+}
+
+/*** Paragraphs ***/
+/*----------------*/
+
+p{
+	font-size: 0.750em;
+	line-height: 1.5em;
+	margin: 1.5em 1.5em 1.5em 3em;
+}
+
+/*p + p:first-letter{
+	margin-left: 1em;
+}*/
+
+h1 + p:first-letter,
+h2 + p:first-letter,
+h3 + p:first-letter,
+h4 + p:first-letter,
+h5 + p:first-letter,
+h6 + p:first-letter
+{
+	float: left;
+	font-size: 3em;
+	margin: 0.13em 0.1em -0.01em 0;
+}
+
+p.no_large:first-letter{
+	float: none;
+	font-size: 1em;
+	margin: 0;
+}
+/*
+h1 + p:first-line,
+h2 + p:first-line,
+h3 + p:first-line,
+h4 + p:first-line,
+h5 + p:first-line,
+h6 + p:first-line
+{
+	font-variant: small-caps;
+}
+
+/*** Paragraphs with no spacing ***/
+/*--------------------------------*/
+
+.book{
+	/*font-family: "Palatino Linotype" "Palatino" "Times New Roman" Times serif;
+	font-size: 1.1em;*/
+}
+
+.book p{
+	margin: 0 1.5em 0 3em;
+}
+
+.book p + p:first-letter{
+	margin-left: 2em;
+}
+
+.book h1 + p,
+.book h2 + p,
+.book h3 + p,
+.book h4 + p
+.book h5 + p,
+.book h6 + p{
+	margin: 1.5em 1.5em 0 3em;
+}
+
+.book .separator{
+	margin: 1.5em;
+	text-align: center;
+}
+
+/*** Lists ***/
+/*-----------*/
+
+ul, ol{
+	font-size: 0.750em;
+	line-height: 1.5em;
+	margin: 1.5em 1.5em 1.5em 6em;
+	list-style: disc;
+}
+
+ol{
+	list-style: decimal;
+}
+
+ul code, ul pre, ol code, ol pre{
+	font-size: 1em;
+	margin-left: 0;
+}
+
+table ul, table ol, ul ul, ol ul, ol ol, ul ol{
+	font-size: 1em;
+	margin: 0.5em 0.5em 0em 1.5em;
+}
+
+/*** Source Code ***/
+/*-----------------*/
+
+code, pre{
+	display: block;
+	margin: 1.5em 1.5em 1.5em 2.917em;
+	padding: 1.416em;
+	font: 0.750em Monaco, "DejaVu Sans Mono", "Courier New", Verdana, Sans-serif;
+	line-height: 1.5em;
+	border: 0.083em solid #333;
+	overflow: auto;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+}
+
+/***   TABLES    ***/
+/*-----------------*/
+
+table{
+	font-size: 0.75em;
+	margin: 0 1.5em;
+	border: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+table th{
+	background-color: #666;
+	color: #fff;
+	padding: 1em;
+	text-align: left;
+	border-bottom: 0.083em solid #fff;
+	font-weight: bold;
+}
+
+table th:first-child{
+	-moz-border-radius-topleft: 0.5em;	
+	-webkit-border-top-left-radius: 0.5em;
+}
+
+table th:last-child{
+	-moz-border-radius-topright: 0.5em;	
+	-webkit-border-top-right-radius: 0.5em;
+}
+
+table td{
+	background-color: #ccc;
+	color: #000;
+	padding: 0.75em;
+	text-align: left;
+	border-top: 0.083em solid #fff;
+	border-right: 0.083em solid #fff;
+	border-left: 0.083em solid #fff;
+}
+
+table tr td:first-child{
+	border-left: 0;
+}
+
+table tr td:last-child{
+	border-right: 0;
+}
+
+table tr:last-child td:first-child{
+	-moz-border-radius-bottomleft: 0.5em;	
+	-webkit-border-bottom-left-radius: 0.5em;
+}
+
+table tr:last-child td:last-child{
+	-moz-border-radius-bottomright: 0.5em;	
+	-webkit-border-bottom-right-radius: 0.5em;
+}
+
+/***   HEADERS   ***/
+/*-----------------*/
+
+h1, h2, h3, h4, h5, h6{
+	font-family: "Palatino Linotype", "Palatino", "Times New Roman", Times, serif;
+	font-weight: 300;
+}
+
+/* 24 pt */
+h1{
+	font-size: 1.5em;
+	line-height: 1.46em; /* 1.5em without border */
+	margin: 0.75em;
+	font-weight: 300;
+	border-bottom: 0.045em solid #ccc;
+}
+
+/* 18 pt */
+h2{
+	font-size: 1.125em;
+	line-height: 0.97em; /* 1em without border */
+	margin: 1em;
+	border-bottom: 0.07em solid #ccc;
+}
+
+/* 16 pt */
+h3{
+	font-size: 1em;
+	line-height: 1.062em; /* 1.125em without border */
+	margin: 1.125em;
+	border-bottom: 0.064em solid #ccc;
+}
+
+/* 12 pt */
+h4, h5, h6{
+	font-size: 0.750em;
+	line-height: 1.46em; /* 1.5em without border */
+	margin: 1.5em;
+	font-weight: 400;
+	border-bottom: 0.083em solid #ccc;
+}
+
+/* Centered Headers */
+
+h1.center,
+h2.center,
+h3.center,
+h4.center,
+h5.center,
+h6.center{
+	border-bottom-color: transparent;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+.clear{
+	clear: both;
+	line-height: 0;
+	width: 100%;
+	height: 0;
+}

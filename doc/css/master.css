@@ -1,0 +1,136 @@
+
+@import 'reset.css';
+@import 'typo.css';
+@import 'markers.css';
+
+html, body{
+	height: 100%;
+	background: #111;
+	color: #ccc;
+}
+
+code, pre{
+	border-color: #555;
+	background: #111;
+	color: #bbb;
+	-moz-border-radius-topleft:			1em;
+	-webkit-border-top-left-radius:		1em;
+    -moz-border-radius-topright:		1em;
+	-webkit-border-top-right-radius:	1em;
+    -moz-border-radius-bottomleft:		1em;
+	-webkit-border-bottom-left-radius:	1em;
+    -moz-border-radius-bottomright:		1em;
+	-webkit-border-bottom-right-radius:	1em;
+}
+
+a{
+	font-variant: normal;
+	color: #900;
+}
+
+a:hover{
+	color: #000;
+}
+
+#container{
+	position: relative;
+	width: 58.2em;
+	margin: auto auto -4em;
+	text-align: left;
+	top: 0;
+	height: 100%;
+	overflow: visible;
+}
+
+#header{
+	position: relative;
+	float: left;
+	width: 20em;
+	padding-top: 1em;
+}
+
+#logo{
+	margin: 1em;
+	width: 17em;
+}
+
+#content{
+	position: relative;
+	width: 38em;
+	margin: 0 0 -4em auto;
+	background: #222;
+	float: left;
+	min-height: 100%;
+	left: -1px;
+	border-right: 1px solid #555;
+	border-left: 1px solid #555;
+}
+
+#nav{
+	text-align: left;
+	list-style: none;
+	margin: 0;
+}
+
+#nav li{
+	display: block;
+	width: 100%;
+}
+
+#nav a{
+	text-transform: uppercase;
+	display:block;
+	line-height: 1.436em;
+	padding: 1em;
+	color: #ccc;
+	background: #111;
+	text-decoration: none;
+	-moz-border-radius-topleft: 0.5em;
+	-moz-border-radius-bottomleft: 0.5em;
+	-webkit-border-top-left-radius: 0.5em;
+	-webkit-border-bottom-left-radius: 0.5em;
+}
+
+#nav a:hover{
+	background: #222;
+	color: #900;
+}
+
+#nav a.current{
+	background: #211;
+	font-weight: bold;
+}
+
+#nav ul{
+	margin: 0 0 0 3em;
+	font-size: 1em;
+}
+
+#footer{
+	position: relative;
+	margin: 0 auto 0;
+	width: 58em;
+	height: 3em;
+}
+
+#inner_footer{
+	position:relative;
+	right: 0.5em;
+	width: 37em;
+	margin: 0 0 0 auto;
+	background: #222;
+	float: right;
+	height: 4em;
+}
+
+#spacer{
+	height: 1em;
+}
+
+#spacer_footer{
+	height: 3em;
+}
+
+#spacer_footer{
+	height: 4em;
+}
