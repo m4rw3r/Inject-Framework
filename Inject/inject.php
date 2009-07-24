@@ -448,14 +448,14 @@ abstract class Inject
 			$c = self::$classes[$class_key];
 			
 			// do we have a callable, an instance or a class name?
-			if(is_object($c))
+			if(is_callable($c))
+			{
+				return call_user_func($c, $parameters);
+			}
+			elseif(is_object($c))
 			{
 				// already created object ("singleton")
 				return $c;
-			}
-			elseif(is_callable($c))
-			{
-				return call_user_func($c, $parameters);
 			}
 			else
 			{

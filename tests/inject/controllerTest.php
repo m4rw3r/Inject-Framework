@@ -34,13 +34,35 @@ class Inject_ControllerTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testSettingRequest()
 	{
-		$r = $this->getMock('Inject_Request');
+		$r = $this->getMock('Inject_Request', array('get_response'));
 		
 		$c = new Inject_Controller($r);
 		
 		$this->assertObjectHasAttribute('request', $c);
 		
 		$this->assertSame($r, $c->request);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Is the response object assigned properly?
+	 * 
+	 * @covers __construct
+	 */
+	public function testSettingResponse()
+	{
+		$req = $this->getMock('Inject_Request', array('get_response'));
+		
+		$resp = $this->getMock('Inject_Response');
+		
+		$req->expects($this->once())->method('get_response')->will($this->returnValue($resp));
+		
+		$c = new Inject_Controller($req);
+		
+		$this->assertObjectHasAttribute('response', $c);
+		
+		$this->assertSame($resp, $c->response);
 	}
 	
 	// ------------------------------------------------------------------------
