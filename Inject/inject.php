@@ -324,6 +324,10 @@ abstract class Inject
 			// let the loggers write, here is their chance to do shutdown before __destruct()
 			self::terminate_loggers();
 		}
+		else
+		{
+			return $request->get_response();
+		}
 	}
 	
 	// ------------------------------------------------------------------------
