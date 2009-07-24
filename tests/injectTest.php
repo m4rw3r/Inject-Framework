@@ -14,7 +14,10 @@ require_once dirname(__FILE__).'/../Inject/inject.php';
  */
 class InjectTest extends PHPUnit_Framework_TestCase
 {
-	// The Inject class is a singleton
+	/**
+	 * The Inject class is a singleton, hence we need to restart PHP
+	 * every time to make sure that it is reset
+	 */
 	public $runTestInSeparateProcess = true;
 	
 	// ------------------------------------------------------------------------
@@ -54,7 +57,7 @@ class InjectTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(ob_get_level(), 1);
 	}
 	
-	public function testObStart2()
+	public function testObStartNested()
 	{
 		ob_start();
 		
@@ -180,23 +183,84 @@ class InjectTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests the run method, makes sure that the dispatcher is called.
+	 * 
+	 * @covers run
 	 */
 	public function testRun()
 	{
-		return;
-		$req = $this->getMock('Inject_Request', array('get_type', 'get_response'));
-		$disp = $this->getMock('Inject_Dispatcher', array('http'));
-		$resp = $this->getMock('Inject_Response', array('output_content'));
+		$request	= $this->getMock('Inject_Request', array('get_type', 'get_response'));
+		$dispatcher	= $this->getMock('Inject_Dispatcher', array('http'));
+		$response	= $this->getMock('Inject_Response', array('output_content'));
 		
-		$req->expects($this->atLeastOnce())->method('get_type')->will($this->returnValue('http'));
-		$req->expects($this->once())->method('get_response')->will($this->returnValue($resp));
-		$disp->expects($this->once())->method('http');
+		$request->expects($this->atLeastOnce())	->method('get_type')	->will($this->returnValue('http'));
+		$request->expects($this->once())		->method('get_response')->will($this->returnValue($response));
 		
-		Inject::set_class('dispatcher', $disp);
+		$dispatcher->expects($this->once())->method('http');
 		
-		Inject::run($req);
+		Inject::set_class('dispatcher', $dispatcher);
 		
-		$this->assertSame(Inject::$main_request, $req);
+		Inject::run($request);
+		
+		$this->assertSame(Inject::$main_request, $request);
+	}
+	
+	/**
+	 * Tests the run method, makes sure that the dispatcher is called.
+	 * 
+	 * @covers run
+	 */
+	public function testRunNested()
+	{
+		// A mock dispatcher, because PHPUnit doesn't support Closures in returnCallable() yet
+		// it fails on serialize(), because closures cannot be serialized (using $runTestInSeparateProcess = true)
+		eval('class Fake_Dispatcher
+		{
+			public $call;
+			
+			function __call($m, $p)
+			{
+				$c = $this->call;
+				
+				return $c();
+			}
+		}');
+		
+		$request	= $this->getMock('Inject_Request',	array('get_type', 'get_response'));
+		$dispatcher	= new Fake_Dispatcher();
+		$response	= $this->getMock('Inject_Response',	array('output_content'));
+		
+		$request_2		= $this->getMock('Inject_Request',		array('get_type', 'get_response'));
+		$dispatcher_2	= $this->getMock('Inject_Dispatcher',	array('http'));
+		$response_2		= $this->getMock('Inject_Response', 	array('output_content'));
+		
+		$request_2->expects($this->atLeastOnce())->method('get_type')	 ->will($this->returnValue('http'));
+		$request_2->expects($this->once())		 ->method('get_response')->will($this->returnValue($response_2));
+		
+		$dispatcher_2->expects($this->once())->method('http')->will($this->returnValue(''));
+		
+		$test = $this;
+		
+		// "controller" wich will call a nested request with new request objects and a mock dispatcher
+		$c = function() use ($test, $request, $request_2, $dispatcher_2, $response_2)
+		{
+			Inject::set_class('dispatcher', $dispatcher_2);
+			
+			$result = Inject::run($request_2);
+			
+			$test->assertSame(Inject::$main_request, $request);
+			$test->assertSame($result, $response_2);
+		};
+		
+		$request->expects($this->atLeastOnce()) ->method('get_type')	->will($this->returnValue('http'));
+		$request->expects($this->once())		->method('get_response')->will($this->returnValue($response));
+		
+		$dispatcher->call = $c;
+		
+		Inject::set_class('dispatcher', $dispatcher);
+		
+		Inject::run($request);
+		
+		$this->assertSame(Inject::$main_request, $request);
 	}
 }
 
