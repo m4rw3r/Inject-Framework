@@ -47,14 +47,16 @@ class Inject_Request_HTTP implements Inject_Request
 	
 	// ------------------------------------------------------------------------
 
-	public function __construct()
+	public function __construct($uri = null)
 	{
 		Inject::log('inject', 'HTTP request initializing', Inject::DEBUG);
-		$uri = $this->get_uri();
 		
-		if( ! empty($uri))
+		// do we have an URI? if not get the current one from the URL object
+		$this->uri = is_null($uri) ? URL::get_current_uri() : $uri;
+		
+		if( ! empty($this->uri))
 		{
-			$this->route($uri);
+			$this->route($this->uri);
 		}
 		
 		if(is_null($this->parameters))
@@ -68,94 +70,6 @@ class Inject_Request_HTTP implements Inject_Request
 	public function get_type()
 	{
 		return 'http';
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the URI used for this request.
-	 * 
-	 * @return string
-	 */
-	public function get_uri()
-	{
-		static $final_uri;
-		
-		if( ! is_null($final_uri))
-		{
-			// we have already parsed it, return it
-			return $final_uri;
-		}
-		
-		if(PHP_SAPI === 'cli')
-		{
-			if(isset($_SERVER['argv'][1]))
-			{
-				$current_uri = $_SERVER['argv'][1];
-
-				// Remove GET string from segments
-				if(($query = strpos($current_uri, '?')) !== FALSE)
-				{
-					list($current_uri, $query) = explode('?', $current_uri, 2);
-
-					// Parse the query string into $_GET
-					parse_str($query, $_GET);
-
-					// Convert $_GET to UTF-8
-					$_GET = utf8::clean($_GET);
-				}
-			}
-			
-			$source = 'Command Line Interface';
-		}
-		elseif(isset($_GET['inject_uri']))
-		{
-			// Use the URI defined in the query string
-			$current_uri = $_GET['inject_uri'];
-
-			// Remove the URI from $_GET
-			unset($_GET['inject_uri']);
-
-			// Remove the URI from $_SERVER['QUERY_STRING']
-			$_SERVER['QUERY_STRING'] = preg_replace('~\binject_uri\b[^&]*+&?~', '', $_SERVER['QUERY_STRING']);
-			
-			$source = 'Query String';
-		}
-		elseif(isset($_SERVER['PATH_INFO']) AND $_SERVER['PATH_INFO'])
-		{
-			$current_uri = $_SERVER['PATH_INFO'];
-			
-			$source = 'Path Info';
-		}
-		elseif(isset($_SERVER['ORIG_PATH_INFO']) AND $_SERVER['ORIG_PATH_INFO'])
-		{
-			$current_uri = $_SERVER['ORIG_PATH_INFO'];
-			
-			$source = 'Orig Path Info';
-		}
-		elseif(isset($_SERVER['PHP_SELF']) AND $_SERVER['PHP_SELF'])
-		{
-			$current_uri = $_SERVER['PHP_SELF'];
-			
-			$source = 'PHP_SELF';
-		}
-		
-		if(Inject::config('inject.front_controller', '') && ($fc_pos = strpos($current_uri, Inject::config('inject.front_controller', ''))) !== false)
-		{
-			// Remove the front controller from the current uri
-			$current_uri = (string) substr($current_uri, $fc_pos + strlen(Inject::config('inject.front_controller', '')));
-		}
-		
-		// Remove slashes from the start and end of the URI
-		$current_uri = trim($current_uri, '/');
-		
-		if($current_uri !== '')
-		{
-			// Reduce multiple slashes into single slashes
-			$current_uri = preg_replace('#//+#', '/', $current_uri);
-		}
-		
-		return $final_uri = $current_uri;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -421,6 +335,13 @@ class Inject_Request_HTTP implements Inject_Request
 	public function get_parameter($name, $default = null)
 	{
 		return isset($this->parameters[$name]) ? $this->parameters[$name] : $default;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function get_parameters()
+	{
+		return $this->parameters;
 	}
 	
 	// ------------------------------------------------------------------------
