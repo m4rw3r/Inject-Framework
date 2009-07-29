@@ -33,13 +33,6 @@ interface Inject_Request
 	public function get_parameter($name, $default = null);
 	
 	/**
-	 * Returns the URI used by this request (ie. everything after the front controller name).
-	 * 
-	 * @return string
-	 */
-	public function get_uri();
-	
-	/**
 	 * Returns the request type.
 	 * 
 	 * @return string
