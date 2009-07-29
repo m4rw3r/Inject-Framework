@@ -205,7 +205,7 @@ class InjectTest extends PHPUnit_Framework_TestCase
 	}
 	
 	/**
-	 * Tests the run method, makes sure that the dispatcher is called.
+	 * Tests the run method in nested calls.
 	 * 
 	 * @covers run
 	 */
@@ -261,6 +261,30 @@ class InjectTest extends PHPUnit_Framework_TestCase
 		Inject::run($request);
 		
 		$this->assertSame(Inject::$main_request, $request);
+	}
+	
+	/**
+	 * Test calling the Inject::run() method and forcing it to return the response object.
+	 * 
+	 * @covers run
+	 */
+	public function testRunForceResponseReturn()
+	{
+		$request	= $this->getMock('Inject_Request', array('get_type', 'get_response'));
+		$dispatcher	= $this->getMock('Inject_Dispatcher', array('http'));
+		$response	= $this->getMock('Inject_Response', array('output_content'));
+		
+		$request->expects($this->atLeastOnce())	->method('get_type')	->will($this->returnValue('http'));
+		$request->expects($this->once())		->method('get_response')->will($this->returnValue($response));
+		$response->expects($this->never())		->method('output_content');
+		
+		$dispatcher->expects($this->once())->method('http');
+		
+		Inject::set_class('dispatcher', $dispatcher);
+		
+		$resp = Inject::run($request);
+		
+		$this->assertSame($resp, $response);
 	}
 }
 
