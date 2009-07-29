@@ -273,9 +273,11 @@ abstract class Inject
 	/**
 	 * Runs the framework for a request.
 	 * 
-	 * @return void
+	 * @param  Inject_Request
+	 * @param  bool		If to output the response on the first request (ie. the first call to run())
+	 * @return Inject_Response
 	 */
-	public static function run(Inject_Request $request)
+	public static function run(Inject_Request $request, $output_response = true)
 	{
 		static $calls = 0;
 		
@@ -312,8 +314,11 @@ abstract class Inject
 		// should we end buffering?
 		if($first_end)
 		{
-			// output the contents
-			echo self::$main_request->get_response()->output_content();
+			if($output_response)
+			{
+				// output the contents
+				echo $request->get_response()->output_content();
+			}
 			
 			// clear all the buffers and finally let Inject Framework parse the result
 			while(ob_get_level() > self::$ob_level)
@@ -324,10 +329,8 @@ abstract class Inject
 			// let the loggers write, here is their chance to do shutdown before __destruct()
 			self::terminate_loggers();
 		}
-		else
-		{
-			return $request->get_response();
-		}
+		
+		return $request->get_response();
 	}
 	
 	// ------------------------------------------------------------------------
