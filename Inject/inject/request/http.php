@@ -82,7 +82,7 @@ class Inject_Request_HTTP implements Inject_Request
 	 */
 	public function route($uri)
 	{
-		$routes = Inject::config('request.http.routes', array());
+		$routes = Inject::config('http.routes', array());
 		
 		// literal match, has highest priority
 		if(isset($routes[$uri]))

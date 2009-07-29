@@ -20,7 +20,7 @@ return array
 		),
 	'inject.error_level'		=> E_ALL,
 	'inject.error_level_log'	=> E_ALL,
-	'request_http.routes'	=> array
+	'http.routes'		=> array
 		(
 			'admin/(.+?)(/.*)?'	=> 'admin_$1$2'		// routes to controller/admin/$match.php
 		)
