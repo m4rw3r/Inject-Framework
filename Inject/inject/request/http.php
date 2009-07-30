@@ -29,7 +29,7 @@ class Inject_Request_HTTP implements Inject_Request
 	 * 
 	 * @var array
 	 */
-	protected $parameters = null;
+	protected $parameters = array();
 	
 	/**
 	 * Contains all the segments for the current request.
@@ -62,11 +62,6 @@ class Inject_Request_HTTP implements Inject_Request
 				$this->set_uri($uri);
 			}
 		}
-		
-		if(is_null($this->parameters))
-		{
-			$this->parameters = array();
-		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -80,6 +75,12 @@ class Inject_Request_HTTP implements Inject_Request
 
 	/**
 	 * Routes the URI, then calls set_uri() to set the controller, action and parameters.
+	 * 
+	 * Named regexes:
+	 * The named captures of the regular expressions will be set as parameters with the
+	 * capture name as the key.
+	 * Unnamed captures will be ignored, and the resulting uri string will be parsed
+	 * into controller/action/extra parameters
 	 * 
 	 * @param  string
 	 * @return void
@@ -130,8 +131,20 @@ class Inject_Request_HTTP implements Inject_Request
 				$key = trim($key, '/');
 				$val = trim($val, '/');
 				
-				if(preg_match('#^'.$key.'$#u', $uri))
+				if(preg_match('#^'.$key.'$#u', $uri, $m))
 				{
+					// get parameters from the regex, step 1: clean it from junk
+					foreach($m as $k => $v)
+					{
+						// skip numeric
+						if(is_numeric($k))
+						{
+							unset($m[$k]);
+						}
+					}
+					
+					$this->set_parameters($m);
+					
 					if(strpos($val, '$') !== false)
 					{
 						// regex routing
@@ -212,7 +225,7 @@ class Inject_Request_HTTP implements Inject_Request
 		$this->segments = $segments;
 		
 		// parse the parameters
-		$this->parameters = $this->parse_segments_to_params($segments);
+		$this->parameters = array_merge($this->parameters, $this->parse_segments_to_params($segments));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -298,23 +311,14 @@ class Inject_Request_HTTP implements Inject_Request
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the controller to use for this request.
+	 * Sets the parameters to use for this request.
 	 * 
-	 * @param  string
+	 * @param  array
 	 * @return bool
 	 */
 	public function set_parameters($value)
 	{
-		if(is_null($this->parameters))
-		{
-			$this->parameters = (Array) $value;
-			
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		$this->parameters = array_merge($this->parameters, $value);
 	}
 	
 	// ------------------------------------------------------------------------
