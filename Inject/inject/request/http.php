@@ -56,7 +56,11 @@ class Inject_Request_HTTP implements Inject_Request
 		
 		if( ! empty($this->uri))
 		{
-			$this->route($this->uri);
+			if(($uri = $this->route($this->uri)) !== false)
+			{
+				// $uri is the routed uri
+				$this->set_uri($uri);
+			}
 		}
 		
 		if(is_null($this->parameters))
@@ -89,9 +93,7 @@ class Inject_Request_HTTP implements Inject_Request
 		{
 			Inject::log('request', 'HTTP request routed to "'.$routes[$uri].'".', Inject::DEBUG);
 			
-			$this->set_uri($routes[$uri]);
-			
-			return;
+			return $routes[$uri];
 		}
 		
 		foreach($routes as $key => $val)
@@ -116,7 +118,7 @@ class Inject_Request_HTTP implements Inject_Request
 						Inject::log('request', 'HTTP request routed by callable to controller "'.$this->controller.'".', Inject::DEBUG);
 						
 						// we're done, the callable has set the controller, action, parameters and segment
-						return;
+						return false;
 					}
 				}
 			}
@@ -149,8 +151,7 @@ class Inject_Request_HTTP implements Inject_Request
 			}
 		}
 		
-		// $uri is the routed uri
-		$this->set_uri($uri);
+		return $uri;
 	}
 	
 	// ------------------------------------------------------------------------
