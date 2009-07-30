@@ -388,9 +388,9 @@ abstract class Inject
 		ob_end_clean();
 		
 		// output the contents
-		echo self::filter('inject.output', $request->get_response()->output_content() . $output);
+		echo self::filter('inject.output', self::$main_request->get_response()->output_content() . $output);
 		
-		$exit && exit (Int) $status;
+		$exit && exit((Int) $status);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -790,7 +790,7 @@ abstract class Inject
 		
 		// quit
 		flush();
-		exit (Int) $level;
+		exit((Int) $level);
 	}
 	
 	// ------------------------------------------------------------------------
