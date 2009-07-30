@@ -25,10 +25,36 @@ require INJECT_FRAMEWORK_PATH . '/utf8' . INJECT_FRAMEWORK_EXT;
  */
 abstract class Inject
 {
+	/**
+	 * Error constant for ERROR in the Inject Framework.
+	 * 
+	 * @var int
+	 */
 	const ERROR = 1;
+	/**
+	 * Error constant for WARNING in the Inject Framework.
+	 * 
+	 * @var int
+	 */
 	const WARNING = 2;
+	/**
+	 * Error constant for NOTICE in the Inject Framework.
+	 * 
+	 * @var int
+	 */
 	const NOTICE = 4;
+	/**
+	 * Error constant for DEBUG in the Inject Framework.
+	 * 
+	 * @var int
+	 */
 	const DEBUG = 8;
+	/**
+	 * Error constant for ALL in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const ALL = 15;
 	
 	/**
 	 * The configuration.
@@ -127,6 +153,20 @@ abstract class Inject
 	 * @var int
 	 */
 	protected static $ob_level = 0;
+	
+	/**
+	 * Contains callables hooked to a certain event.
+	 * 
+	 * @var array
+	 */
+	protected static $events = array();
+	
+	/**
+	 * Contains callables hooked to a certain filter.
+	 * 
+	 * @var array
+	 */
+	protected static $filters = array();
 	
 	/**
 	 * A list of log events.
@@ -239,11 +279,11 @@ abstract class Inject
 		// add handler for fatal errors
 		register_shutdown_function(array('Inject', 'handle_fatal_error'));
 		
-		// get buffer level, so we don't end any enclosing buffers
-		self::$ob_level = ob_get_level();
-		
 		// start output buffering, and send it through the output handler
 		ob_start('Inject::parse_output');
+		
+		// get buffer level, so we don't end any enclosing buffers
+		self::$ob_level = ob_get_level();
 	}
 	
 	// ------------------------------------------------------------------------
@@ -274,14 +314,12 @@ abstract class Inject
 	 * Runs the framework for a request.
 	 * 
 	 * @param  Inject_Request
-	 * @param  bool		If to output the response on the first request (ie. the first call to run())
+	 * @param  bool		If to automatically shut down the whole PHP script after the first request has run completely
 	 * @return Inject_Response
 	 */
-	public static function run(Inject_Request $request, $output_response = true)
+	public static function run(Inject_Request $request, $auto_end = true)
 	{
 		static $calls = 0;
-		
-		$first_end = false;
 		
 		// get the first request type to be able to produce proper error messages
 		if( ! $calls)
@@ -290,8 +328,14 @@ abstract class Inject
 			self::$main_request = $request;
 			self::$request_type = $request->get_type();
 			
-			// define that we're the first one and that we need it to end the buffering
-			$first_end = true;
+			self::event('inject.start');
+			
+			// do not modify auto end here
+		}
+		else
+		{
+			// do not allow us to exit the script on subrequests
+			$auto_end = false;
 		}
 		
 		// increase the call counter, to be able to debug for HMVC
@@ -311,26 +355,42 @@ abstract class Inject
 		
 		self::log('inject', 'run()[' . $real_calls . '] - DONE', self::DEBUG);
 		
-		// should we end buffering?
-		if($first_end)
-		{
-			if($output_response)
-			{
-				// output the contents
-				echo $request->get_response()->output_content();
-			}
-			
-			// clear all the buffers and finally let Inject Framework parse the result
-			while(ob_get_level() > self::$ob_level)
-			{
-				ob_end_flush();
-			}
-			
-			// let the loggers write, here is their chance to do shutdown before __destruct()
-			self::terminate_loggers();
-		}
+		// if this is the first call, end it automatically if the option is set
+		$auto_end && self::end();
 		
 		return $request->get_response();
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Ends the framework execution, by default also ends PHP execution.
+	 * 
+	 * @param  int
+	 * @param  bool
+	 * @return void
+	 */
+	public static function end($status = 0, $exit = true)
+	{
+		// run the end event
+		self::event('inject.end');
+		
+		// clear all the buffers except for the last
+		while(ob_get_level() > self::$ob_level)
+		{
+			ob_end_flush();
+		}
+		
+		// get the contents, so we can add it to the output
+		$output = ob_get_contents();
+		
+		// clear the last buffer
+		ob_end_clean();
+		
+		// output the contents
+		echo self::filter('inject.output', $request->get_response()->output_content() . $output);
+		
+		$exit && exit (Int) $status;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -520,6 +580,84 @@ abstract class Inject
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Triggers an event.
+	 * 
+	 * @param  string
+	 * @param  array
+	 * @return void
+	 */
+	public static function event($name, $params = array())
+	{
+		if( ! empty(self::$events[$name]))
+		{
+			foreach(self::$events[$name] as $call)
+			{
+				call_user_func_array($call, $params);
+			}
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets a callable which will be triggered on the specified event.
+	 * 
+	 * @param  string
+	 * @param  callable
+	 * @return void
+	 */
+	public static function on_event($name, $callable)
+	{
+		self::$events[$name][] = $callable;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Filters the string through the callables associated with the filter name.
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @param  array
+	 * @return string
+	 */
+	public static function filter($name, $string, $params = array())
+	{
+		if( ! empty(self::$filters[$name]))
+		{
+			foreach(self::$filters[$name] as $filter)
+			{
+				// make the filter string be the first
+				$args = array_merge(array($string), $params);
+				
+				if($res = call_user_func_array($filter, $args))
+				{
+					// not evalated to false, assume that it is the new string
+					$string = $res;
+				}
+			}
+		}
+		
+		return $string;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Adds a callable to filter a certain string.
+	 * 
+	 * @param  string
+	 * @param  callable
+	 * @return void
+	 */
+	public static function add_filter($name, $callable)
+	{
+		self::$filters[$name][] = $callable;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Outputs debug information about the current request.
 	 * 
 	 * @param  bool
@@ -635,7 +773,14 @@ abstract class Inject
 			self::log($type, $message . ' in file "'.$file.'" on line "'.$line.'".', self::ERROR);
 		}
 		
-		self::terminate_loggers();
+		if( ! self::$error_level & $level OR ! self::$error_level_500 & $level)
+		{
+			// we did not output an error page, do not quit, just log it
+			return;
+		}
+		
+		// quit inject framework execution
+		self::event('inject.end');
 		
 		// send the output to the browser
 		while(ob_get_level())
@@ -643,6 +788,7 @@ abstract class Inject
 			ob_end_flush();
 		}
 		
+		// quit
 		flush();
 		exit;
 	}
@@ -667,7 +813,7 @@ abstract class Inject
 		{
 			list($log_level, $logger) = $pair;
 			
-			if($level <= $log_level)
+			if($level & $log_level)
 			{
 				$logger->add_message($namespace, $message, $level);
 			}
@@ -686,25 +832,6 @@ abstract class Inject
 		$level OR $level = self::DEBUG;
 		
 		self::$loggers[] = array($level, $log_obj);
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Calls the shutdown() method of all the attached loggers.
-	 * 
-	 * @return void
-	 */
-	protected static function terminate_loggers()
-	{
-		foreach(self::$loggers as $pair)
-		{
-			list(,$logger) = $pair;
-			
-			$logger->shutdown();
-		}
-		
-		self::$loggers = array();
 	}
 }
 
