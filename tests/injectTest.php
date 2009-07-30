@@ -199,9 +199,40 @@ class InjectTest extends PHPUnit_Framework_TestCase
 		
 		Inject::set_class('dispatcher', $dispatcher);
 		
-		Inject::run($request);
+		Inject::run($request, false);
 		
 		$this->assertSame(Inject::$main_request, $request);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Test a single first run of run(), to assert that it exits.
+	 * 
+	 * @covers run
+	 */
+	public function testRunAutoExit()
+	{
+		// TODO: How can I make this test work?
+		// Now I keep getting a Runtime Exception from PHPUnit because the script exits
+		
+		$request	= $this->getMock('Inject_Request', array('get_type', 'get_response'));
+		$request2	= $this->getMock('Inject_Request', array('get_type', 'get_response'));
+		$dispatcher	= $this->getMock('Inject_Dispatcher', array('http'));
+		$response	= $this->getMock('Inject_Response', array('output_content'));
+		
+		$request->expects($this->atLeastOnce())	->method('get_type')	->will($this->returnValue('http'));
+		$request->expects($this->once())		->method('get_response')->will($this->returnValue($response));
+		$request2->expects($this->never())		->method('get_type');
+		
+		$dispatcher->expects($this->once())->method('http');
+		
+		Inject::set_class('dispatcher', $dispatcher);
+		
+		Inject::run($request);
+		
+		// should not run, asserted by expects($this->never())
+		Inject::run($request2);
 	}
 	
 	/**
@@ -258,7 +289,7 @@ class InjectTest extends PHPUnit_Framework_TestCase
 		
 		Inject::set_class('dispatcher', $dispatcher);
 		
-		Inject::run($request);
+		Inject::run($request, false);
 		
 		$this->assertSame(Inject::$main_request, $request);
 	}
@@ -282,7 +313,7 @@ class InjectTest extends PHPUnit_Framework_TestCase
 		
 		Inject::set_class('dispatcher', $dispatcher);
 		
-		$resp = Inject::run($request);
+		$resp = Inject::run($request, false);
 		
 		$this->assertSame($resp, $response);
 	}
