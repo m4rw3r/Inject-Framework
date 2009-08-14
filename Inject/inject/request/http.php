@@ -99,72 +99,46 @@ class Inject_Request_HTTP implements Inject_Request
 		
 		foreach($routes as $key => $val)
 		{
-			if(is_numeric($key))
+		
+			// Trim slashes
+			$key = trim($key, '/');
+			$val = trim($val, '/');
+			
+			if(preg_match('#^'.$key.'$#u', $uri, $m))
 			{
-				// we have a callable, check its validity
-				if(is_callable($val))
+				// get parameters from the regex, step 1: clean it from junk
+				foreach($m as $k => $v)
 				{
-					// function routing_function(string $uri, Inject_Router $rtr)
-					
-					// Let it reroute the URI or set controller, action and parameters.
-					// Depends on if it calls $rtr->set_controller($str) or $rtr->set_uri(),
-					// return false to not route the URI
-					// If the uri is routed to its final destination, use the $rtr->set_uri()
-					// with a valid uri (which sets a controller)
-					$uri = ($r = call_user_func($val, $uri, $this)) ? $r : $uri;
-					
-					// did we get a controller?
-					if( ! empty($this->controller))
+					// skip numeric
+					if(is_numeric($k))
 					{
-						Inject::log('request', 'HTTP request routed by callable to controller "'.$this->controller.'".', Inject::DEBUG);
-						
-						// we're done, the callable has set the controller, action, parameters and segment
-						return false;
+						unset($m[$k]);
 					}
 				}
-			}
-			else
-			{
-				// we have a match to do
 				
-				// Trim slashes
-				$key = trim($key, '/');
-				$val = trim($val, '/');
+				// step 2: assign
+				$this->set_parameters($m);
 				
-				if(preg_match('#^'.$key.'$#u', $uri, $m))
+				if(strpos($val, '$') !== false)
 				{
-					// get parameters from the regex, step 1: clean it from junk
-					foreach($m as $k => $v)
-					{
-						// skip numeric
-						if(is_numeric($k))
-						{
-							unset($m[$k]);
-						}
-					}
-					
-					$this->set_parameters($m);
-					
-					if(strpos($val, '$') !== false)
-					{
-						// regex routing
-						$uri = preg_replace('#^'.$key.'$#u', $val, $uri);
-					}
-					else
-					{
-						// Standard routing
-						$uri = $val;
-					}
-					
-					Inject::log('request', 'HTTP request routed by regex to "'.$uri.'".', Inject::DEBUG);
-					
-					// A valid route has been found
-					break;
+					// regex routing
+					$uri = preg_replace('#^'.$key.'$#u', $val, $uri);
+					echo "'$uri'";
 				}
+				else
+				{
+					// Standard routing
+					$uri = $val;
+				}
+				
+				Inject::log('request', 'HTTP request routed by regex to "'.$uri.'".', Inject::DEBUG);
+				
+				// A valid route has been found
+				break;
 			}
 		}
 		
-		return $uri;
+		return str_replace('//', '/', $uri);
 	}
 	
 	// ------------------------------------------------------------------------
