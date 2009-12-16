@@ -41,6 +41,11 @@ class Inject
 	 */
 	const ALL = 15;
 	
+	/**
+	 * A list which is used to convert PHP error constants to Inject error constants.
+	 * 
+	 * @var array
+	 */
 	private static $error_conversion_table = array();
 	
 	/**
@@ -56,7 +61,7 @@ class Inject
 	private static $run_level = 0;
 	
 	/**
-	 * The configuration.
+	 * The configuration cache.
 	 * 
 	 * @var array
 	 */
@@ -89,9 +94,11 @@ class Inject
 	/**
 	 * The error level which Inject Framework should respect when receiving errors.
 	 * 
+	 * 15 = self::ALL
+	 * 
 	 * @var int
 	 */
-	private static $error_level = E_ALL;
+	private static $error_level = 15;
 	
 	/**
 	 * The error level which Inject Framework will send HTTP 500 errors.
@@ -99,9 +106,11 @@ class Inject
 	 * This is triggered if $error_level doesn't cover the error,
 	 * as it usually is in a production environment ($error_level = 0).
 	 * 
+	 * 15 = self::ALL
+	 * 
 	 * @var int
 	 */
-	private static $error_level_500 = E_ALL;
+	private static $error_level_500 = 15;
 	
 	/**
 	 * The request which first was sent to Inject Framework during this run.
@@ -127,50 +136,25 @@ class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Adds an additional path to search for files in (ie. application path).
+	 * Adds application paths for the framework.
 	 * 
-	 * Added at the end of the search-list.
-	 * 
-	 * @param  string
+	 * @param  array
 	 * @return void
 	 */
-	public function addPath($path)
+	public static function addPaths(array $paths)
 	{
-		self::$paths[] = $path;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Stores a configuration.
-	 * 
-	 * @param  string|array
-	 * @param  mixed
-	 * @return void
-	 */
-	public static function setConfig($key, $value = null)
-	{
-		if(is_array($key))
+		foreach($paths as $p)
 		{
-			self::$config = array_merge(self::$config, $key);
+			$p = ltrim($p, '/\\').DIRECTORY_SEPARATOR;
+			
+			if(file_exists($p.'config/inject.php'))
+			{
+				self::log('Inject', 'Loading framework configuration from "'.$p.'config/inject.php".', self::DEBUG);
+				include $p.'config/inject.php';
+			}
+			
+			self::$paths[] = $p;
 		}
-		else
-		{
-			self::$config[$key] = $value;
-		}
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the configuration value stored in the supplied key, null if not present.
-	 * 
-	 * @param  string
-	 * @return mixed|null
-	 */
-	public function getConfig($key)
-	{
-		return isset(self::$config[$key]) ? self::$config[$key] : null;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -182,7 +166,7 @@ class Inject
 	 */
 	public function init()
 	{
-		self::$fw_path = dirname(__FILE__);
+		self::$fw_path = dirname(__FILE__).DIRECTORY_SEPARATOR;
 		
 		// set the autoloader
 		spl_autoload_register('Inject::load');
@@ -203,7 +187,7 @@ class Inject
 			);
 		
 		// Init UTF-8 support
-		require self::$fw_path.'/utf8.php';
+		require self::$fw_path.'Utf8.php';
 	}
 	
 	// ------------------------------------------------------------------------
@@ -213,9 +197,68 @@ class Inject
 	 * 
 	 * @param  Inject_Dispatcher
 	 */
-	public function setDispatcher($disp)
+	public static function setDispatcher($disp)
 	{
 		self::$dispatcher = $disp;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Stores a configuration.
+	 * 
+	 * @param  string
+	 * @param  array
+	 * @return void
+	 */
+	public static function setConfiguration($name, array $value)
+	{
+		self::$config[$key] = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns a configuration for a certain name, loads the configuration if not present.
+	 * 
+	 * Searches all the registered paths for configuration files with the name $name.php.
+	 * 
+	 * Configuration format:
+	 * <code>
+	 * <?php
+	 * // do some stuff here, usually just create an array like this:
+	 * 
+	 * $config = array(
+	 *     'cache_path' => '/some/path',
+	 *     'use_cache' => true
+	 * );
+	 * 
+	 * // then return the resulting config:
+	 * return $config;
+	 * ?>
+	 * </code>
+	 * 
+	 * 
+	 * @param  string
+	 * @return array|false
+	 */
+	public function getConfiguration($name)
+	{
+		if(isset(self::$config[$name]))
+		{
+			return self::$config[$name];
+		}
+		
+		foreach($this->paths as $p)
+		{
+			if(file_exists($p.'config/'.$name.'.php'))
+			{
+				// include file and get return value.
+				return self::$config[$name] = include $p.'config/'.$name.'.php';
+			}
+		}
+		
+		return false;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -231,7 +274,7 @@ class Inject
 	{
 		self::$run_level++;
 		
-		self::log('inject', 'run()['.$run_level.']', self::DEBUG);
+		self::log('Inject', 'run()['.$run_level.']', self::DEBUG);
 		
 		if(self::$run_level == 1)
 		{
@@ -251,7 +294,7 @@ class Inject
 		
 		self::$dispatcher->$type($request);
 		
-		self::log('inject', 'run()[' . $run_level . '] - DONE', self::DEBUG);
+		self::log('Inject', 'run()[' . $run_level . '] - DONE', self::DEBUG);
 		
 		self::$run_level--;
 		
@@ -291,6 +334,8 @@ class Inject
 	 */
 	public static function load($class)
 	{
+		$org_class = $class;
+		
 		// fetch the prefix:
 		$prefix = ($p = strpos($class, '_')) ? substr($class, 0, $p) : '';
 		
@@ -309,7 +354,7 @@ class Inject
 		}
 		
 		// assemble the path, and convert the class_name to class/name.php
-		$path = DIRECTORY_SEPARATOR . $base . DIRECTORY_SEPARATOR . strtr($class, '_\\', DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR) . '.php';
+		$path = $base.DIRECTORY_SEPARATOR.strtr($class, '_\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR).'.php';
 		
 		// find the file
 		foreach(array_merge(self::$paths, array(self::$fw_path)) as $p)
@@ -326,16 +371,16 @@ class Inject
 		
 		// the file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
 		// 10 = length of "/libraries"
-		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path . DIRECTORY_SEPARATOR . 'Inject' . substr($path, 10)))
+		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject'.substr($path, 10)))
 		{
-			self::log('inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', sefl::DEBUG);
+			self::log('Inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', sefl::DEBUG);
 			
 			eval('class '.$class.' extends Inject_'.$class.'{}');
 			
 			return true;
 		}
 		
-		self::log('inject', 'load(): Failed to load "'.$path.'" for the class "'.$class.'".', self::WARNING);
+		self::log('Inject', 'load(): Failed to load "'.$path.'" for the class "'.$org_class.'".', self::WARNING);
 		
 		return false;
 	}
