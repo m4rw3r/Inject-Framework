@@ -244,6 +244,7 @@ class Inject
 				E_WARNING			=> self::WARNING,
 				E_PARSE				=> self::ERROR,
 				E_COMPILE_ERROR		=> self::ERROR,
+				E_COMPILE_WARNING	=> self::WARNING,
 				E_NOTICE			=> self::NOTICE,
 				E_USER_ERROR		=> self::ERROR,
 				E_USER_WARNING		=> self::WARNING,
@@ -403,6 +404,8 @@ class Inject
 	 */
 	public static function load($class)
 	{
+		// TODO: Make it possible to replace this with a list of pre-searched files
+		
 		$org_class = $class;
 		
 		// fetch the prefix:
