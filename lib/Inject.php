@@ -5,11 +5,28 @@
  * All rights reserved.
  */
 
+// check for missing error constants which are added in PHP 5.3
+if( ! defined('E_DEPRECATED'))
+{
+	define('E_DEPRECATED', 8192);
+}
+if( ! defined('E_USER_DEPRECATED'))
+{
+	define('E_USER_DEPRECATED', 16384);
+}
+
 /**
  * 
  */
 class Inject
 {
+	/**
+	 * Constant telling the current framework core version.
+	 * 
+	 * @var string
+	 */
+	const VERSION = '0.1dev';
+	
 	/**
 	 * Error constant for ERROR in the Inject Framework.
 	 * 
@@ -101,16 +118,11 @@ class Inject
 	private static $error_level = 15;
 	
 	/**
-	 * The error level which Inject Framework will send HTTP 500 errors.
+	 * If this framework should run in production mode.
 	 * 
-	 * This is triggered if $error_level doesn't cover the error,
-	 * as it usually is in a production environment ($error_level = 0).
-	 * 
-	 * 15 = self::ALL
-	 * 
-	 * @var int
+	 * @var bool
 	 */
-	private static $error_level_500 = 15;
+	private static $production = false;
 	
 	/**
 	 * The request which first was sent to Inject Framework during this run.
@@ -147,14 +159,62 @@ class Inject
 		{
 			$p = ltrim($p, '/\\').DIRECTORY_SEPARATOR;
 			
+			// do not add twice
+			if(in_array($p, self::$paths))
+			{
+				continue;
+			}
+			
+			self::$paths[] = $p;
+			
+			// does the path have a configuration file
 			if(file_exists($p.'config/inject.php'))
 			{
 				self::log('Inject', 'Loading framework configuration from "'.$p.'config/inject.php".', self::DEBUG);
 				include $p.'config/inject.php';
 			}
-			
-			self::$paths[] = $p;
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the error constant for which errors should be displayed.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public function setErrorLevel($error_level)
+	{
+		self::$error_level = $error_level;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the production switch.
+	 * 
+	 * @param  bool
+	 * @return void
+	 */
+	public function setProdution($value)
+	{
+		self::$production = (bool) $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the folder for the files beginning on $prefix, so they are stored in
+	 * $folder alongside the library folder in the app folder (or system folder).
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return void
+	 */
+	public function setNamespace($prefix, $folder)
+	{
+		self::$namespaces[$prefix] = $folder;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -164,7 +224,7 @@ class Inject
 	 * 
 	 * @return 
 	 */
-	public function init()
+	public static function init()
 	{
 		self::$fw_path = dirname(__FILE__).DIRECTORY_SEPARATOR;
 		
@@ -180,10 +240,19 @@ class Inject
 		
 		// create the error conversion table to be used later
 		self::$error_conversion_table = array(
-				E_ERROR		=> self::ERROR,
-				E_WARNING	=> self::WARNING,
-				E_NOTICE	=> self::NOTICE,
-				E_ALL		=> self::ALL
+				E_ERROR				=> self::ERROR,
+				E_WARNING			=> self::WARNING,
+				E_PARSE				=> self::ERROR,
+				E_COMPILE_ERROR		=> self::ERROR,
+				E_NOTICE			=> self::NOTICE,
+				E_USER_ERROR		=> self::ERROR,
+				E_USER_WARNING		=> self::WARNING,
+				E_USER_NOTICE		=> self::NOTICE,
+				E_STRICT			=> self::NOTICE,
+				E_RECOVERABLE_ERROR	=> self::WARNING,
+				E_DEPRECATED		=> self::NOTICE,
+				E_USER_DEPRECATED	=> self::NOTICE,
+				E_ALL				=> self::ALL
 			);
 		
 		// Init UTF-8 support
@@ -242,7 +311,7 @@ class Inject
 	 * @param  string
 	 * @return array|false
 	 */
-	public function getConfiguration($name)
+	public static function getConfiguration($name)
 	{
 		if(isset(self::$config[$name]))
 		{
@@ -270,7 +339,7 @@ class Inject
 	 * @param  bool				Only applies on nested calls
 	 * @return void
 	 */
-	public function run(Inject_Request $req, $return = false)
+	public static function run(Inject_Request $req, $return = false)
 	{
 		self::$run_level++;
 		
@@ -529,7 +598,7 @@ class Inject
 		// log error first
 		self::log($type, $message . ' in file "'.$file.'" on line "'.$line.'".', $level);
 		
-		if(self::$error_level & $level)
+		if(self::$error_level & $level && ! self::$production)
 		{
 			if(self::$main_request)
 			{
@@ -551,7 +620,7 @@ Trace:
 				print_r($trace);
 			}
 		}
-		elseif(self::$error_level_500 & $level)
+		elseif(self::$production && self::$error_level & $level)
 		{
 			// clear the output buffers, to avoid displaying page fragments
 			// before the 500 error
