@@ -180,9 +180,10 @@ class Inject
 	 * Runs a request by the Inject Framework.
 	 * 
 	 * @param  Inject_Request
+	 * @param  bool				Only applies on nested calls
 	 * @return void
 	 */
-	public function run(Inject_Request $req)
+	public function run(Inject_Request $req, $return = false)
 	{
 		self::$run_level++;
 		
@@ -190,17 +191,19 @@ class Inject
 		
 		if(self::$run_level == 1)
 		{
-			// start output buffering, and send it through the output handler
 			ob_start();
 			
 			self::$ob_level = ob_get_level();
 			
 			// first request, set the request object as error handler
-			self::$main_request = $req
-			
-			self::event('inject.start');
-
+			self::$main_request = $req;
 		}
+		elseif($return)
+		{
+			ob_start();
+		}
+		
+		$type = $req->getType();
 		
 		self::$dispatcher->$type($request);
 		
@@ -224,6 +227,14 @@ class Inject
 			
 			// output the contents
 			echo self::filter('inject.output', self::$main_request->get_response()->output_content() . $output);
+		}
+		elseif($return)
+		{
+			$c = ob_get_contents();
+			
+			ob_end_clean();
+			
+			return $c;
 		}
 	}
 	
