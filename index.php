@@ -6,16 +6,19 @@
  */
 
 error_reporting(E_ALL | E_DEPRECATED);
-//ini_set('display_errors', '0');
+ini_set('display_errors', '0');
 
-require './Inject/inject.php';
+require './lib/Inject.php';
 
 // Add the autoloader and error handling
 Inject::init();
 
+Inject::attachLogger(new Inject_Logger_Screenwriter("\n"));
+
 Inject::setDispatcher(new Inject_Dispatcher);
 
-//Inject::attach_logger(new Inject_Logger_Screenwriter);
+Inject::addPath('app');
+
 //Inject::attach_logger(new Inject_Logger_File(dirname(__FILE__) . '/log.txt'));
 
 /*echo "<pre>";
