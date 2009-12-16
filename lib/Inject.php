@@ -11,6 +11,39 @@
 class Inject
 {
 	/**
+	 * Error constant for ERROR in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const ERROR = 1;
+	/**
+	 * Error constant for WARNING in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const WARNING = 2;
+	/**
+	 * Error constant for NOTICE in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const NOTICE = 4;
+	/**
+	 * Error constant for DEBUG in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const DEBUG = 8;
+	/**
+	 * Error constant for ALL in the Inject Framework.
+	 * 
+	 * @var int
+	 */
+	const ALL = 15;
+	
+	private static $error_conversion_table = array();
+	
+	/**
 	 * Output buffer level on which Inject was started.
 	 * 
 	 * @var int
@@ -115,7 +148,7 @@ class Inject
 	 * @param  mixed
 	 * @return void
 	 */
-	public static function set_config($key, $value = null)
+	public static function setConfig($key, $value = null)
 	{
 		if(is_array($key))
 		{
@@ -135,7 +168,7 @@ class Inject
 	 * @param  string
 	 * @return mixed|null
 	 */
-	public function configItem($key)
+	public function getConfig($key)
 	{
 		return isset(self::$config[$key]) ? self::$config[$key] : null;
 	}
@@ -159,7 +192,18 @@ class Inject
 		set_exception_handler(array('Inject', 'exceptionHandler'));
 		
 		// add handler for fatal errors
-		register_shutdown_function(array('Inject', 'handleFatalEror'));
+		register_shutdown_function(array('Inject', 'handleFatalError'));
+		
+		// create the error conversion table to be used later
+		self::$error_conversion_table = array(
+				E_ERROR		=> self::ERROR,
+				E_WARNING	=> self::WARNING,
+				E_NOTICE	=> self::NOTICE,
+				E_ALL		=> self::ALL
+			);
+		
+		// Init UTF-8 support
+		require self::$fw_path.'/utf8.php';
 	}
 	
 	// ------------------------------------------------------------------------
@@ -187,7 +231,7 @@ class Inject
 	{
 		self::$run_level++;
 		
-		self::log('inject', 'run()['.$run_level.']', E_DEBUG);
+		self::log('inject', 'run()['.$run_level.']', self::DEBUG);
 		
 		if(self::$run_level == 1)
 		{
@@ -218,10 +262,10 @@ class Inject
 			{
 				ob_end_flush();
 			}
-
+			
 			// get the contents, so we can add it to the output
 			$output = ob_get_contents();
-
+			
 			// clear the last buffer
 			ob_end_clean();
 			
@@ -257,7 +301,7 @@ class Inject
 			$base = self::$namespaces[$prefix];
 			
 			// remove the prefix, as the namespace tells us what to place instad
-			$file = substr($file, $p + 1);
+			$class = substr($class, $p + 1);
 		}
 		else
 		{
@@ -265,7 +309,7 @@ class Inject
 		}
 		
 		// assemble the path, and convert the class_name to class/name.php
-		$path = DIRECTORY_SEPARATOR . $base . DIRECTORY_SEPARATOR . strtr($file, '_\\', DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR) . '.php';
+		$path = DIRECTORY_SEPARATOR . $base . DIRECTORY_SEPARATOR . strtr($class, '_\\', DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR) . '.php';
 		
 		// find the file
 		foreach(array_merge(self::$paths, array(self::$fw_path)) as $p)
@@ -284,14 +328,14 @@ class Inject
 		// 10 = length of "/libraries"
 		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path . DIRECTORY_SEPARATOR . 'Inject' . substr($path, 10)))
 		{
-			self::log('inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', E_NOTICE);
+			self::log('inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', sefl::DEBUG);
 			
 			eval('class '.$class.' extends Inject_'.$class.'{}');
 			
 			return true;
 		}
 		
-		self::log('inject', 'load(): Failed to load "'.$path.'" for the class "'.$class.'".', E_DEBUG);
+		self::log('inject', 'load(): Failed to load "'.$path.'" for the class "'.$class.'".', self::WARNING);
 		
 		return false;
 	}
@@ -434,12 +478,33 @@ class Inject
 	 */
 	public static function handleError($level, $type, $message, $file, $line, $trace = array())
 	{
+		// Convert the error level
+		$level = isset(self::$error_conversion_table[$level]) ? self::$error_conversion_table[$level] : self::ERROR;
+		
 		// log error first
 		self::log($type, $message . ' in file "'.$file.'" on line "'.$line.'".', $level);
 		
 		if(self::$error_level & $level)
 		{
-			self::$main_request->showError($level, $type, $message, $file, $line, $trace);
+			if(self::$main_request)
+			{
+				self::$main_request->showError($level, $type, $message, $file, $line, $trace);
+			}
+			else
+			{
+				// Default renderer
+				echo '
+An error has occurred: '.$type.':
+
+'.$message.'
+
+in file "'.$file.'" at line '.$line.'
+
+Trace:
+';
+
+				print_r($trace);
+			}
 		}
 		elseif(self::$error_level_500 & $level)
 		{
@@ -453,7 +518,18 @@ class Inject
 			// add the output handler again, to add compression and the like
 			ob_start('Inject::parse_output');
 			
-			self::$main_request->showError500($level, $type, $message, $file, $line, $trace);
+			if(self::$main_request)
+			{
+				self::$main_request->showError500($level, $type, $message, $file, $line, $trace);
+			}
+			else
+			{
+				// Default renderer
+				echo '
+! A Fatal Error occurred !
+==========================
+';
+			}
 		}
 		else
 		{
@@ -479,12 +555,12 @@ class Inject
 	 * 
 	 * @param  string
 	 * @param  string
-	 * @param  int		PHP error constant (E_*)
+	 * @param  int		Inject error constant
 	 * @return void
 	 */
 	public static function log($namespace, $message, $level = false)
 	{
-		$level = $level ? $level : E_WARNING;
+		$level = $level ? $level : self::WARNING;
 		
 		foreach(self::$loggers as $pair)
 		{
@@ -492,7 +568,7 @@ class Inject
 			
 			if($level & $log_level)
 			{
-				$logger->addMmessage($namespace, $message, $level);
+				$logger->addMessage($namespace, $message, $level);
 			}
 		}
 	}
@@ -504,9 +580,9 @@ class Inject
 	 * 
 	 * @return void
 	 */
-	public static function attach_logger(Inject_logger $log_obj, $level = false)
+	public static function attachLogger(Inject_LoggerInterface $log_obj, $level = false)
 	{
-		$level OR $level = E_DEBUG;
+		$level OR $level = self::ALL;
 		
 		self::$loggers[] = array($level, $log_obj);
 	}
