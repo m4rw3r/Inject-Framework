@@ -6,19 +6,21 @@
  */
 
 error_reporting(E_ALL | E_DEPRECATED);
-ini_set('display_errors', '0');
+//ini_set('display_errors', '0');
 
 require './Inject/inject.php';
 
 // Add the autoloader and error handling
 Inject::init();
 
-// Configure Inject Framework
-Inject::set_config_file('./config.php');
-Inject::set_config('inject.front_controller', basename(__FILE__));
+Inject::setDispatcher(new Inject_Dispatcher);
 
 //Inject::attach_logger(new Inject_Logger_Screenwriter);
-Inject::attach_logger(new Inject_Logger_File(dirname(__FILE__) . '/log.txt'));
+//Inject::attach_logger(new Inject_Logger_File(dirname(__FILE__) . '/log.txt'));
+
+/*echo "<pre>";
+echo new URL('post/show', array('year' => 2008, 'month' => 34, 'day' => 4));*/
+
 
 Inject::run(new Inject_Request_HTTP);
 
