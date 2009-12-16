@@ -435,7 +435,7 @@ class Inject
 	public static function handleError($level, $type, $message, $file, $line, $trace = array())
 	{
 		// log error first
-		self::log($type, $message . ' in file "'.$file.'" on line "'.$line.'".', $type);
+		self::log($type, $message . ' in file "'.$file.'" on line "'.$line.'".', $level);
 		
 		if(self::$error_level & $level)
 		{

@@ -47,6 +47,32 @@ class Inject_Request
 	 */
 	abstract public function getParameters();
 	
+	/**
+	 * Handles a generic error and prints error information.
+	 * 
+	 * @param  int
+	 * @param  string
+	 * @param  string
+	 * @param  int
+	 * @param  array
+	 * @return void
+	 */
+	abstract public function showError($level, $type, $message, $file, $line, $trace);
+	
+	/**
+	 * Handles a fatal error and prints minimum error information.
+	 * 
+	 * This is for production, when you don't want to expose errors to the world.
+	 * 
+	 * @param  int
+	 * @param  string
+	 * @param  string
+	 * @param  int
+	 * @param  array
+	 * @return void
+	 */
+	abstract public function showError500($level, $type, $message, $file, $line, $trace);
+	
 	// ------------------------------------------------------------------------
 
 	/**
