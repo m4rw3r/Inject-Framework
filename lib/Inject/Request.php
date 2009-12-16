@@ -57,7 +57,20 @@ class Inject_Request
 	 * @param  array
 	 * @return void
 	 */
-	abstract public function showError($level, $type, $message, $file, $line, $trace);
+	public function showError($level, $type, $message, $file, $line, $trace)
+	{
+		echo '
+An error has occurred: '.$type.':
+
+'.$message.'
+
+in file "'.$file.'" at line '.$line.'
+
+Trace:
+';
+		
+		print_r($trace);
+	}
 	
 	/**
 	 * Handles a fatal error and prints minimum error information.
@@ -71,7 +84,14 @@ class Inject_Request
 	 * @param  array
 	 * @return void
 	 */
-	abstract public function showError500($level, $type, $message, $file, $line, $trace);
+	public function showError500($level, $type, $message, $file, $line, $trace)
+	{
+		// Default view
+		echo '
+! A Fatal Error occurred !
+==========================
+';
+	}
 	
 	// ------------------------------------------------------------------------
 
