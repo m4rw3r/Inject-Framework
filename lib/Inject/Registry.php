@@ -45,7 +45,7 @@
  * 
  * @author Martin Wernståhl <m4rw3r@gmail.com>
  */
-class Inject_Registry implements ArrayAccess
+class Inject_Registry
 {
 	/**
 	 * Global instance-keys, fallbacks for the local registry if they aren't found.
@@ -64,26 +64,25 @@ class Inject_Registry implements ArrayAccess
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Stores a local object instance.
+	 * Sets a local object instance.
 	 * 
 	 * @param  string
 	 * @param  object
 	 * @return void
 	 */
-	public function offsetSet($key, $obj)
+	public function __set($key, $object)
 	{
-		$this->local_registry[$key] = $obj;
+		$this->local_registry[$key] = $object;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Fetches an object instance, first tries local and then global if local fails.
+	 * Returns an object instance.
 	 * 
-	 * @param  string
 	 * @return object|null
 	 */
-	public function offsetGet($key)
+	public function __get($key)
 	{
 		return isset($this->local_registry[$key]) ? $this->local_registry : (isset(self::$global_registry[$key]) ? self::$global_registry[$key] : null);
 	}
@@ -96,7 +95,7 @@ class Inject_Registry implements ArrayAccess
 	 * @param  string
 	 * @return bool
 	 */
-	public function offsetExists($key)
+	public function __isset($key)
 	{
 		return isset($this->local_registry[$key]) OR isset(self::$global_registry[$key]);
 	}
@@ -109,7 +108,7 @@ class Inject_Registry implements ArrayAccess
 	 * @param  string
 	 * @return void
 	 */
-	public function offsetUnset($key)
+	public function __unset($key)
 	{
 		unset($this->local_registry[$key]);
 	}
