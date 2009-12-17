@@ -8,7 +8,7 @@
 /**
  * 
  */
-class Inject_Request
+abstract class Inject_Request extends Inject_Registry
 {
 	/**
 	 * Returns the type name of this request, used to determine what to do in the dispatcher.
@@ -91,70 +91,6 @@ Trace:
 ! A Fatal Error occurred !
 ==========================
 ';
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the registered instance, false if not found.
-	 * 
-	 * @return object
-	 */
-	public function getInstance($key)
-	{
-		return isset($this->registry[$key]) ? $this->registry[$key] : false;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the object to be stored in a certain registry key.
-	 * 
-	 * @param  string
-	 * @param  object
-	 * @return void
-	 */
-	public function setInstance($key, $object)
-	{
-		$this->registry[$object];
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the registry array.
-	 * 
-	 * @return array
-	 */
-	public function getRegisteredInstances()
-	{
-		return $this->registry;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the content of the registry.
-	 * 
-	 * @param  array
-	 * @return void
-	 */
-	public function setRegisteredInstances(array $array)
-	{
-		$this->registry = $array;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Adds additional instances, overwriting identical keys.
-	 * 
-	 * @param  array
-	 * @return void
-	 */
-	public function addRegisteredInstances(array $array)
-	{
-		$this->registry = array_merge($array, $this->registry);
 	}
 }
 
