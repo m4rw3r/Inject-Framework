@@ -13,8 +13,10 @@ require './lib/Inject.php';
 // Add the autoloader and error handling
 Inject::init();
 
+// Set applicaiton paths
 Inject::addPaths(array('app'));
 
+// Run a HMVC request, so we specify controller and action
 Inject::run(new Inject_Request_HMVC('Controller_Test', 'test_action'));
 
 /* End of file index.php */
