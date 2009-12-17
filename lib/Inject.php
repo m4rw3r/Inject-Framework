@@ -5,16 +5,6 @@
  * All rights reserved.
  */
 
-// check for missing error constants which are added in PHP 5.3
-if( ! defined('E_DEPRECATED'))
-{
-	define('E_DEPRECATED', 8192);
-}
-if( ! defined('E_USER_DEPRECATED'))
-{
-	define('E_USER_DEPRECATED', 16384);
-}
-
 /**
  * 
  */
@@ -259,7 +249,7 @@ final class Inject
 		// add handler for fatal errors
 		register_shutdown_function(array('Inject', 'handleFatalError'));
 		
-		// create the error conversion table to be used later
+		// create the error conversion table to be used later by the error handler
 		self::$error_conversion_table = array(
 				E_ERROR				=> self::ERROR,
 				E_WARNING			=> self::WARNING,
@@ -272,10 +262,15 @@ final class Inject
 				E_USER_NOTICE		=> self::NOTICE,
 				E_STRICT			=> self::NOTICE,
 				E_RECOVERABLE_ERROR	=> self::WARNING,
-				E_DEPRECATED		=> self::NOTICE,
-				E_USER_DEPRECATED	=> self::NOTICE,
 				E_ALL				=> self::ALL
 			);
+		
+		if(defined('E_DEPRECATED'))
+		{
+			// We have PHP 5.3, add the new error constants
+			self::$error_conversion_table[E_DEPRECATED]			= self::NOTICE;
+			self::$error_conversion_table[E_USER_DEPRECATED]	= self::NOTICE;
+		}
 		
 		// Init UTF-8 support
 		require self::$fw_path.'Utf8.php';
