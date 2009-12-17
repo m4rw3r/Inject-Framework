@@ -18,7 +18,7 @@ if( ! defined('E_USER_DEPRECATED'))
 /**
  * 
  */
-class Inject
+final class Inject
 {
 	/**
 	 * Constant telling the current framework core version.
@@ -125,6 +125,13 @@ class Inject
 	private static $production = false;
 	
 	/**
+	 * The dispatcher object used.
+	 * 
+	 * @var Inject_Dispatcher
+	 */
+	private static $dispatcher = null;
+	
+	/**
 	 * The request which first was sent to Inject Framework during this run.
 	 * 
 	 * This request gets to handle error reporting.
@@ -139,6 +146,20 @@ class Inject
 	 * @var array
 	 */
 	private static $loggers = array();
+	
+	/**
+	 * A list containing all the registered filter listeners.
+	 * 
+	 * @var array
+	 */
+	private static $filters = array();
+	
+	/**
+	 * A list containing all registered event listeners.
+	 * 
+	 * @var array
+	 */
+	private static $events = array();
 	
 	final function __construct()
 	{
@@ -340,11 +361,11 @@ class Inject
 	 * @param  bool				Only applies on nested calls
 	 * @return void
 	 */
-	public static function run(Inject_Request $req, $return = false)
+	public static function run(Inject_Request $request, $return = false)
 	{
 		self::$run_level++;
 		
-		self::log('Inject', 'run()['.$run_level.']', self::DEBUG);
+		self::log('Inject', 'run()['.self::$run_level.']', self::DEBUG);
 		
 		if(self::$run_level == 1)
 		{
@@ -353,18 +374,18 @@ class Inject
 			self::$ob_level = ob_get_level();
 			
 			// first request, set the request object as error handler
-			self::$main_request = $req;
+			self::$main_request = $request;
 		}
 		elseif($return)
 		{
 			ob_start();
 		}
 		
-		$type = $req->getType();
+		$type = $request->getType();
 		
 		self::$dispatcher->$type($request);
 		
-		self::log('Inject', 'run()[' . $run_level . '] - DONE', self::DEBUG);
+		self::log('Inject', 'run()['.self::$run_level.'] - DONE', self::DEBUG);
 		
 		self::$run_level--;
 		
@@ -383,7 +404,7 @@ class Inject
 			ob_end_clean();
 			
 			// output the contents
-			echo self::filter('inject.output', self::$main_request->get_response()->output_content() . $output);
+			echo self::filter('inject.output', $output);
 		}
 		elseif($return)
 		{
