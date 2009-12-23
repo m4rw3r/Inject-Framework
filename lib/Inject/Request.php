@@ -59,6 +59,7 @@ abstract class Inject_Request extends Inject_Registry
 	 */
 	public function showError($level, $type, $message, $file, $line, $trace)
 	{
+		// TODO: Make the standard trace easier to read
 		echo '
 An error has occurred: '.$type.':
 

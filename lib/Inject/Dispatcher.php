@@ -71,18 +71,18 @@ class Inject_Dispatcher
 		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
 		if( ! class_exists($class) OR ! method_exists($class, $action))
 		{
-			Inject::log('inject', '404 Error on URI: "'. new URL() . '", class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
+			Inject::log('Inject', '404 Error on URI: "'. new URL() . '", class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
 			
 			// nope, show an error
 			$class = $this->missing_controller;
 		}
 		
-		Inject::log('inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
+		Inject::log('Inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
 		
 		// load the controller
 		$controller = new $class($req);
 		
-		Inject::log('inject', 'Calling action "'.$action.'".', Inject::DEBUG);
+		Inject::log('Inject', 'Calling action "'.$action.'".', Inject::DEBUG);
 		
 		// call the action
 		$controller->$action();
@@ -106,18 +106,18 @@ class Inject_Dispatcher
 		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
 		if( ! class_exists($class) OR ! method_exists($class, $action))
 		{
-			Inject::log('inject', 'HMVC: 404 Error on class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
+			Inject::log('Inject', 'HMVC: 404 Error on class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
 			
 			// HMVC should not cause errors, just a warning
 			return;
 		}
 		
-		Inject::log('inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
+		Inject::log('Inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
 		
 		// load the controller
 		$controller = new $class($req);
 		
-		Inject::log('inject', 'Calling action "'.$action.'".', Inject::DEBUG);
+		Inject::log('Inject', 'Calling action "'.$action.'".', Inject::DEBUG);
 		
 		// call the action
 		$controller->$action();
