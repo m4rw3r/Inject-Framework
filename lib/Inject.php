@@ -95,7 +95,10 @@ final class Inject
 	 * @var string
 	 */
 	private static $namespaces = array(
-									'Inject' => 'Inject'
+									'Controller'	=> 'controllers',
+									'Inject'		=> 'Inject',
+									'Model'			=> 'models',
+									'Partial'		=> 'partials'
 									);
 	
 	/**
