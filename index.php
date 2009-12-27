@@ -21,7 +21,7 @@ Inject::addPaths(array('app'));
 // Run a HMVC request, so we specify controller and action
 //Inject::run(new Inject_Request_HMVC('Controller_Test', 'testAction'));
 
-Inject::run(new Inject_Request_HTTP_URI(URI::getCurrentURI()));
+Inject::run(new Inject_Request_HTTP_URI(Inject_URI::getCurrentURI()));
 
 /* End of file index.php */
 /* Location: . */
