@@ -64,7 +64,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	
 	public function setMethod($method)
 	{
-		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $class))
+		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $method))
 		{
 			throw new Exception('Disallowed characters in action name.');
 		}
