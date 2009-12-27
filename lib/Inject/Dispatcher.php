@@ -10,18 +10,41 @@
  */
 class Inject_Dispatcher
 {
+	/**
+	 * The default class to call.
+	 * 
+	 * @var string
+	 */
 	protected $default_class;
 	
+	/**
+	 * The default action method.
+	 * 
+	 * @var string
+	 */
 	protected $default_action;
 	
+	/**
+	 * The class which is to be called in case of a class->method which cannot be called.
+	 * 
+	 * @var string
+	 */
 	protected $missing_controller;
+	
+	/**
+	 * The method which is to be called in case of a class->method which cannot be called.
+	 * 
+	 * @var string
+	 */
+	protected $missing_action;
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the default controller class.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setDefaultControllerClass($str)
 	{
@@ -31,9 +54,10 @@ class Inject_Dispatcher
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the default controller action to call.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setDefaultControllerAction($str)
 	{
@@ -43,13 +67,15 @@ class Inject_Dispatcher
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the controller which is to be called if the class and/or method cannot be found/called.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
-	public function setMissingClassHandlerController($class_name)
+	public function set404Handler($class_name, $method_name)
 	{
 		$this->missing_controller = $class_name;
+		$this->missing_action = $class_name;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -69,23 +95,20 @@ class Inject_Dispatcher
 		$action = ($m = $req->getMethod()) ? $m : $this->default_action;
 		
 		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
-		if( ! class_exists($class) OR ! method_exists($class, $action))
+		try
 		{
-			Inject::log('Inject', '404 Error on URI: "'. new URL() . '", class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
+			 $this->run($req, $class, $action);
+		}
+		catch(Inject_DispatcherException $e)
+		{
+			Inject::log('Inject', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::WARNING);
 			
 			// nope, show an error
 			$class = $this->missing_controller;
+			$action = $this->missing_action;
 		}
 		
-		Inject::log('Inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
-		
-		// load the controller
-		$controller = new $class($req);
-		
-		Inject::log('Inject', 'Calling action "'.$action.'".', Inject::DEBUG);
-		
-		// call the action
-		$controller->$action();
+		$this->run($req, $class, $action);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -103,19 +126,48 @@ class Inject_Dispatcher
 		// get the action
 		$action = ($m = $req->getMethod()) ? $m : $this->default_action;
 		
-		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
-		if( ! class_exists($class) OR ! method_exists($class, $action))
+		try
+		{
+			$this->run($req, $class, $action);
+		}
+		catch(Inject_DispatcherException $e)
 		{
 			Inject::log('Inject', 'HMVC: 404 Error on class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
 			
-			// HMVC should not cause errors, just a warning
+			// HMVC should not cause errors or call a 404 controller, just a warning
 			return;
 		}
 		
-		Inject::log('Inject', 'Loading controller class "'.$class.'".', Inject::DEBUG);
+		$this->run($req, $controller, $action);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * The method doing the grunt work of trying to run the request.
+	 * 
+	 * @return void
+	 */
+	protected function run(Inject_Request $req, $controller, $action)
+	{
+		Inject::log('Inject', 'Loading controller class "'.$controller.'".', Inject::DEBUG);
+		
+		// validate again, to make sure it hasn't gone FUBAR
+		if( ! class_exists($controller))
+		{
+			throw new Inject_Dispatcher_ClassException('Controller class "'.$controller.'" cannot be found.');
+		}
+		
+		// check if the method can be called
+		$r = new ReflectionClass($controller);
+		
+		if( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic())
+		{
+			throw new Inject_Dispatcher_MethodException('Action method "'.$action.'" cannot be called');
+		}
 		
 		// load the controller
-		$controller = new $class($req);
+		$controller = new $controller($req);
 		
 		Inject::log('Inject', 'Calling action "'.$action.'".', Inject::DEBUG);
 		
