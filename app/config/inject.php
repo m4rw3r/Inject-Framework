@@ -16,7 +16,7 @@
 Inject::attachLogger(new Inject_Logger_Screenwriter("\n"));
 
 // Add a file logger for ERROR and WARNING, saves the files in log.txt
-Inject::attachLogger(new Inject_Logger_File('log.txt'), Inject::ERROR | Inject::WARNING);
+Inject::attachLogger(new Inject_Logger_File('/Users/m4rw3r/Sites/Inject-Framework/log.txt'), Inject::ERROR | Inject::WARNING);
 
 
 
@@ -52,10 +52,3 @@ Inject::setDispatcher($d);
  */
 //Inject_Registry::setGlobal('database', new Db);
 
-
-
-
-// Not implemented settings:
-
-// Set Root URL
-// URL::setBase('http://localhost');
