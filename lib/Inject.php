@@ -329,16 +329,17 @@ final class Inject
 	 * 
 	 * 
 	 * @param  string
+	 * @param  mixed
 	 * @return array|false
 	 */
-	public static function getConfiguration($name)
+	public static function getConfiguration($name, $default = false)
 	{
 		if(isset(self::$config[$name]))
 		{
 			return self::$config[$name];
 		}
 		
-		foreach($this->paths as $p)
+		foreach(self::$paths as $p)
 		{
 			if(file_exists($p.'config/'.$name.'.php'))
 			{
@@ -347,7 +348,7 @@ final class Inject
 			}
 		}
 		
-		return false;
+		return $default;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -462,9 +463,9 @@ final class Inject
 		
 		// the file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
 		// 10 = length of "/libraries"
-		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject'.substr($path, 10)))
+		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
 		{
-			self::log('Inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', sefl::DEBUG);
+			self::log('Inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', self::DEBUG);
 			
 			eval('class '.$class.' extends Inject_'.$class.'{}');
 			
