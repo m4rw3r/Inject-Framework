@@ -84,7 +84,7 @@ class Inject_Registry
 	 */
 	public function __get($key)
 	{
-		return isset($this->local_registry[$key]) ? $this->local_registry : (isset(self::$global_registry[$key]) ? self::$global_registry[$key] : null);
+		return isset($this->local_registry[$key]) ? $this->local_registry[$key] : (isset(self::$global_registry[$key]) ? self::$global_registry[$key] : null);
 	}
 	
 	// ------------------------------------------------------------------------
