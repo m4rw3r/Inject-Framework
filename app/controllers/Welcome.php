@@ -22,33 +22,13 @@ class Controller_Welcome
 	 * 
 	 * @return 
 	 */
-	public function index()
-	{
-		echo "all";
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function error()
-	{
-		echo "404 Error!!!!";
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
 	public function __call($method, $params = array())
 	{
-		echo $method;
+		echo "\nWelcome controller\nmethod: $method\nparams:\n";
+		
+		print_r($this->request->getParameters());
+		
+		echo "\n";
 	}
 }
 
