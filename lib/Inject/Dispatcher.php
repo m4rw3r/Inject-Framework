@@ -161,7 +161,7 @@ class Inject_Dispatcher
 		// check if the method can be called
 		$r = new ReflectionClass($controller);
 		
-		if( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic())
+		if(( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic()) && ! $r->hasMethod('__call'))
 		{
 			throw new Inject_Dispatcher_MethodException('Action method "'.$action.'" cannot be called');
 		}
