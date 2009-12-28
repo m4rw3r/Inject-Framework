@@ -31,11 +31,10 @@ Inject::attachLogger(new Inject_Logger_File('/Users/m4rw3r/Sites/Inject-Framewor
 $d = new Inject_Dispatcher();
 
 // Set default controller and action
-$d->setDefaultControllerClass('Controller_Welcome');
-$d->setDefaultControllerAction('index');
+$d->setDefaultHandler('Controller_Welcome', 'index');
 
 // set the error handlers in case something goes wrong
-$d->set404Handler('Class', 'Method');
+$d->set404Handler('Controller_Welcome', 'error');
 
 // Tell Inject to use the configured dispatcher
 Inject::setDispatcher($d);
