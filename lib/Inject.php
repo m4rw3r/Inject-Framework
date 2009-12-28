@@ -102,6 +102,13 @@ final class Inject
 									);
 	
 	/**
+	 * A cache of all the classes and their respective files.
+	 * 
+	 * @var array
+	 */
+	private static $loader_cache = array();
+	
+	/**
 	 * The error level which Inject Framework should respect when receiving errors.
 	 * 
 	 * 15 = self::ALL
@@ -356,6 +363,42 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns the framework path.
+	 * 
+	 * @return string
+	 */
+	public static function getFrameworkPath()
+	{
+		return self::$fw_path;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns an array of all the application paths.
+	 * 
+	 * @return string
+	 */
+	public static function getApplicationPaths()
+	{
+		return self::$paths;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the namespace mappings.
+	 * 
+	 * @return array
+	 */
+	public static function getNamespaceMappings()
+	{
+		return self::$namespaces;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Runs a request by the Inject Framework.
 	 * 
 	 * @param  Inject_Request
@@ -426,7 +469,13 @@ final class Inject
 	 */
 	public static function load($class)
 	{
-		// TODO: Make it possible to replace this with a list of pre-searched files
+		// Check if we have a cache
+		if(isset(self::$loader_cache[$class]))
+		{
+			require self::$loader_cache[$class];
+			
+			return true;
+		}
 		
 		$org_class = $class;
 		
@@ -455,6 +504,8 @@ final class Inject
 		{
 			if(file_exists($p . $path))
 			{
+				self::log('Load', 'Loading "'.$p.$path.'".', self::DEBUG);
+				
 				// load the file
 				require $p . $path;
 				
@@ -467,16 +518,29 @@ final class Inject
 		// 10 = length of "/libraries"
 		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
 		{
-			self::log('Inject', 'load(): Failed to load the class file, resorting to loading core file for the class "'.$class.'".', self::DEBUG);
+			self::log('Load', 'Failed to load the class file, resorting to loading core file for the class "'.$class.'".', self::DEBUG);
 			
 			eval('class '.$class.' extends Inject_'.$class.'{}');
 			
 			return true;
 		}
 		
-		self::log('Inject', 'load(): Failed to load "'.$path.'" for the class "'.$org_class.'".', self::WARNING);
+		self::log('Load', 'Failed to load "'.$path.'" for the class "'.$org_class.'".', self::WARNING);
 		
 		return false;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the cache array to use when loading files.
+	 * 
+	 * @param  array
+	 * @return void
+	 */
+	public function setLoaderCache(array $list)
+	{
+		self::$loader_cache = $list;
 	}
 	
 	// ------------------------------------------------------------------------
