@@ -8,7 +8,7 @@
 /**
  * 
  */
-abstract class Inject_Request extends Inject_Registry
+abstract class Inject_Request extends Inject_Container
 {
 	/**
 	 * Returns the type name of this request, used to determine what to do in the dispatcher.
