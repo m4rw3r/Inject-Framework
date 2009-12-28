@@ -29,7 +29,7 @@ class Inject_Dispatcher
 	 * 
 	 * @var string
 	 */
-	protected $missing_controller;
+	protected $missing_class;
 	
 	/**
 	 * The method which is to be called in case of a class->method which cannot be called.
@@ -41,41 +41,31 @@ class Inject_Dispatcher
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the default controller class.
+	 * Sets the default controller class and action.
 	 * 
+	 * @param  string
 	 * @param  string
 	 * @return void
 	 */
-	public function setDefaultControllerClass($str)
+	public function setDefaultHandler($class, $method)
 	{
-		$this->default_class = $str;
+		$this->default_class = $class;
+		$this->default_action = $method;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the default controller action to call.
+	 * Sets the controller and method which is to be called if the class and/or method cannot be found/called.
 	 * 
 	 * @param  string
-	 * @return void
-	 */
-	public function setDefaultControllerAction($str)
-	{
-		$this->default_action = $str;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the controller which is to be called if the class and/or method cannot be found/called.
-	 * 
 	 * @param  string
 	 * @return void
 	 */
 	public function set404Handler($class_name, $method_name)
 	{
-		$this->missing_controller = $class_name;
-		$this->missing_action = $class_name;
+		$this->missing_class = $class_name;
+		$this->missing_action = $method_name;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -83,10 +73,10 @@ class Inject_Dispatcher
 	/**
 	 * Handles a HTTP request.
 	 * 
-	 * @param  Inject_Request
+	 * @param  Inject_Request_HTTP
 	 * @return void
 	 */
-	public function http($req)
+	public function http(Inject_Request_HTTP $req)
 	{
 		// get the controller
 		($class = $req->getClass()) OR ($class = $this->default_class);
@@ -104,11 +94,11 @@ class Inject_Dispatcher
 			Inject::log('Inject', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::WARNING);
 			
 			// nope, show an error
-			$class = $this->missing_controller;
+			$class = $this->missing_class;
 			$action = $this->missing_action;
+			
+			$this->run($req, $class, $action);
 		}
-		
-		$this->run($req, $class, $action);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -116,7 +106,8 @@ class Inject_Dispatcher
 	/**
 	 * Dispatcher method for the Inject_Request_HMVC
 	 * 
-	 * @return 
+	 * @param  Inject_Request_HMVC
+	 * @return void
 	 */
 	public function hmvc(Inject_Request_HMVC $req)
 	{
@@ -137,8 +128,6 @@ class Inject_Dispatcher
 			// HMVC should not cause errors or call a 404 controller, just a warning
 			return;
 		}
-		
-		$this->run($req, $controller, $action);
 	}
 	
 	// ------------------------------------------------------------------------
