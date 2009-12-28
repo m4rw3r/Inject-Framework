@@ -198,7 +198,7 @@ final class Inject
 	 * @param  int
 	 * @return void
 	 */
-	public function setErrorLevel($error_level)
+	public static function setErrorLevel($error_level)
 	{
 		self::$error_level = $error_level;
 	}
@@ -211,7 +211,7 @@ final class Inject
 	 * @param  bool
 	 * @return void
 	 */
-	public function setProdution($value)
+	public static function setProduction($value)
 	{
 		self::$production = (bool) $value;
 	}
@@ -339,16 +339,18 @@ final class Inject
 			return self::$config[$name];
 		}
 		
+		$c = array();
+		
 		foreach(self::$paths as $p)
 		{
 			if(file_exists($p.'config/'.$name.'.php'))
 			{
-				// include file and get return value.
-				return self::$config[$name] = include $p.'config/'.$name.'.php';
+				// include file and merge it
+				$c = array_merge(include $p.'config/'.$name.'.php', $c);
 			}
 		}
 		
-		return $default;
+		return self::$config[$name] = empty($c) ? $default : $c;
 	}
 	
 	// ------------------------------------------------------------------------
