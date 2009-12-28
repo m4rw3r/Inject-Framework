@@ -8,13 +8,8 @@
 /**
  * 
  */
-class Controller_Welcome
+class Controller_Welcome extends Inject_Controller
 {
-	function __construct(Inject_Request $req)
-	{
-		$this->request = $req;
-	}
-	
 	// ------------------------------------------------------------------------
 
 	/**
