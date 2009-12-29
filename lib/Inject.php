@@ -472,15 +472,18 @@ final class Inject
 		// Check if we have a cache
 		if(isset(self::$loader_cache[$class]))
 		{
-			require self::$loader_cache[$class];
+			require_once self::$loader_cache[$class];
 			
 			return true;
 		}
 		
 		$org_class = $class;
 		
-		// fetch the prefix:
-		$prefix = ($p = strpos($class, '_')) ? substr($class, 0, $p) : '';
+		// convert namespace\class_name to namespace/class/name
+		$class = strtr($class, '_\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR);
+		
+		// fetch the prefix (also respects namespaces)
+		$prefix = ($p = strpos($class, '/')) ? substr($class, 0, $p) : '';
 		
 		// do not search in the libraries folder for the following class types:
 		if(isset(self::$namespaces[$prefix]))
@@ -496,8 +499,8 @@ final class Inject
 			$base = 'libraries';
 		}
 		
-		// assemble the path, and convert the class_name to class/name.php
-		$path = $base.DIRECTORY_SEPARATOR.strtr($class, '_\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR).'.php';
+		// assemble the path
+		$path = $base.DIRECTORY_SEPARATOR.$class.'.php';
 		
 		// find the file
 		foreach(array_merge(self::$paths, array(self::$fw_path)) as $p)
