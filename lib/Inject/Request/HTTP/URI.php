@@ -12,7 +12,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 {
 	function __construct($uri = '', $routes = array())
 	{
-		Inject::log('Inject', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
+		Inject::log('Request', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
 		
 		// load the routes config if we don't have a supplied routes array
 		if(empty($routes))
