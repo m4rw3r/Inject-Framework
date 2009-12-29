@@ -52,6 +52,8 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 */
 	protected $files_total_size = 0;
 	
+	protected $queries = array();
+	
 	/**
 	 * Creates a new Inject_Profiler.
 	 * 
@@ -228,10 +230,12 @@ function activateTab(classname)
 {
 	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
+	addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
 	removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
 	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
 	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
 	removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
 	addClassName(document.getElementById(classname + '-Tab'), 'IFW-Selected', true);
 }
@@ -294,7 +298,7 @@ function hideIFW()
 }
 #IFW-HideBtn:hover
 {
-	color: #f00;
+	color: #000;
 }
 #IFW-Profiler.hidden
 {
@@ -304,9 +308,9 @@ function hideIFW()
 #IFW-Profiler .IFW-Container
 {
 	position: relative;
-	background: #333;
+	background: #555;
 	color: #ccc;
-	width: 600px;
+	width: 800px;
 	height: 400px;
 	margin: auto;
 	float: none;
@@ -321,11 +325,12 @@ function hideIFW()
 #IFW-Profiler ul li
 {
 	display: block;
-	width: 30%;
+	width: 20%;
 	float: left;
 	height: 40px;
 	font-size: 16px;
 	padding: 10px;
+	text-align: center;
 	-moz-border-radius-topleft: 10px;
 	-webkit-border-top-left-radius: 10px;
 	-moz-border-radius-topright: 10px;
@@ -337,7 +342,7 @@ function hideIFW()
 }
 #IFW-Profiler ul li:hover, #IFW-Profiler ul li:hover *
 {
-	color: #f33;
+	color: #000;
 	background: #ccc;
 }
 #IFW-Profiler ul li strong, #IFW-Profiler ul li span
@@ -352,13 +357,20 @@ function hideIFW()
 }
 #IFW-Profiler .IFW-Pane
 {
-	height: 320px;
+	height: 310px;
 	overflow: auto;
-	padding: 5px;
+	padding: 15px 5px 5px;
 }
 #IFW-Profiler .IFW-Hidden
 {
 	display: none;
+}
+#IFW-Profiler h2
+{
+	width: 100%;
+	padding: 10px 0;
+	font-size: 20px;
+	text-align: center;
 }
 #IFW-Profiler table
 {
@@ -375,7 +387,23 @@ function hideIFW()
 #IFW-Profiler td
 {
 	display: block;
-	padding: 5px;
+	padding: 5px 10px;
+}
+#IFW-Profiler td.IFW-ERROR
+{
+	color: #f00;
+}
+#IFW-Profiler td.IFW-WARNING
+{
+	color: #ff9;
+}
+#IFW-Profiler td.IFW-NOTICE
+{
+	color: #fff;
+}
+#IFW-Profiler td.IFW-DEBUG
+{
+	color: #99c;
 }
 </style>
 <div id="IFW-Profiler">
@@ -384,6 +412,7 @@ function hideIFW()
 		<ul>
 			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong>Console</strong></li>
 			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong>Execution info</strong> <span><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</span></li>
+			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong>Database</strong> <span><?php echo count($this->queries) ?> queries</span></li>
 			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> Files</strong> <span>included</span></li>
 		</ul>
 	
@@ -392,7 +421,7 @@ function hideIFW()
 				<table border="0" cellspacing="0" cellpadding="0">
 					<?php foreach($this->log as $row): ?>
 					<tr>
-						<td class="<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>"><?php echo $s ?></td>
+						<td class="IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>"><?php echo $s ?></td>
 						<td><?php echo number_format($row['time'] * 1000, 4) ?> ms</td>
 						<td><?php echo $row['name'] ?></td>
 						<td><?php echo $row['message'] ?></td>
@@ -413,6 +442,16 @@ function hideIFW()
 				<p>
 					<strong>Maximum memory allowed: </strong> <?php echo $this->memory_limit ?>
 				</p>
+			</div>
+			
+			<div id="IFW-Db" class="IFW-Pane IFW-Hidden">
+				<?php if($this->database_loaded): ?>
+					
+				<?php else: ?>
+				<h2>
+					Database is not loaded
+				</h2>
+				<?php endif; ?>
 			</div>
 			
 			<div id="IFW-Files" class="IFW-Pane IFW-Hidden">
