@@ -154,53 +154,6 @@ class Inject_Profiler implements Inject_LoggerInterface
 	protected function render()
 	{
 		?>
-<style type="text/css">
-#IFW-Profiler
-{
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	background: transparent;
-	z-index: 0;
-	width: 100%;
-	margin: 0;
-	padding: 0;
-	font-size: 12px;
-}
-#IFW-Profiler.hidden
-{
-	height: 30px;
-	overflow: hidden;
-}
-#IFW-Profiler *
-{
-	color: #ccc;
-}
-#IFW-Profiler .IFW-Container
-{
-	position: relative;
-	background: #333;
-	color: #ccc;
-	width: 600px;
-	height: 400px;
-	margin: auto;
-	float: none;
-	padding: 10px;
-	-moz-border-radius-topleft: 20px;
-	-webkit-border-top-left-radius: 20px;
-	-moz-border-radius-topright: 20px;
-	-webkit-border-top-right-radius: 20px;
-}
-#IFW-Profiler .IFW-Pane
-{
-	height: 320px;
-	overflow: auto;
-}
-#IFW-Profiler .IFW-Hidden
-{
-	display: none;
-}
-</style>
 <script type="text/javascript" charset="utf-8">
 //http://www.bigbold.com/snippets/posts/show/2630
 function addClassName(objElement, strClass, blnMayAlreadyExist)
@@ -277,33 +230,164 @@ function activateTab(classname)
 	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
 	removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
+	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
+	addClassName(document.getElementById(classname + '-Tab'), 'IFW-Selected', true);
 }
 function hideIFW()
 {
 	var p = document.getElementById('IFW-Profiler');
+	var a = document.getElementById('IFW-HideBtn');
+	var txt = '';
 	
 	if(p.className.indexOf('hidden') != -1)
 	{
 		removeClassName(p, 'hidden');
+		txt = '\u25BC';
 	}
 	else
 	{
 		addClassName(p, 'hidden', true);
+		txt = '\u25B2';
 	}
+	
+	if(a.nodeType == 3)
+	{
+		a.data = txt;
+	} 
+	if(a.nodeType == 1)
+	{
+		a.firstChild.data = txt;
+	} 
+	
 }
 </script>
+<style type="text/css">
+#IFW-Profiler
+{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	background: transparent;
+	z-index: 0;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	font: 12px Tahoma, Arial, sans-serif;
+}
+#IFW-Profiler *
+{
+	display: block;
+	color: #ccc;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+#IFW-HideBtn
+{
+	display: block;
+	width: 100%;
+	padding: 0 5px 5px;
+	text-align: center;
+	font-weight: bolder;
+}
+#IFW-HideBtn:hover
+{
+	color: #f00;
+}
+#IFW-Profiler.hidden
+{
+	height: 30px;
+	overflow: hidden;
+}
+#IFW-Profiler .IFW-Container
+{
+	position: relative;
+	background: #333;
+	color: #ccc;
+	width: 600px;
+	height: 400px;
+	margin: auto;
+	float: none;
+	padding: 10px;
+	border: 1px solid #111;
+	border-bottom: 0;
+	-moz-border-radius-topleft: 20px;
+	-webkit-border-top-left-radius: 20px;
+	-moz-border-radius-topright: 20px;
+	-webkit-border-top-right-radius: 20px;
+}
+#IFW-Profiler ul li
+{
+	display: block;
+	width: 30%;
+	float: left;
+	height: 40px;
+	font-size: 16px;
+	padding: 10px;
+	-moz-border-radius-topleft: 10px;
+	-webkit-border-top-left-radius: 10px;
+	-moz-border-radius-topright: 10px;
+	-webkit-border-top-right-radius: 10px;
+}
+.IFW-Selected, .IFW-Selected *
+{
+	background: #000;
+}
+#IFW-Profiler ul li:hover, #IFW-Profiler ul li:hover *
+{
+	color: #f33;
+	background: #ccc;
+}
+#IFW-Profiler ul li strong, #IFW-Profiler ul li span
+{
+	display: block;
+	width: 100%;
+}
+#IFW-Profiler .IFW-Panes
+{
+	clear: both;
+	background: #000;
+}
+#IFW-Profiler .IFW-Pane
+{
+	height: 320px;
+	overflow: auto;
+	padding: 5px;
+}
+#IFW-Profiler .IFW-Hidden
+{
+	display: none;
+}
+#IFW-Profiler table
+{
+	font-size: 12px;
+	border-collapse: collapse;
+	width: 100%;
+}
+#IFW-Profiler tr
+{
+	display: table-row;
+	border-bottom: 1px solid #333;
+	padding: 5px;
+}
+#IFW-Profiler td
+{
+	display: block;
+	padding: 5px;
+}
+</style>
 <div id="IFW-Profiler">
 	<div class="IFW-Container">
-		<div>
-			<span><a onClick="hideIFW();">Hide</a></span>
-		</div>
+		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25BC;</a>
 		<ul>
-			<li><a onClick="activateTab('IFW-Console');"><strong>Console</strong></a></li>
-			<li><a onClick="activateTab('IFW-Exec');"><strong>Execution info</strong> <span><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</span></a></li>
-			<li><a onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> Files</strong> <span>included</span></a></li>
+			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong>Console</strong></li>
+			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong>Execution info</strong> <span><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</span></li>
+			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> Files</strong> <span>included</span></li>
 		</ul>
 	
-		<div class="panes">
+		<div class="IFW-panes">
 			<div id="IFW-Console" class="IFW-Pane">
 				<table border="0" cellspacing="0" cellpadding="0">
 					<?php foreach($this->log as $row): ?>
