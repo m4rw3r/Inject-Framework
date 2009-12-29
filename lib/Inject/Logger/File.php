@@ -21,6 +21,11 @@ class Inject_Logger_File implements Inject_LoggerInterface
 	
 	function __destruct()
 	{
+		if(empty($this->lines))
+		{
+			return;
+		}
+		
 		if(file_exists($this->file))
 		{
 			file_put_contents($this->file, $this->newline . implode($this->newline, $this->lines), FILE_APPEND);
@@ -54,7 +59,7 @@ class Inject_Logger_File implements Inject_LoggerInterface
 				break;
 		}
 		
-		$this->lines[] = str_pad('[' . $level . ']', 9) . ' - ' . str_pad($namespace, 10) . ': ' . $message;
+		$this->lines[] = date('Y-m-d') .' - '.str_pad('[' . $level . ']', 9) . ' - ' . str_pad($namespace, 10) . ': ' . $message;
 	}
 }
 
