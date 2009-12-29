@@ -336,19 +336,50 @@ function hideIFW()
 	-moz-border-radius-topright: 10px;
 	-webkit-border-top-right-radius: 10px;
 }
-.IFW-Selected, .IFW-Selected *
-{
-	background: #000;
-}
 #IFW-Profiler ul li:hover, #IFW-Profiler ul li:hover *
 {
 	color: #000;
-	background: #ccc;
 }
 #IFW-Profiler ul li strong, #IFW-Profiler ul li span
 {
 	display: block;
 	width: 100%;
+}
+.IFW-Selected, .IFW-Selected *
+{
+	background: #000;
+}
+#IFW-Console-Tab.IFW-Selected, #IFW-Console-Tab.IFW-Selected *
+{
+	color: #3a3;
+}
+#IFW-Console-Tab:hover, #IFW-Console-Tab:hover *
+{
+	background: #3a3;
+}
+#IFW-Exec-Tab.IFW-Selected, #IFW-Exec-Tab.IFW-Selected *
+{
+	color: #55a;
+}
+#IFW-Exec-Tab:hover, #IFW-Exec-Tab:hover *
+{
+	background: #55a;
+}
+#IFW-Db-Tab.IFW-Selected, #IFW-Db-Tab.IFW-Selected *
+{
+	color: #a5a;
+}
+#IFW-Db-Tab:hover, #IFW-Db-Tab:hover *
+{
+	background: #a5a;
+}
+#IFW-Files-Tab.IFW-Selected, #IFW-Files-Tab.IFW-Selected *
+{
+	color: #a33;
+}
+#IFW-Files-Tab:hover, #IFW-Files-Tab:hover *
+{
+	background: #a33;
 }
 #IFW-Profiler .IFW-Panes
 {
