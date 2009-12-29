@@ -233,7 +233,7 @@ final class Inject
 	 * @param  string
 	 * @return void
 	 */
-	public function setNamespace($prefix, $folder)
+	public static function setNamespace($prefix, $folder)
 	{
 		self::$namespaces[$prefix] = $folder;
 	}
