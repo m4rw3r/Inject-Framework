@@ -63,6 +63,8 @@ class Inject_Util_LoaderCache_Writer
 	 */
 	function scan()
 	{
+		Inject::log('LoaderWriter', 'Scanning folders for classes.', Inject::DEBUG);
+		
 		foreach($this->paths as $path)
 		{
 			$len = strlen($path);
@@ -81,7 +83,9 @@ class Inject_Util_LoaderCache_Writer
 			}
 		}
 		
-		return count($this->list);
+		Inject::log('LoaderWriter', 'Found '.($c = count($this->list)).' files.', Inject::DEBUG);
+		
+		return $c;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -146,6 +150,7 @@ class Inject_Util_LoaderCache_Writer
 					$is_classname = true;
 					break;
 					
+				// case T_NAMESPACE:
 				case $this->namespace_token:
 					$is_namespace = true;
 					$inside_namespace = true;

@@ -541,7 +541,7 @@ final class Inject
 	 * @param  array
 	 * @return void
 	 */
-	public function setLoaderCache(array $list)
+	public static function setLoaderCache(array $list)
 	{
 		self::$loader_cache = $list;
 	}
