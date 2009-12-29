@@ -31,6 +31,7 @@ Inject::init();
 
 // Initialize the profiler
 $p = new Inject_Profiler($start);
+Inject::attachLogger($p);
 
 
 /*
@@ -46,7 +47,6 @@ $p = new Inject_Profiler($start);
  * Here you define the application paths, with the most important one first.
  */
 Inject::addPaths(array('app'));
-Inject::attachLogger($p);
 
 // Run a HMVC request, so we specify controller and action
 //Inject::run(new Inject_Request_HMVC('Controller_Test', 'testAction'));
