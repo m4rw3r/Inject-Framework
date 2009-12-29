@@ -507,7 +507,7 @@ final class Inject
 		{
 			if(file_exists($p . $path))
 			{
-				self::log('Load', 'Loading "'.$p.$path.'".', self::DEBUG);
+				self::log('Load', 'Loading "'.$org_class.'".', self::DEBUG);
 				
 				// load the file
 				require $p . $path;
@@ -521,7 +521,7 @@ final class Inject
 		// 10 = length of "/libraries"
 		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
 		{
-			self::log('Load', 'Failed to load the class file, resorting to loading core file for the class "'.$class.'".', self::DEBUG);
+			self::log('Load', 'Failed to load the class file, resorting to loading core file for the class "'.$org_class.'".', self::DEBUG);
 			
 			eval('class '.$class.' extends Inject_'.$class.'{}');
 			
