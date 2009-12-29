@@ -6,7 +6,7 @@
  */
 
 /**
- * 
+ * Log variant which writes to the standard output, useful for some debugging.
  */
 class Inject_Logger_ScreenWriter implements Inject_LoggerInterface
 {
@@ -15,6 +15,7 @@ class Inject_Logger_ScreenWriter implements Inject_LoggerInterface
 	public function __construct($newline = "<br />")
 	{
 		$this->newline = $newline;
+		$this->start = microtime(true);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -40,7 +41,7 @@ class Inject_Logger_ScreenWriter implements Inject_LoggerInterface
 				break;
 		}
 		
-		echo str_pad('[' . $level . ']', 9) . ' - ' . str_pad($namespace, 10) . ': ' . $message . $this->newline;
+		echo str_pad('[' . $level . ']', 9) . ' ' . str_pad(number_format((microtime(true) - $this->start) * 1000, 3).' ms', 10) . ' - ' . str_pad($namespace, 10) . ': ' . $message . $this->newline;
 	}
 }
 
