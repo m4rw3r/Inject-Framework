@@ -32,6 +32,20 @@ class Inject_Profiler implements Inject_LoggerInterface
 	protected $allowed_time = 0;
 	
 	/**
+	 * The maximum amount of memory used by this run, bytes.
+	 * 
+	 * @var int
+	 */
+	protected $memory = 0;
+	
+	/**
+	 * Maximum size of the memory which is allowed for the PHP binary, bytes.
+	 * 
+	 * @var int
+	 */
+	protected $allowed_memory = 0;
+	
+	/**
 	 * Log messages.
 	 * 
 	 * @param array
@@ -52,6 +66,25 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 */
 	protected $files_total_size = 0;
 	
+	/**
+	 * The path in which the framework is stored.
+	 * 
+	 * @var string
+	 */
+	protected $fw_path;
+	
+	/**
+	 * A list of the application paths.
+	 * 
+	 * @var array
+	 */
+	protected $paths = array();
+	
+	/**
+	 * A list of queries to print and their times.
+	 * 
+	 * @var array
+	 */
 	protected $queries = array();
 	
 	/**
@@ -124,8 +157,33 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 */
 	protected function getMemoryData()
 	{
+		$prefixes = array('k' => 1024, 'm' => 1048576, 'g' => 1073741824);
+		
 		$this->memory = memory_get_peak_usage();
-		$this->memory_limit = ini_get('memory_limit');
+		$ml = ini_get('memory_limit');
+		
+		preg_match('/(\d*)\s*([TGMK]*)/i', $ml, $m);
+		
+		$prefix = isset($prefixes[strtolower($m[2])]) ? $prefixes[strtolower($m[2])] : 1;
+		
+		$this->memory_limit = $m[1] * $prefix;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	protected function getFrameworkData()
+	{
+		$this->fw_path = realpath(Inject::getFrameworkPath());
+		
+		foreach(Inject::getApplicationPaths() as $p)
+		{
+			$this->paths[] = realpath($p);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -142,6 +200,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 		
 		$this->getFileData();
 		$this->getMemoryData();
+		$this->getFrameworkData();
 		
 		$this->render();
 	}
@@ -207,32 +266,30 @@ function removeClassName(objElement, strClass)
 	}
 }
 
-//http://ejohn.org/projects/flexible-javascript-events/
-function addEvent(obj, type, fn)
-{
-	if(obj.attachEvent)
-	{
-		obj["e"+type+fn] = fn;
-		obj[type+fn] = function()
-		{
-			obj["e"+type+fn](window.event)
-		};
-		
-		obj.attachEvent("on"+type, obj[type+fn]);
-	} 
-	else
-	{
-		obj.addEventListener( type, fn, false );	
-	}
-}
-
 function activateTab(classname)
 {
+	// always show the whole profiler
+	removeClassName(document.getElementById('IFW-Profiler'), 'IFW-Hidden', true);
+	
+	// change the arrow to a down arrow
+	var a = document.getElementById('IFW-HideBtn');
+	if(a.nodeType == 3)
+	{
+		a.data = '\u25BC';
+	}
+	if(a.nodeType == 1)
+	{
+		a.firstChild.data = '\u25BC';
+	}
+	
+	// change tab
 	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
 	removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
+	
+	// change tab selection
 	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
 	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
 	removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
@@ -245,26 +302,25 @@ function hideIFW()
 	var a = document.getElementById('IFW-HideBtn');
 	var txt = '';
 	
-	if(p.className.indexOf('hidden') != -1)
+	if(p.className.indexOf('IFW-Hidden') != -1)
 	{
-		removeClassName(p, 'hidden');
+		removeClassName(p, 'IFW-Hidden');
 		txt = '\u25BC';
 	}
 	else
 	{
-		addClassName(p, 'hidden', true);
+		addClassName(p, 'IFW-Hidden', true);
 		txt = '\u25B2';
 	}
 	
 	if(a.nodeType == 3)
 	{
 		a.data = txt;
-	} 
+	}
 	if(a.nodeType == 1)
 	{
 		a.firstChild.data = txt;
-	} 
-	
+	}
 }
 </script>
 <style type="text/css">
@@ -287,6 +343,9 @@ function hideIFW()
 	padding: 0;
 	margin: 0;
 	border: 0;
+	text-align: left;
+	text-decoration: none;
+	font-weight: normal;
 }
 #IFW-HideBtn
 {
@@ -300,9 +359,9 @@ function hideIFW()
 {
 	color: #000;
 }
-#IFW-Profiler.hidden
+#IFW-Profiler.IFW-Hidden
 {
-	height: 30px;
+	height: 90px;
 	overflow: hidden;
 }
 #IFW-Profiler .IFW-Container
@@ -311,21 +370,21 @@ function hideIFW()
 	background: #555;
 	color: #ccc;
 	width: 800px;
-	height: 400px;
+	height: 500px;
 	margin: auto;
 	float: none;
 	padding: 10px;
 	border: 1px solid #111;
 	border-bottom: 0;
-	-moz-border-radius-topleft: 20px;
-	-webkit-border-top-left-radius: 20px;
-	-moz-border-radius-topright: 20px;
-	-webkit-border-top-right-radius: 20px;
+	-moz-border-radius-topleft: 10px;
+	-webkit-border-top-left-radius: 10px;
+	-moz-border-radius-topright: 10px;
+	-webkit-border-top-right-radius: 10px;
 }
 #IFW-Profiler ul li
 {
 	display: block;
-	width: 20%;
+	width: 176px;
 	float: left;
 	height: 40px;
 	font-size: 16px;
@@ -342,6 +401,7 @@ function hideIFW()
 }
 #IFW-Profiler ul li strong, #IFW-Profiler ul li span
 {
+	margin: 0;
 	display: block;
 	width: 100%;
 }
@@ -384,13 +444,23 @@ function hideIFW()
 #IFW-Profiler .IFW-Panes
 {
 	clear: both;
-	background: #000;
 }
 #IFW-Profiler .IFW-Pane
 {
-	height: 310px;
+	height: 400px;
+	background: #000;
 	overflow: auto;
-	padding: 15px 5px 5px;
+	padding: 15px;
+}
+#IFW-Profiler .IFW-LeftCorner
+{
+	-moz-border-radius-topleft: 5px;
+	-webkit-border-top-left-radius: 5px;
+}
+#IFW-Profiler .IFW-RightCorner
+{
+	-moz-border-radius-topright: 5px;
+	-webkit-border-top-right-radius: 5px;
 }
 #IFW-Profiler .IFW-Hidden
 {
@@ -403,6 +473,17 @@ function hideIFW()
 	font-size: 20px;
 	text-align: center;
 }
+#IFW-Profiler h3
+{
+	width: 100%;
+	padding: 10px 0 0;
+	font-size: 16px;
+}
+#IFW-Profiler strong
+{
+	font-weight: bold;
+	margin-top: 10px;
+}
 #IFW-Profiler table
 {
 	font-size: 12px;
@@ -413,12 +494,20 @@ function hideIFW()
 {
 	display: table-row;
 	border-bottom: 1px solid #333;
-	padding: 5px;
+	padding: 5px 0;
 }
 #IFW-Profiler td
 {
 	display: block;
 	padding: 5px 10px;
+}
+#IFW-Profiler td:first-child
+{
+	padding-left: 0;
+}
+#IFW-Profiler td:last-child
+{
+	padding-right: 0;
 }
 #IFW-Profiler td.IFW-ERROR
 {
@@ -437,18 +526,18 @@ function hideIFW()
 	color: #99c;
 }
 </style>
-<div id="IFW-Profiler">
+<div id="IFW-Profiler" class="IFW-Hidden">
 	<div class="IFW-Container">
-		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25BC;</a>
+		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25B2;</a>
 		<ul>
 			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong>Console</strong></li>
-			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong>Execution info</strong> <span><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</span></li>
-			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong>Database</strong> <span><?php echo count($this->queries) ?> queries</span></li>
+			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</strong> <span>Execution info</span></li>
+			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong><?php echo count($this->queries) ?> Queries</strong> <span>Database</span></li>
 			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> Files</strong> <span>included</span></li>
 		</ul>
 	
 		<div class="IFW-panes">
-			<div id="IFW-Console" class="IFW-Pane">
+			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
 				<table border="0" cellspacing="0" cellpadding="0">
 					<?php foreach($this->log as $row): ?>
 					<tr>
@@ -461,21 +550,25 @@ function hideIFW()
 				</table>
 			</div>
 			
-			<div id="IFW-Exec" class="IFW-Pane IFW-Hidden">
+			<div id="IFW-Exec" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
 				<p>
 					<strong>Total Execution time: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
 				</p>
 				
 				<p>
-					<strong>Maximum memory used: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
+					<strong>Maximum Execution time allowed: </strong> <?php echo $this->allowed_time ?> s
 				</p>
 				
 				<p>
-					<strong>Maximum memory allowed: </strong> <?php echo $this->memory_limit ?>
+					<strong>Maximum Memory used: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
+				</p>
+				
+				<p>
+					<strong>Maximum Memory allowed: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
 				</p>
 			</div>
 			
-			<div id="IFW-Db" class="IFW-Pane IFW-Hidden">
+			<div id="IFW-Db" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
 				<?php if($this->database_loaded): ?>
 					
 				<?php else: ?>
@@ -485,7 +578,22 @@ function hideIFW()
 				<?php endif; ?>
 			</div>
 			
-			<div id="IFW-Files" class="IFW-Pane IFW-Hidden">
+			<div id="IFW-Files" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
+				<p>
+					<strong>Framework path: </strong> <?php echo $this->fw_path ?>
+				</p>
+				
+				<p>
+					<strong>Application paths:</strong>
+					<ol>
+						<?php foreach($this->paths as $p): ?>
+						<li><?php echo $p ?></li>
+						<?php endforeach; ?>
+					</ol>
+				</p>
+				
+				<h3>Included Files</h3>
+				
 				<table border="0" cellspacing="0" cellpadding="0">
 					<?php foreach($this->files as $file): ?>
 					<tr>
