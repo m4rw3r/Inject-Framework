@@ -278,8 +278,8 @@ final class Inject
 		if(defined('E_DEPRECATED'))
 		{
 			// We have PHP 5.3, add the new error constants
-			self::$error_conversion_table[E_DEPRECATED]			= self::NOTICE;
-			self::$error_conversion_table[E_USER_DEPRECATED]	= self::NOTICE;
+			self::$error_conversion_table[constant('E_DEPRECATED')]			= self::NOTICE;
+			self::$error_conversion_table[constant('E_USER_DEPRECATED')]	= self::NOTICE;
 		}
 		
 		// Init UTF-8 support
