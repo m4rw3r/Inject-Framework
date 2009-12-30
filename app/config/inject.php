@@ -52,8 +52,8 @@ Inject::setProduction(false);
  * which adjusts which errors this logger should log.
  */
 
-// Add a logger which prints all messages to the screen
-Inject::attachLogger(new Inject_Logger_Screenwriter("\n"));
+// Add a logger which prints ALL messages to the screen
+// Inject::attachLogger(new Inject_Logger_Screenwriter("\n"));
 
 // Add a file logger for ERROR and WARNING, saves the files in log.txt
 Inject::attachLogger(new Inject_Logger_File('/Users/m4rw3r/Sites/Inject-Framework/log.txt'), Inject::ERROR | Inject::WARNING);
