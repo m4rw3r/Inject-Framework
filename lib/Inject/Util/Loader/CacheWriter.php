@@ -7,14 +7,31 @@
 
 /**
  * Creates a cache for the Inject::load() autoloader.
+ * 
+ * Usage:
+ * <code>
+ * $cw = new Inject_Util_Loader_Cachewriter();
+ * 
+ * // Getting the code to paste in index.php:
+ * echo $cw->getPHP();
+ * 
+ * // Writing to an external file
+ * $cw->writeFile('file_path_name');
+ * 
+ * // Modifying the index.php file automatically:
+ * $cw->writeIndex('path/to/index.php');
+ * </code>
  */
 class Inject_Util_Loader_CacheWriter
 {
-	// ------------------------------------------------------------------------
-
 	/**
+	 * The object which is searching for the classes and files.
 	 * 
-	 * 
+	 * @var Inject_Util_Loader_ClassFinder
+	 */
+	protected $class_finder;
+	
+	/**
 	 * @param  array
 	 */
 	public function __construct(array $paths = array())
