@@ -128,7 +128,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns true if this is an XMLHttpRequest (ie. Javascript).
+	 * Returns true if this is an Ajax request (ie. Javascript request).
 	 * 
 	 * This requires a special header to be sent from the JS
 	 * (usually the Javascript frameworks' Ajax/XHR methods add it automatically):
@@ -139,7 +139,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * 
 	 * @return bool
 	 */
-	public function isXHR()
+	public function isAjax()
 	{
 		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER ['HTTP_X_REQUESTED_WITH'])  == 'xmlhttprequest';
 	}
