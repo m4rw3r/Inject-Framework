@@ -475,10 +475,11 @@ function hideIFW()
 }
 #IFW-Profiler .IFW-Pane
 {
-	height: 400px;
+	height: 399px;
 	background: #000;
 	overflow:auto;
 	padding: 15px;
+	border: 0;
 }
 #IFW-Profiler .IFW-LeftCorner
 {
