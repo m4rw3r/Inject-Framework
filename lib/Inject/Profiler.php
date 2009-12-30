@@ -193,6 +193,33 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @return 
 	 */
+	protected function getQueryData()
+	{
+		// Assume RapidDataMapper
+		
+		// Check if it is loaded
+		if(class_exists('Db', false))
+		{
+			foreach(Db::getLoadedConnections() as $conn)
+			{
+				foreach($conn->queries as $k => $q)
+				{
+					$this->queries[] = array(
+						'time' => $conn->query_times[$k],
+						'query' => $q
+					);
+				}
+			}
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
 	public function display()
 	{
 		$this->end_time = microtime(true);
@@ -201,6 +228,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 		$this->getFileData();
 		$this->getMemoryData();
 		$this->getFrameworkData();
+		$this->getQueryData();
 		
 		$this->render();
 	}
@@ -472,12 +500,14 @@ function hideIFW()
 	padding: 10px 0;
 	font-size: 20px;
 	text-align: center;
+	font-weight: bold;
 }
 #IFW-Profiler h3
 {
 	width: 100%;
 	padding: 10px 0 0;
 	font-size: 16px;
+	font-weight: bold;
 }
 #IFW-Profiler strong
 {
