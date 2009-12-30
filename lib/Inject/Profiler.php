@@ -104,6 +104,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 		{
 			$this->start_time = microtime(true);
 		}
+		
+		// Add shutdown function for the profiler
+		register_shutdown_function(array(&$this, 'display'));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -583,8 +586,8 @@ function hideIFW()
 				<div class="IFW-Row">
 					<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
 					<div class="IFW-Cell" style="width: 70px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
-					<div class="IFW-Cell" style="width: 60px"><?php echo $row['name'] ?></div>
-					<div class="IFW-Cell" style="width: 495px"><?php echo htmlentities($row['message']) ?></div>
+					<div class="IFW-Cell" style="width: 70px"><?php echo $row['name'] ?></div>
+					<div class="IFW-Cell" style="width: 485px"><?php echo htmlentities($row['message']) ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
