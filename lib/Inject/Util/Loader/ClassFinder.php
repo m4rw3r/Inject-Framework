@@ -1,35 +1,22 @@
 <?php
 /*
- * Created by Martin Wernståhl on 2009-12-28.
+ * Created by Martin Wernståhl on 2009-12-30.
  * Copyright (c) 2009 Martin Wernståhl.
  * All rights reserved.
  */
 
 /**
- * 
+ * Searches trough a set of paths for classes, returns a list of classes
+ * and in which file they are located.
  */
-class Inject_Util_LoaderCache_Writer
+class Inject_Util_Loader_ClassFinder
 {
 	/**
 	 * The regex determining which files to search.
 	 * 
 	 * @var string
 	 */
-	protected $file_regex = '/\.php$/';
-	
-	/**
-	 * A list of paths to search, the most important last.
-	 * 
-	 * @var array
-	 */
-	protected $paths = array();
-	
-	/**
-	 * The list of found classes, class => file.
-	 * 
-	 * @var array
-	 */
-	protected $list = array();
+	protected $file_regex;
 	
 	/**
 	 * The token constant for T_NAMESPACE, filled with a dummy value for PHP < 5.3.
@@ -38,16 +25,15 @@ class Inject_Util_LoaderCache_Writer
 	 */
 	protected $namespace_token = false;
 	
-	// ------------------------------------------------------------------------
-
 	/**
-	 * 
-	 * 
-	 * @param  array
+	 * A list of paths to search
 	 */
-	public function __construct(array $paths)
+	protected $paths = array();
+	
+	function __construct($paths = '.', $file_regex = '/\.php$/')
 	{
-		$this->paths = $paths;
+		$this->paths = (Array) $paths;
+		$this->file_regex = $file_regex;
 		
 		// Use constant() to prevent compiler errors, if not PHP > 5.3 use a random
 		// (huge) number to prevent errors:
@@ -57,12 +43,18 @@ class Inject_Util_LoaderCache_Writer
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Scans the directories for classes and constructs an internal array.
+	 * Searches the supplied paths for the files and returns a list of classes
+	 * and in which file they're located.
 	 * 
-	 * @return int		The number of found classes
+	 * @return array(class => file)
 	 */
-	function scan()
+	public function getClassFiles()
 	{
+		if( ! empty($this->list))
+		{
+			return $this->list;
+		}
+		
 		Inject::log('LoaderWriter', 'Scanning folders for classes.', Inject::DEBUG);
 		
 		foreach($this->paths as $path)
@@ -85,19 +77,7 @@ class Inject_Util_LoaderCache_Writer
 		
 		Inject::log('LoaderWriter', 'Found '.($c = count($this->list)).' files.', Inject::DEBUG);
 		
-		return $c;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the PHP code which is adding the cache to the Inject loader.
-	 * 
-	 * @return string
-	 */
-	public function getPHP()
-	{
-		return 'Inject::setLoaderCache('.var_export($this->list, true).');';
+		return $this->list;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -182,5 +162,5 @@ class Inject_Util_LoaderCache_Writer
 }
 
 
-/* End of file Writer.php */
-/* Location: ./lib/Inject/Utils/LoaderWriter */
+/* End of file CacheWriter.php */
+/* Location: ./Users/m4rw3r/Sites/Inject-Framework/lib/Inject/Util/Loader/CacheWriter.php */
