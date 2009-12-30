@@ -82,7 +82,7 @@ else
 }
 
 // Get the path to the current file, so we can easily load the methods
-define('UTF8_LIBPATH', dirname(__FILE__) . 'Utf8/');
+define('UTF8_LIBPATH', dirname(__FILE__) . '/Utf8/');
 
 // Convert all global variables to UTF-8.
 $_GET    = utf8::clean($_GET);
