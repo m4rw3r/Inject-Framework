@@ -455,19 +455,19 @@ function hideIFW()
 }
 #IFW-Db-Tab.IFW-Selected, #IFW-Db-Tab.IFW-Selected *
 {
-	color: #a5a;
+	color: #aa3;
 }
 #IFW-Db-Tab:hover, #IFW-Db-Tab:hover *
 {
-	background: #a5a;
+	background: #aa3;
 }
 #IFW-Files-Tab.IFW-Selected, #IFW-Files-Tab.IFW-Selected *
 {
-	color: #a33;
+	color: #ccc;
 }
 #IFW-Files-Tab:hover, #IFW-Files-Tab:hover *
 {
-	background: #a33;
+	background: #ccc;
 }
 #IFW-Profiler .IFW-Panes
 {
