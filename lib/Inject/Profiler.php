@@ -78,7 +78,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @var array
 	 */
-	protected $paths = array();
+	protected $app_paths = array();
 	
 	/**
 	 * A list of queries to print and their times.
@@ -181,12 +181,8 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 */
 	protected function getFrameworkData()
 	{
-		$this->fw_path = realpath(Inject::getFrameworkPath());
-		
-		foreach(Inject::getApplicationPaths() as $p)
-		{
-			$this->paths[] = realpath($p);
-		}
+		$this->fw_path = Inject::getFrameworkPath();
+		$this->app_paths = Inject::getApplicationPaths();
 	}
 	
 	// ------------------------------------------------------------------------
@@ -582,6 +578,14 @@ function hideIFW()
 	
 		<div class="IFW-panes">
 			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
+				<div class="IFW-THead">
+					<div class="IFW-Cell" style="width: 60px">Level</div>
+					<div class="IFW-Cell" style="width: 70px">Time</div>
+					<div class="IFW-Cell" style="width: 70px">Source</div>
+					<div class="IFW-Cell" style="width: 485px">Message</div>
+					<span class="IFW-Clear"></span>
+				</div>
+				
 				<?php foreach($this->log as $row): ?>
 				<div class="IFW-Row">
 					<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
@@ -693,7 +697,7 @@ function hideIFW()
 						<strong>Application paths:</strong>
 						
 						<ol>
-							<?php foreach($this->paths as $p): ?>
+							<?php foreach($this->app_paths as $p): ?>
 							<li><?php echo $p ?></li>
 							<?php endforeach; ?>
 						</ol>
