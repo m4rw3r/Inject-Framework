@@ -10,7 +10,7 @@
  * 
  * Usage:
  * <code>
- * $cw = new Inject_Util_Loader_Cachewriter();
+ * $cw = new Inject_Util_Loader_CacheWriter();
  * 
  * // Getting the code to paste in index.php:
  * echo $cw->getPHP();
@@ -87,7 +87,7 @@ class Inject_Util_Loader_CacheWriter
 	 * the data is added just below the Inject::init() method call.
 	 * 
 	 * @param  string
-	 * @return int
+	 * @return int		Bytes written
 	 */
 	public function writeIndex($index_file)
 	{
@@ -102,7 +102,7 @@ class Inject_Util_Loader_CacheWriter
 		
 		Inject::log('LoaderCache', 'Writing index file "'.$index_file.'".', Inject::DEBUG);
 		
-		file_put_contents($index_file, $c);
+		return file_put_contents($index_file, $c);
 	}
 	
 	// ------------------------------------------------------------------------
