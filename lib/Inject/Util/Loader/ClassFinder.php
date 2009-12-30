@@ -61,6 +61,7 @@ class Inject_Util_Loader_ClassFinder
 		{
 			$len = strlen($path);
 			
+			// Search the folder
 			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
 			
 			foreach($files as $name => $file)
@@ -103,6 +104,7 @@ class Inject_Util_Loader_ClassFinder
 		{
 			if( ! is_array($token))
 			{
+				// we're only interested in brackets
 				switch($token)
 				{
 					case '{':
@@ -114,6 +116,7 @@ class Inject_Util_Loader_ClassFinder
 						break;
 				}
 				
+				// no class name nor namespace name can follow brackets
 				$is_classname = false;
 				$is_namespace = false;
 				
@@ -123,15 +126,18 @@ class Inject_Util_Loader_ClassFinder
 			switch($token[0])
 			{
 				case T_WHITESPACE:
+					// Not needed to be counted
 					break;
 					
 				case T_CLASS:
 				case T_INTERFACE:
+					// Next is a classname
 					$is_classname = true;
 					break;
 					
 				// case T_NAMESPACE:
 				case $this->namespace_token:
+					// Next is a namespace and we're inside it
 					$is_namespace = true;
 					$inside_namespace = true;
 					// reset so we're sure that we get an empty namespace if the user decides
@@ -143,7 +149,7 @@ class Inject_Util_Loader_ClassFinder
 					if($is_classname)
 					{
 						// Found a class, add the namespace if we have one (which isn't the global, "empty" namespace)
-						$classes[] = ($inside_namespace && ! empty($current_ns) ? '\\'.$current_ns.'\\' : '').$token[1];
+						$classes[] = ($inside_namespace && ! empty($current_ns) ? $current_ns.'\\' : '').$token[1];
 					}
 					// namespaces cannot be within indentation
 					elseif($is_namespace && $indentation == 0)
@@ -152,6 +158,7 @@ class Inject_Util_Loader_ClassFinder
 					}
 					
 				default:
+					// Something else, not a namespace or class
 					$is_classname = false;
 					$is_namespace = false;
 			}

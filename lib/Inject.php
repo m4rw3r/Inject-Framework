@@ -256,6 +256,9 @@ final class Inject
 	 */
 	public static function load($class, $error_level = false)
 	{
+		// Remove namespace separators which can make a file load twice
+		$class = trim($class, '\\');
+		
 		// Check if we have a cache
 		if(isset(self::$loader_cache[$class]))
 		{
