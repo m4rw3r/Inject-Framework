@@ -449,7 +449,7 @@ function hideIFW()
 {
 	height: 400px;
 	background: #000;
-	overflow: auto;
+	overflow:auto;
 	padding: 15px;
 }
 #IFW-Profiler .IFW-LeftCorner
@@ -484,46 +484,56 @@ function hideIFW()
 	font-weight: bold;
 	margin-top: 10px;
 }
-#IFW-Profiler table
+#IFW-Profiler p
 {
-	font-size: 12px;
-	border-collapse: collapse;
-	width: 100%;
+	padding: 5px 0;
+	border: 0;
 }
-#IFW-Profiler tr
+#IFW-Profiler .IFW-Row
 {
-	display: table-row;
 	border-bottom: 1px solid #333;
 	padding: 5px 0;
+	width: 755px;
+	clear: both;
 }
-#IFW-Profiler td
+#IFW-Profiler .IFW-THead
+{
+	border: 0;
+	padding: 5px 0 10px;
+	width: 755px;
+	clear: both;
+}
+#IFW-Profiler .IFW-Cell
 {
 	display: block;
-	padding: 5px 10px;
+	float: left;
+	padding: 2px 0 2px 20px;
+	overflow: hidden;
+	word-wrap: break-word;
 }
-#IFW-Profiler td:first-child
+#IFW-Profiler .IFW-Row :first-child, #IFW-Profiler .IFW-THead :first-child
 {
 	padding-left: 0;
 }
-#IFW-Profiler td:last-child
-{
-	padding-right: 0;
-}
-#IFW-Profiler td.IFW-ERROR
+#IFW-Profiler .IFW-ERROR
 {
 	color: #f00;
 }
-#IFW-Profiler td.IFW-WARNING
+#IFW-Profiler .IFW-WARNING
 {
 	color: #ff9;
 }
-#IFW-Profiler td.IFW-NOTICE
+#IFW-Profiler .IFW-NOTICE
 {
 	color: #fff;
 }
-#IFW-Profiler td.IFW-DEBUG
+#IFW-Profiler .IFW-DEBUG
 {
 	color: #99c;
+}
+.IFW-Clear
+{
+	clear: both;
 }
 </style>
 <div id="IFW-Profiler" class="IFW-Hidden">
@@ -538,34 +548,95 @@ function hideIFW()
 	
 		<div class="IFW-panes">
 			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
-				<table border="0" cellspacing="0" cellpadding="0">
-					<?php foreach($this->log as $row): ?>
-					<tr>
-						<td class="IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>"><?php echo $s ?></td>
-						<td><?php echo number_format($row['time'] * 1000, 4) ?> ms</td>
-						<td><?php echo $row['name'] ?></td>
-						<td><?php echo $row['message'] ?></td>
-					</tr>
-					<?php endforeach; ?>
-				</table>
+				<?php foreach($this->log as $row): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
+					<div class="IFW-Cell" style="width: 60px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
+					<div class="IFW-Cell" style="width: 60px"><?php echo $row['name'] ?></div>
+					<div class="IFW-Cell" style="width: 505px"><?php echo $row['message'] ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
 			</div>
 			
 			<div id="IFW-Exec" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
-				<p>
-					<strong>Total Execution time: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
-				</p>
+				<div class="IFW-THead">
+					<div class="IFW-Cell">
+						<strong>Total Execution time: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
+					</div>
+					
+					<div class="IFW-Cell">
+						<strong>Maximum Execution time allowed: </strong> <?php echo $this->allowed_time ?> s
+					</div>
+
+					<div class="IFW-Cell">
+						<strong>Maximum Memory used: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
+					</div>
+
+					<div class="IFW-Cell">
+						<strong>Maximum Memory allowed: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
+					</div>
+					
+					<span class="IFW-Clear"></span>
+				</div>
 				
-				<p>
-					<strong>Maximum Execution time allowed: </strong> <?php echo $this->allowed_time ?> s
-				</p>
+				<h3>Server Variables</h3>
 				
-				<p>
-					<strong>Maximum Memory used: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
-				</p>
+				<?php foreach($_SERVER as $k => $v): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k) ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v) ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
 				
+				<h3>Environment Variables</h3>
+				
+				<?php if( ! empty($_ENV)): ?>
+				<?php foreach($_ENV as $k => $v): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k) ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v) ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
+				<?php else:?>
 				<p>
-					<strong>Maximum Memory allowed: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
+					No Environment variables are available.
 				</p>
+				<?php endif; ?>
+				
+				<h3>Cookies</h3>
+				
+				<?php if( ! empty($_COOKIE)): ?>
+				<?php foreach($_COOKIE as $k => $v): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k) ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v) ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
+				<?php else:?>
+				<p>
+					No Cookie information is available.
+				</p>
+				<?php endif; ?>
+				
+				<h3>Session</h3>
+				
+				<?php if( ! empty($_SESSION)): ?>
+				<?php foreach($_SESSION as $k => $v): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k) ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v) ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
+				<?php else:?>
+				<p>
+					No Session information is available.
+				</p>
+				<?php endif; ?>
 			</div>
 			
 			<div id="IFW-Db" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
@@ -579,29 +650,33 @@ function hideIFW()
 			</div>
 			
 			<div id="IFW-Files" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
-				<p>
-					<strong>Framework path: </strong> <?php echo $this->fw_path ?>
-				</p>
-				
-				<p>
-					<strong>Application paths:</strong>
-					<ol>
-						<?php foreach($this->paths as $p): ?>
-						<li><?php echo $p ?></li>
-						<?php endforeach; ?>
-					</ol>
-				</p>
+				<div class="IFW-THead">
+					<div class="IFW-Cell">
+						<strong>Framework path: </strong> <?php echo $this->fw_path ?>
+					</div>
+					
+					<div class="IFW-Cell">
+						<strong>Application paths:</strong>
+						
+						<ol>
+							<?php foreach($this->paths as $p): ?>
+							<li><?php echo $p ?></li>
+							<?php endforeach; ?>
+						</ol>
+					</div>
+					
+					<span class="IFW-Clear"></span>
+				</div>
 				
 				<h3>Included Files</h3>
 				
-				<table border="0" cellspacing="0" cellpadding="0">
-					<?php foreach($this->files as $file): ?>
-					<tr>
-						<td><?php echo $file['file'] ?></td>
-						<td><?php echo Inject_Util::humanReadableSize($file['size']) ?></td>
-					</tr>
-					<?php endforeach; ?>
-				</table>
+				<?php foreach($this->files as $file): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 655px;"><?php echo $file['file'] ?></div>
+					<div class="IFW-Cell" style="width: 80px; text-align: right;"><?php echo Inject_Util::humanReadableSize($file['size']) ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
 			</div>
 		</div>
 	</div>
