@@ -354,7 +354,7 @@ function hideIFW()
 <style type="text/css">
 #IFW-Profiler
 {
-	position: absolute;
+	position: fixed !important;
 	bottom: 0;
 	left: 0;
 	background: transparent;
