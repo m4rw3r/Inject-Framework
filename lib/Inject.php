@@ -169,81 +169,9 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Adds application paths for the framework.
-	 * 
-	 * @param  array
-	 * @return void
-	 */
-	public static function addPaths(array $paths)
-	{
-		foreach($paths as $p)
-		{
-			$p = ltrim($p, '/\\').DIRECTORY_SEPARATOR;
-			
-			// do not add twice
-			if(in_array($p, self::$paths))
-			{
-				continue;
-			}
-			
-			self::$paths[] = $p;
-			
-			// does the path have a configuration file
-			if(file_exists($p.'config/inject.php'))
-			{
-				self::log('Inject', 'Loading framework configuration from "'.$p.'config/inject.php".', self::DEBUG);
-				include $p.'config/inject.php';
-			}
-		}
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the error constant for which errors should be displayed.
-	 * 
-	 * @param  int
-	 * @return void
-	 */
-	public static function setErrorLevel($error_level)
-	{
-		self::$error_level = $error_level;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the production switch.
-	 * 
-	 * @param  bool
-	 * @return void
-	 */
-	public static function setProduction($value)
-	{
-		self::$production = (bool) $value;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the folder for the files beginning on $prefix, so they are stored in
-	 * $folder alongside the library folder in the app folder (or system folder).
-	 * 
-	 * @param  string
-	 * @param  string
-	 * @return void
-	 */
-	public static function setNamespace($prefix, $folder)
-	{
-		self::$namespaces[$prefix] = $folder;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
 	 * Initializes the error logging
 	 * 
-	 * @return 
+	 * @return void
 	 */
 	public static function init()
 	{
@@ -289,174 +217,31 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the dispatcher object.
+	 * Adds application paths for the framework.
 	 * 
-	 * @param  Inject_Dispatcher
-	 */
-	public static function setDispatcher($disp)
-	{
-		self::$dispatcher = $disp;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Stores a configuration.
-	 * 
-	 * @param  string
 	 * @param  array
 	 * @return void
 	 */
-	public static function setConfiguration($name, array $value)
+	public static function addPaths(array $paths)
 	{
-		self::$config[$key] = $value;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns a configuration for a certain name, loads the configuration if not present.
-	 * 
-	 * Searches all the registered paths for configuration files with the name $name.php.
-	 * 
-	 * Configuration format:
-	 * <code>
-	 * <?php
-	 * // do some stuff here, usually just create an array like this:
-	 * 
-	 * $config = array(
-	 *     'cache_path' => '/some/path',
-	 *     'use_cache' => true
-	 * );
-	 * 
-	 * // then return the resulting config:
-	 * return $config;
-	 * ?>
-	 * </code>
-	 * 
-	 * 
-	 * @param  string
-	 * @param  mixed
-	 * @return array|false
-	 */
-	public static function getConfiguration($name, $default = false)
-	{
-		if(isset(self::$config[$name]))
+		foreach($paths as $p)
 		{
-			return self::$config[$name];
-		}
-		
-		$c = array();
-		
-		foreach(self::$paths as $p)
-		{
-			if(file_exists($p.'config/'.$name.'.php'))
-			{
-				// include file and merge it
-				$c = array_merge(include $p.'config/'.$name.'.php', $c);
-			}
-		}
-		
-		return self::$config[$name] = empty($c) ? $default : $c;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the framework path.
-	 * 
-	 * @return string
-	 */
-	public static function getFrameworkPath()
-	{
-		return self::$fw_path;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns an array of all the application paths.
-	 * 
-	 * @return string
-	 */
-	public static function getApplicationPaths()
-	{
-		return self::$paths;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the namespace mappings.
-	 * 
-	 * @return array
-	 */
-	public static function getNamespaceMappings()
-	{
-		return self::$namespaces;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Runs a request by the Inject Framework.
-	 * 
-	 * @param  Inject_Request
-	 * @param  bool				Only applies on nested calls
-	 * @return void
-	 */
-	public static function run(Inject_Request $request, $return = false)
-	{
-		self::$run_level++;
-		
-		self::log('Inject', 'run()['.self::$run_level.']', self::DEBUG);
-		
-		if(self::$run_level == 1)
-		{
-			ob_start();
+			$p = ltrim($p, '/\\').DIRECTORY_SEPARATOR;
 			
-			self::$ob_level = ob_get_level();
-			
-			// first request, set the request object as error handler
-			self::$main_request = $request;
-		}
-		elseif($return)
-		{
-			ob_start();
-		}
-		
-		$type = $request->getType();
-		
-		self::$dispatcher->$type($request);
-		
-		self::log('Inject', 'run()['.self::$run_level.'] - DONE', self::DEBUG);
-		
-		self::$run_level--;
-		
-		if( ! self::$run_level)
-		{
-			// clear all the buffers except for the last
-			while(ob_get_level() > self::$ob_level)
+			// do not add twice
+			if(in_array($p, self::$paths))
 			{
-				ob_end_flush();
+				continue;
 			}
 			
-			// get the contents, so we can add it to the output
-			$output = ob_get_contents();
+			self::$paths[] = $p;
 			
-			// clear the last buffer
-			ob_end_clean();
-			
-			// output the contents
-			echo self::filter('inject.output', $output);
-		}
-		elseif($return)
-		{
-			$c = ob_get_contents();
-			
-			ob_end_clean();
-			
-			return $c;
+			// does the path have a configuration file
+			if(file_exists($p.'config/inject.php'))
+			{
+				self::log('Inject', 'Loading framework configuration from "'.$p.'config/inject.php".', self::DEBUG);
+				include $p.'config/inject.php';
+			}
 		}
 	}
 	
@@ -536,6 +321,32 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the error constant for which errors should be displayed.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public static function setErrorLevel($error_level)
+	{
+		self::$error_level = $error_level;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the production switch.
+	 * 
+	 * @param  bool
+	 * @return void
+	 */
+	public static function setProduction($value)
+	{
+		self::$production = (bool) $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Sets the cache array to use when loading files.
 	 * 
 	 * @param  array
@@ -544,6 +355,195 @@ final class Inject
 	public static function setLoaderCache(array $list)
 	{
 		self::$loader_cache = $list;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the folder for the files beginning on $prefix, so they are stored in
+	 * $folder alongside the library folder in the app folder (or system folder).
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return void
+	 */
+	public static function setNamespace($prefix, $folder)
+	{
+		self::$namespaces[$prefix] = $folder;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the dispatcher object.
+	 * 
+	 * @param  Inject_Dispatcher
+	 */
+	public static function setDispatcher($disp)
+	{
+		self::$dispatcher = $disp;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Stores a configuration.
+	 * 
+	 * @param  string
+	 * @param  array
+	 * @return void
+	 */
+	public static function setConfiguration($name, array $value)
+	{
+		self::$config[$key] = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the framework path.
+	 * 
+	 * @return string
+	 */
+	public static function getFrameworkPath()
+	{
+		return self::$fw_path;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns an array of all the application paths.
+	 * 
+	 * @return string
+	 */
+	public static function getApplicationPaths()
+	{
+		return self::$paths;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the namespace mappings.
+	 * 
+	 * @return array
+	 */
+	public static function getNamespaceMappings()
+	{
+		return self::$namespaces;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns a configuration for a certain name, loads the configuration if not present.
+	 * 
+	 * Searches all the registered paths for configuration files with the name $name.php.
+	 * 
+	 * Configuration format:
+	 * <code>
+	 * <?php
+	 * // do some stuff here, usually just create an array like this:
+	 * 
+	 * $config = array(
+	 *     'cache_path' => '/some/path',
+	 *     'use_cache' => true
+	 * );
+	 * 
+	 * // then return the resulting config:
+	 * return $config;
+	 * ?>
+	 * </code>
+	 * 
+	 * 
+	 * @param  string
+	 * @param  mixed
+	 * @return array|false
+	 */
+	public static function getConfiguration($name, $default = false)
+	{
+		if(isset(self::$config[$name]))
+		{
+			return self::$config[$name];
+		}
+		
+		$c = array();
+		
+		foreach(self::$paths as $p)
+		{
+			if(file_exists($p.'config/'.$name.'.php'))
+			{
+				// include file and merge it
+				$c = array_merge(include $p.'config/'.$name.'.php', $c);
+			}
+		}
+		
+		return self::$config[$name] = empty($c) ? $default : $c;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Runs a request by the Inject Framework.
+	 * 
+	 * @param  Inject_Request
+	 * @param  bool				Only applies on nested calls
+	 * @return void
+	 */
+	public static function run(Inject_Request $request, $return = false)
+	{
+		self::$run_level++;
+		
+		self::log('Inject', 'run()['.self::$run_level.']', self::DEBUG);
+		
+		if(self::$run_level == 1)
+		{
+			ob_start();
+			
+			self::$ob_level = ob_get_level();
+			
+			// first request, set the request object as error handler
+			self::$main_request = $request;
+		}
+		elseif($return)
+		{
+			ob_start();
+		}
+		
+		$type = $request->getType();
+		
+		self::$dispatcher->$type($request);
+		
+		self::log('Inject', 'run()['.self::$run_level.'] - DONE', self::DEBUG);
+		
+		self::$run_level--;
+		
+		if( ! self::$run_level)
+		{
+			// clear all the buffers except for the last
+			while(ob_get_level() > self::$ob_level)
+			{
+				ob_end_flush();
+			}
+			
+			// get the contents, so we can add it to the output
+			$output = ob_get_contents();
+			
+			// clear the last buffer
+			ob_end_clean();
+			
+			// output the contents
+			echo self::filter('inject.output', $output);
+		}
+		elseif($return)
+		{
+			$c = ob_get_contents();
+			
+			ob_end_clean();
+			
+			return $c;
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -666,7 +666,7 @@ final class Inject
 			$e['type'] & (E_ERROR | E_COMPILE_ERROR | E_CORE_ERROR | E_PARSE | E_USER_ERROR)) 
 		{
 			// We've got a fatal error
-			self::handleError($e['type'], 'PHP Error', $e['message'], $e['file'], $e['line'], false);
+			self::handleError($e['type'], 'PHP Error', $e['message'], $e['file'], $e['line'], array());
 		}
 	}
 	
