@@ -227,7 +227,7 @@ final class Inject
 	{
 		foreach($paths as $p)
 		{
-			$p = ltrim($p, '/\\').DIRECTORY_SEPARATOR;
+			$p = realpath($p).DIRECTORY_SEPARATOR;
 			
 			// do not add twice
 			if(in_array($p, self::$paths))
