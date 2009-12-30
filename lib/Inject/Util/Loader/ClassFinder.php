@@ -55,7 +55,7 @@ class Inject_Util_Loader_ClassFinder
 			return $this->list;
 		}
 		
-		Inject::log('LoaderWriter', 'Scanning folders for classes.', Inject::DEBUG);
+		Inject::log('ClassFinder', 'Scanning folders for classes.', Inject::DEBUG);
 		
 		foreach($this->paths as $path)
 		{
@@ -77,7 +77,7 @@ class Inject_Util_Loader_ClassFinder
 			}
 		}
 		
-		Inject::log('LoaderWriter', 'Found '.($c = count($this->list)).' files.', Inject::DEBUG);
+		Inject::log('ClassFinder', 'Found '.($c = count($this->list)).' files.', Inject::DEBUG);
 		
 		return $this->list;
 	}
