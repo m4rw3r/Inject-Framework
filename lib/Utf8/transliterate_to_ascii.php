@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct access allowed.');
+<?php
 /**
  * utf8::transliterate_to_ascii
  *
