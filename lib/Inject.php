@@ -250,9 +250,11 @@ final class Inject
 	/**
 	 * Loads the requested class, primarily used as an autoloader
 	 * 
+	 * @param  string
+	 * @param  int		The level to log the error with, default is Inject::WARNING
 	 * @return bool
 	 */
-	public static function load($class)
+	public static function load($class, $error_level = false)
 	{
 		// Check if we have a cache
 		if(isset(self::$loader_cache[$class]))
@@ -297,12 +299,20 @@ final class Inject
 				// load the file
 				require $p . $path;
 				
-				// we're done
-				return true;
+				if( ! (class_exists($org_class, false) OR interface_exists($org_class, false)))
+				{
+					// File did not contain the requested class/interface
+					continue;
+				}
+				else
+				{
+					// We're done
+					return true;
+				}
 			}
 		}
 		
-		// the file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
+		// The file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
 		// 10 = length of "/libraries"
 		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
 		{
@@ -313,7 +323,11 @@ final class Inject
 			return true;
 		}
 		
-		self::log('Load', 'Failed to load "'.$path.'" for the class "'.$org_class.'".', self::WARNING);
+		self::log(
+				'Load',
+				'Failed to load "'.$path.'" for the class "'.$org_class.'".',
+				$error_level ? $error_level : self::WARNING
+			);
 		
 		return false;
 	}
