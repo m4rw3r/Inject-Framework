@@ -121,12 +121,15 @@ class Inject_URI
 			self::$front_controller = $_SERVER['PHP_SELF'];
 		}
 		// do we have to deduce the front_controller?
-		elseif(is_null(self::$front_controller))
+		elseif(empty(self::$front_controller))
 		{
 			if(isset($_SERVER['REQUEST_URI']))
 			{
+				// Request URI var is not urldecoded
+				$req_uri = urldecode($_SERVER['REQUEST_URI']);
+				
 				// Remove the found uri from the REQUEST URI to create the front controller path.
-				self::$front_controller = ($p = strpos($_SERVER['REQUEST_URI'], $current_uri)) !== false ? substr($_SERVER['REQUEST_URI'], 0, $p) : $_SERVER['REQUEST_URI'];
+				self::$front_controller = ($p = strrpos($req_uri, $current_uri)) !== false ? substr($req_uri, 0, $p) : $req_uri;
 			}
 		}
 		
@@ -144,7 +147,8 @@ class Inject_URI
 		
 		Inject::log('URI', 'Found URI from source: "'.$source.'".', Inject::DEBUG);
 		
-		self::$current_uri = urldecode($current_uri);
+		self::$current_uri = $current_uri;
+		Inject::log('URI', 'URI: "'.$current_uri.'" Front controller: "'.self::$front_controller.'".', Inject::DEBUG);
 	}
 }
 
