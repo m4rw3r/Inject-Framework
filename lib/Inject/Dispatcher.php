@@ -91,7 +91,7 @@ class Inject_Dispatcher
 		}
 		catch(Inject_DispatcherException $e)
 		{
-			Inject::log('Inject', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::WARNING);
+			Inject::log('Dispatcher', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::NOTICE);
 			
 			// nope, show an error
 			$class = $this->missing_class;
@@ -123,7 +123,7 @@ class Inject_Dispatcher
 		}
 		catch(Inject_DispatcherException $e)
 		{
-			Inject::log('Inject', 'HMVC: 404 Error on class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
+			Inject::log('Dispatcher', 'HMVC: 404 Error on class: "'.$class.'", action: "'.$action.'".', Inject::WARNING);
 			
 			// HMVC should not cause errors or call a 404 controller, just a warning
 			return;
@@ -139,10 +139,10 @@ class Inject_Dispatcher
 	 */
 	protected function run(Inject_Request $req, $controller, $action)
 	{
-		Inject::log('Inject', 'Loading controller class "'.$controller.'".', Inject::DEBUG);
+		Inject::log('Dispatcher', 'Loading controller class "'.$controller.'".', Inject::DEBUG);
 		
 		// validate again, to make sure it hasn't gone FUBAR
-		if( ! class_exists($controller))
+		if( ! class_exists($controller, false) && ! Inject::load($controller, Inject::NOTICE))
 		{
 			throw new Inject_Dispatcher_ClassException('Controller class "'.$controller.'" cannot be found.');
 		}
@@ -158,7 +158,7 @@ class Inject_Dispatcher
 		// load the controller
 		$controller = new $controller($req);
 		
-		Inject::log('Inject', 'Calling action "'.$action.'".', Inject::DEBUG);
+		Inject::log('Dispatcher', 'Calling action "'.$action.'".', Inject::DEBUG);
 		
 		// call the action
 		$controller->$action();
