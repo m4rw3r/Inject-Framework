@@ -211,6 +211,7 @@ final class Inject
 		}
 		
 		// Init UTF-8 support
+		// TODO: Is this support really needed at this stage? (eats over 3ms out of a total of ~6ms)
 		require self::$fw_path.'Utf8.php';
 	}
 	
@@ -683,7 +684,7 @@ final class Inject
 			$e['type'] & (E_ERROR | E_COMPILE_ERROR | E_CORE_ERROR | E_PARSE | E_USER_ERROR)) 
 		{
 			// We've got a fatal error
-			self::handleError($e['type'], 'PHP Error', $e['message'], $e['file'], $e['line'], array());
+			self::handleError($e['type'], 'PHP Error', $e['message'], $e['file'], $e['line'], false);
 		}
 	}
 	
@@ -696,7 +697,7 @@ final class Inject
 	 * @param  string
 	 * @param  string
 	 * @param  int
-	 * @param  array
+	 * @param  array|false		False if this is a fatal error and PHP is shutting down
 	 * @return void
 	 */
 	public static function handleError($level, $type, $message, $file, $line, $trace = array())
@@ -766,9 +767,15 @@ Trace:
 			ob_end_flush();
 		}
 		
-		// quit
-		flush();
-		exit((Int) $level);
+		if($trace !== false)
+		{
+			// Not a fatal error, quit so we let the other shutdown functions run
+			flush();
+			exit((Int) $level);
+		}
+		
+		// Already in an exit process, do not call exit yet (if we call exit now,
+		// no other shutdown functions will run)
 	}
 	
 	// ------------------------------------------------------------------------
