@@ -667,7 +667,7 @@ final class Inject
 	 */
 	public static function errorHandler($error_code, $message = '', $file = '', $line = 0)
 	{
-		self::handleError($error_code, 'PHP Error', $message, $file, $line, debug_backtrace());
+		self::handleError($error_code, 'PHP Error', $message, $file, $line, array_slice(debug_backtrace(), 1));
 	}
 	
 	// ------------------------------------------------------------------------
