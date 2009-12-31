@@ -15,7 +15,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * 
 	 * @var string
 	 */
-	const ALLOWED_CHARACTERS_REGEX = '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/i';
+	const ALLOWED_CHARACTERS_REGEX = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/iu';
 	
 	/**
 	 * Stores the class name for the controller
