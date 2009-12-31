@@ -111,7 +111,7 @@ class Inject_URI
 		}
 		elseif(isset($_SERVER['PHP_SELF']) AND $_SERVER['PHP_SELF'])
 		{
-			// Already urldecoded (because it is from PHP, not ) and cleaned by Utf8::clean
+			// Already urldecoded (because it is from PHP, not the server) and cleaned by Utf8::clean
 			$current_uri = $_SERVER['PHP_SELF'];
 			
 			$source = 'PHP_SELF';

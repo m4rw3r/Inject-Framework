@@ -11,25 +11,34 @@
 abstract class Inject_Request extends Inject_Container
 {
 	/**
-	 * Returns the type name of this request, used to determine what to do in the dispatcher.
+	 * Returns the protocol of this request, used to determine what to do in the dispatcher.
 	 * 
-	 * @return string
+	 * Eg. http, cli, hmvc etc.
+	 * 
+	 * @return string	lowercase
 	 */
-	abstract public function getType();
+	abstract public function getProtocol();
 	
 	/**
-	 * Returns the class name to call.
+	 * Returns the request method, GET, PUT, POST, DELETE etc.
 	 * 
-	 * @return string
-	 */
-	abstract public function getClass();
-	
-	/**
-	 * Returns the method name to call.
-	 * 
-	 * @return string
+	 * @return string	uppercase
 	 */
 	abstract public function getMethod();
+	
+	/**
+	 * Returns the class name of the controller.
+	 * 
+	 * @return string
+	 */
+	abstract public function getControllerClass();
+	
+	/**
+	 * Returns the method name of the action to call.
+	 * 
+	 * @return string
+	 */
+	abstract public function getActionMethod();
 	
 	/**
 	 * Returns a parameter of this request, if not present $default will be returned.

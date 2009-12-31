@@ -22,14 +22,14 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * 
 	 * @var string
 	 */
-	protected $controller = null;
+	protected $controller_class = null;
 	
 	/**
 	 * Contains the method name which is the action to call.
 	 * 
 	 * @var string
 	 */
-	protected $method = null;
+	protected $action_method = null;
 	
 	/**
 	 * Contains the parameter array.
@@ -37,6 +37,53 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * @var array
 	 */
 	protected $parameters = array();
+	
+	/**
+	 * The protocol, http or https.
+	 * 
+	 * @var string
+	 */
+	protected $protocol = 'http';
+	
+	/**
+	 * The request method.
+	 * 
+	 * @var string
+	 */
+	protected $method = 'GET';
+	
+	/**
+	 * Variable telling if the request has been made by Ajax or not.
+	 * 
+	 * @var bool
+	 */
+	protected $is_ajax = false;
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function __construct()
+	{
+		$this->protocol = (( ! empty($_SERVER['HTTPS'])) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
+		$this->method = isset($_SERVER['REQUEST_METHOD']) ? $method = $_SERVER['REQUEST_METHOD'] : 'GET';
+		$this->is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER ['HTTP_X_REQUESTED_WITH'])  == 'xmlhttprequest';
+		
+		Inject::log('Request', 'Request is '.strtoupper($this->protocol).' '.$this->method, Inject::DEBUG);
+		
+		if($this->method !== 'GET' && $this->method !== 'POST')
+		{
+			Inject::log('Request', 'Reloading form data, PHP has not loaded $_POST.', Inject::DEBUG);
+			
+			// PUT etc. does not parse form data, do it now
+			parse_str(file_get_contents('php://input'), $_POST);
+			
+			Utf8::clean($_POST);
+		}
+	}
 	
 	// ------------------------------------------------------------------------
 
@@ -50,26 +97,26 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * @param  string
 	 * @return void
 	 */
-	public function setController($class)
+	public function setControllerClass($class)
 	{
 		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $class))
 		{
 			throw new Exception('Disallowed characters in controller name.');
 		}
 		
-		$this->controller = 'Controller_'.ucfirst(str_replace('/(_[a-z])/e', "strtoupper('$1')", strtolower($class)));
+		$this->controller_class = 'Controller_'.ucfirst(str_replace('/(_[a-z])/e', "strtoupper('$1')", strtolower($class)));
 	}
 	
 	// ------------------------------------------------------------------------
 	
-	public function setMethod($method)
+	public function setActionMethod($method)
 	{
 		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $method))
 		{
 			throw new Exception('Disallowed characters in action name.');
 		}
 		
-		$this->method = $method;
+		$this->action_method = $method;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -92,16 +139,9 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	
 	// ------------------------------------------------------------------------
 	
-	public function getType()
+	public function getProtocol()
 	{
-		return 'http';
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	public function getClass()
-	{
-		return $this->controller;
+		return $this->protocol;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -109,6 +149,20 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	public function getMethod()
 	{
 		return $this->method;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function getControllerClass()
+	{
+		return $this->controller_class;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function getActionMethod()
+	{
+		return $this->action_method;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -128,6 +182,30 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns the user agent name.
+	 * 
+	 * @return string
+	 */
+	public function getUserAgent()
+	{
+		// TODO: Code
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the user IP address.
+	 * 
+	 * @return string
+	 */
+	public function getUserIp()
+	{
+		// TODO: Code
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns true if this is an Ajax request (ie. Javascript request).
 	 * 
 	 * This requires a special header to be sent from the JS
@@ -141,7 +219,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function isAjax()
 	{
-		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER ['HTTP_X_REQUESTED_WITH'])  == 'xmlhttprequest';
+		return $this->is_ajax;
 	}
 }
 

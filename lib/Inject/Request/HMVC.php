@@ -10,6 +10,7 @@
  */
 class Inject_Request_HMVC extends Inject_Request
 {
+	protected $method = 'GET';
 	
 	protected $class_name;
 	
@@ -17,30 +18,38 @@ class Inject_Request_HMVC extends Inject_Request
 	
 	protected $parameters = array();
 	
-	function __construct($class_name, $action_name = false, $parameters = array())
+	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET')
 	{
 		$this->class_name = $class_name;
 		$this->action_name = $action_name;
 		$this->parameters = $parameters;
+		$this->method = $method;
 	}
 	
 	// ------------------------------------------------------------------------
 	
-	public function getType()
+	public function getProtocol()
 	{
 		return 'hmvc';
 	}
 	
 	// ------------------------------------------------------------------------
 	
-	public function getClass()
+	public function getMethod()
+	{
+		return $this->method;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function getControllerClass()
 	{
 		return $this->class_name;
 	}
 	
 	// ------------------------------------------------------------------------
 	
-	public function getMethod()
+	public function getActionMethod()
 	{
 		return $this->action_name;
 	}

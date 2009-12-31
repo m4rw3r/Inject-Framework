@@ -79,10 +79,10 @@ class Inject_Dispatcher
 	public function http(Inject_Request_HTTP $req)
 	{
 		// get the controller
-		($class = $req->getClass()) OR ($class = $this->default_class);
+		($class = $req->getControllerClass()) OR ($class = $this->default_class);
 		
 		// get the action
-		$action = ($m = $req->getMethod()) ? $m : $this->default_action;
+		$action = ($m = $req->getActionMethod()) ? $m : $this->default_action;
 		
 		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
 		try
@@ -112,10 +112,10 @@ class Inject_Dispatcher
 	public function hmvc(Inject_Request_HMVC $req)
 	{
 		// get the controller
-		($class = $req->getClass()) OR ($class = $this->default_class);
+		($class = $req->getControllerClass()) OR ($class = $this->default_class);
 		
 		// get the action
-		$action = ($m = $req->getMethod()) ? $m : $this->default_action;
+		$action = ($m = $req->getActionMethod()) ? $m : $this->default_action;
 		
 		try
 		{

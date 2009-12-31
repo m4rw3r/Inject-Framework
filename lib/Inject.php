@@ -529,9 +529,9 @@ final class Inject
 			ob_start();
 		}
 		
-		$type = $request->getType();
+		$protocol = $request->getProtocol();
 		
-		self::$dispatcher->$type($request);
+		self::$dispatcher->$protocol($request);
 		
 		self::log('Inject', 'run()['.self::$run_level.'] - DONE', self::DEBUG);
 		

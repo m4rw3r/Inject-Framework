@@ -10,9 +10,13 @@
  */
 class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 {
+	protected $routes = array();
+	
 	function __construct($uri = '', $routes = array())
 	{
 		Inject::log('Request', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
+		
+		parent::__construct();
 		
 		// load the routes config if we don't have a supplied routes array
 		if(empty($routes))
@@ -106,13 +110,13 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		// get the controller from the first segment
 		if( ! empty($segments))
 		{
-			$this->setController(array_shift($segments));
+			$this->setControllerClass(array_shift($segments));
 		}
 		
 		// get the action from the second one, if there is one
 		if( ! empty($segments))
 		{
-			$this->setMethod(array_shift($segments));
+			$this->setActionMethod(array_shift($segments));
 		}
 		
 		$this->setExtraSegments($segments);
