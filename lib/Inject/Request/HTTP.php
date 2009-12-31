@@ -68,6 +68,10 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function __construct()
 	{
+		// Request is UTF-8, need a header
+		// TODO: Move to a response object?
+		header('Content-Type: text/html;charset=UTF-8');
+		
 		$this->protocol = (( ! empty($_SERVER['HTTPS'])) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
 		$this->method = isset($_SERVER['REQUEST_METHOD']) ? $method = $_SERVER['REQUEST_METHOD'] : 'GET';
 		$this->is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER ['HTTP_X_REQUESTED_WITH'])  == 'xmlhttprequest';
