@@ -69,10 +69,12 @@ class Inject_URI
 	{
 		$source = 'None';
 		
-		if(isset($_GET['inject_uri']))
+		/*if(isset($_GET['inject_uri']))
 		{
 			// Use the URI defined in the query string
 			$current_uri = $_GET['inject_uri'];
+			
+			// $_GET is already urldecoded when Utf8::clean gets its hands on it
 			
 			// Remove the URI from $_GET
 			unset($_GET['inject_uri']);
@@ -85,31 +87,35 @@ class Inject_URI
 				/*
 				 * remove the query string from the REQUEST URI to create the front controller path
 				 * add ?inject_uri= to create the final front controller.
-				 */
+				 *//*
 				self::$front_controller = substr($_SERVER['REQUEST_URI'], 0, $p).'?inject_uri=';
 			}
 			
 			$source = 'Query String';
 		}
-		elseif(isset($_SERVER['PATH_INFO']) AND $_SERVER['PATH_INFO'])
+		else*/
+		
+		if(isset($_SERVER['PATH_INFO']) AND $_SERVER['PATH_INFO'])
 		{
+			// Already urldecoded and then cleaned by Utf8::clean
 			$current_uri = $_SERVER['PATH_INFO'];
 			
 			$source = 'Path Info';
 		}
 		elseif(isset($_SERVER['ORIG_PATH_INFO']) AND $_SERVER['ORIG_PATH_INFO'])
 		{
-			$current_uri = $_SERVER['ORIG_PATH_INFO'];
+			// Urldecode and then clean
+			$current_uri = Utf8::clean(urldecode($_SERVER['ORIG_PATH_INFO']));
 			
 			$source = 'Orig Path Info';
 		}
 		elseif(isset($_SERVER['PHP_SELF']) AND $_SERVER['PHP_SELF'])
 		{
+			// Already urldecoded (because it is from PHP, not ) and cleaned by Utf8::clean
 			$current_uri = $_SERVER['PHP_SELF'];
 			
 			$source = 'PHP_SELF';
 		}
-		
 		
 		// remove the current script name if there is one
 		if(isset($_SERVER['PHP_SELF']) && strpos($current_uri, $_SERVER['PHP_SELF']) === 0)
@@ -126,7 +132,7 @@ class Inject_URI
 			if(isset($_SERVER['REQUEST_URI']))
 			{
 				// Request URI var is not urldecoded
-				$req_uri = urldecode($_SERVER['REQUEST_URI']);
+				$req_uri = Utf8::clean(urldecode($_SERVER['REQUEST_URI']));
 				
 				// Remove the found uri from the REQUEST URI to create the front controller path.
 				self::$front_controller = ($p = strrpos($req_uri, $current_uri)) !== false ? substr($req_uri, 0, $p) : $req_uri;
@@ -148,6 +154,7 @@ class Inject_URI
 		Inject::log('URI', 'Found URI from source: "'.$source.'".', Inject::DEBUG);
 		
 		self::$current_uri = $current_uri;
+		
 		Inject::log('URI', 'URI: "'.$current_uri.'" Front controller: "'.self::$front_controller.'".', Inject::DEBUG);
 	}
 }
