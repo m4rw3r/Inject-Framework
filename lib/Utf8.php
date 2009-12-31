@@ -116,32 +116,47 @@ final class Utf8
 	 */
 	public static function clean($str)
 	{
-		if(is_array($str) OR is_object($str))
+		if(empty($str))
+		{
+			return $str;
+		}
+		elseif(is_array($str) OR is_object($str))
 		{
 			foreach($str as $key => $val)
 			{
-				// Recursion!
-				$str[self::clean($key)] = self::clean($val);
+				// Filter key
+				$key = self::strip_ascii_ctrl($key);
+				
+				if( ! self::is_ascii($key))
+				{
+					// iconv is expensive, so it is only used when needed
+					$key = iconv('UTF-8', 'UTF-8//IGNORE', $key);
+				}
+				
+				// Filter value
+				$val = self::strip_ascii_ctrl($val);
+				
+				if( ! self::is_ascii($val))
+				{
+					// iconv is expensive, so it is only used when needed
+					$val = iconv('UTF-8', 'UTF-8//IGNORE', $val);
+				}
+				
+				$str[$key] = $val;
 			}
 		}
 		elseif(is_string($str) AND $str !== '')
 		{
 			// Remove control characters
 			$str = self::strip_ascii_ctrl($str);
-
+			
 			if( ! self::is_ascii($str))
 			{
-				// Disable notices
-				$ER = error_reporting(~E_NOTICE);
-
 				// iconv is expensive, so it is only used when needed
 				$str = iconv('UTF-8', 'UTF-8//IGNORE', $str);
-
-				// Turn notices back on
-				error_reporting($ER);
 			}
 		}
-
+		
 		return $str;
 	}
 
