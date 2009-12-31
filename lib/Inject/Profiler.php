@@ -591,7 +591,7 @@ function hideIFW()
 					<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
 					<div class="IFW-Cell" style="width: 70px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
 					<div class="IFW-Cell" style="width: 70px"><?php echo $row['name'] ?></div>
-					<div class="IFW-Cell" style="width: 485px"><?php echo htmlentities($row['message'], ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 485px"><?php echo htmlspecialchars($row['message'], ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -622,8 +622,8 @@ function hideIFW()
 				
 				<?php foreach($_SERVER as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -633,8 +633,8 @@ function hideIFW()
 				<?php if( ! empty($_GET)): ?>
 				<?php foreach($_GET as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -649,8 +649,8 @@ function hideIFW()
 				<?php if( ! empty($_POST)): ?>
 				<?php foreach($_POST as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -665,8 +665,8 @@ function hideIFW()
 				<?php if( ! empty($_ENV)): ?>
 				<?php foreach($_ENV as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -681,8 +681,8 @@ function hideIFW()
 				<?php if( ! empty($_COOKIE)): ?>
 				<?php foreach($_COOKIE as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
@@ -697,8 +697,8 @@ function hideIFW()
 				<?php if( ! empty($_SESSION)): ?>
 				<?php foreach($_SESSION as $k => $v): ?>
 				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlentities($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlentities($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				<?php endforeach; ?>
