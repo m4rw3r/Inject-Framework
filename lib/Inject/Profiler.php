@@ -92,7 +92,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @param  float	microtime(true) when the app was started.
 	 */
-	function __construct($start_time = 0)
+	function __construct($start_time = 0, $use_inject_event = false)
 	{
 		if($start_time != 0)
 		{
@@ -105,8 +105,15 @@ class Inject_Profiler implements Inject_LoggerInterface
 			$this->start_time = microtime(true);
 		}
 		
-		// Add shutdown function for the profiler
-		register_shutdown_function(array(&$this, 'display'));
+		if( ! $use_inject_event)
+		{
+			// Add shutdown function for the profiler
+			register_shutdown_function(array(&$this, 'display'));
+		}
+		else
+		{
+			Inject::onEvent('inject.terminate', array(&$this, 'display'));
+		}
 	}
 	
 	// ------------------------------------------------------------------------
