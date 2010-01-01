@@ -210,9 +210,46 @@ final class Inject
 			self::$error_conversion_table[constant('E_USER_DEPRECATED')]	= self::NOTICE;
 		}
 		
+		// Start output buffering
+		ob_start();
+		
+		// Save level
+		self::$ob_level = ob_get_level();
+		
 		// Init UTF-8 support
 		// TODO: Is this support really needed at this stage? (eats over 3ms out of a total of ~6ms)
 		require self::$fw_path.'Utf8.php';
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Terminates this run of Inject, sends all the headers and also fetches the
+	 * output buffer contents and runs them through the inject.output filter.
+	 * 
+	 * @return void
+	 */
+	public static function terminate()
+	{
+		// Send the headers
+		Inject_Request::sendHeaders();
+		
+		// clear all the buffers except for the last
+		while(ob_get_level() > self::$ob_level)
+		{
+			ob_end_flush();
+		}
+		
+		self::event('inject.terminate');
+		
+		// get the contents, so we can add it to the output
+		$output = ob_get_contents();
+		
+		// clear the last buffer
+		ob_end_clean();
+		
+		// output the contents
+		echo self::filter('inject.output', $output);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -507,9 +544,9 @@ final class Inject
 	 * 
 	 * @param  Inject_Request
 	 * @param  bool				Only applies on nested calls
-	 * @return void
+	 * @return string
 	 */
-	public static function run(Inject_Request $request, $return = false)
+	public static function run(Inject_Request $request)
 	{
 		self::$run_level++;
 		
@@ -517,16 +554,8 @@ final class Inject
 		
 		if(self::$run_level == 1)
 		{
-			ob_start();
-			
-			self::$ob_level = ob_get_level();
-			
 			// first request, set the request object as error handler
 			self::$main_request = $request;
-		}
-		elseif($return)
-		{
-			ob_start();
 		}
 		
 		$protocol = $request->getProtocol();
@@ -537,31 +566,7 @@ final class Inject
 		
 		self::$run_level--;
 		
-		if( ! self::$run_level)
-		{
-			// clear all the buffers except for the last
-			while(ob_get_level() > self::$ob_level)
-			{
-				ob_end_flush();
-			}
-			
-			// get the contents, so we can add it to the output
-			$output = ob_get_contents();
-			
-			// clear the last buffer
-			ob_end_clean();
-			
-			// output the contents
-			echo self::filter('inject.output', $output);
-		}
-		elseif($return)
-		{
-			$c = ob_get_contents();
-			
-			ob_end_clean();
-			
-			return $c;
-		}
+		return $request->response;
 	}
 	
 	// ------------------------------------------------------------------------
