@@ -100,12 +100,14 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function setControllerClass($class)
 	{
+		$class = 'Controller_'.Utf8::ucfirst(preg_replace('/(_\w)/eu', "Utf8::strtoupper('$1')", Utf8::strtolower($class)));
+		
 		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $class))
 		{
 			throw new Exception('Disallowed characters in controller name.');
 		}
 		
-		$this->controller_class = 'Controller_'.ucfirst(str_replace('/(_[a-z])/e', "strtoupper('$1')", strtolower($class)));
+		$this->controller_class = $class;
 	}
 	
 	// ------------------------------------------------------------------------
