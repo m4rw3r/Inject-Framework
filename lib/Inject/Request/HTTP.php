@@ -62,15 +62,12 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * Initializes an HTTP request object, loads $_SERVER data to get request information.
 	 */
 	public function __construct()
 	{
-		// Request is UTF-8, need a header
-		// TODO: Move to a response object?
-		header('Content-Type: text/html;charset=UTF-8');
+		// Add text/html content type and also charset.
+		self::$headers['Content-Type'] = 'text/html;charset=UTF-8';
 		
 		$this->protocol = (( ! empty($_SERVER['HTTPS'])) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
 		$this->method = isset($_SERVER['REQUEST_METHOD']) ? $method = $_SERVER['REQUEST_METHOD'] : 'GET';

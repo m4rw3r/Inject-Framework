@@ -11,6 +11,53 @@
 abstract class Inject_Request extends Inject_Container
 {
 	/**
+	 * The list of HTTP headers which will be sent by header().
+	 * 
+	 * @var array
+	 */
+	public static $headers = array();
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sends all response headers which has been set.
+	 * 
+	 * @return void
+	 */
+	public static function sendHeaders()
+	{
+		foreach(self::$headers as $k => $v)
+		{
+			header($k.': '.$v);
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets a response header, overwrites any existing header with the same name.
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return void
+	 */
+	public function setHeader($header, $value)
+	{
+		self::$headers[$header] = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	/**
+	 * The response from this request.
+	 * 
+	 * @var string
+	 */
+	public $response = '';
+	
+	// ------------------------------------------------------------------------
+	
+	/**
 	 * Returns the protocol of this request, used to determine what to do in the dispatcher.
 	 * 
 	 * Eg. http, cli, hmvc etc.
@@ -56,6 +103,8 @@ abstract class Inject_Request extends Inject_Container
 	 */
 	abstract public function getParameters();
 	
+	// ------------------------------------------------------------------------
+	
 	/**
 	 * Handles a generic error and prints error information.
 	 * 
@@ -81,6 +130,8 @@ Trace:
 		
 		print_r($trace);
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Handles a fatal error and prints minimum error information.
