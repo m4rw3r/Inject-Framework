@@ -60,7 +60,6 @@ class Inject_Util_Loader_ClassFinder
 		foreach($this->paths as $path)
 		{
 			$path = realpath($path);
-			$len = strlen($path);
 			
 			// Search the folder
 			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
