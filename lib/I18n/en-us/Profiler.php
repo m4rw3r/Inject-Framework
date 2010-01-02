@@ -1,0 +1,32 @@
+<?php
+
+return array(
+	'console'			=> 'Console',
+	'exec_info'			=> 'Execution Info',
+	'queries'			=> 'Queries',
+	'database'			=> 'Database',
+	'files'				=> 'Files',
+	'included'			=> 'Included',
+	'level'				=> 'Level',
+	'time'				=> 'Time',
+	'source'			=> 'Source',
+	'message'			=> 'Message',
+	'tot_exec_time'		=> 'Total Execution Time',
+	'max_exec_time' 	=> 'Maximum Execution time allowed',
+	'tot_mem_used'		=> 'Total Memory used',
+	'max_mem_allowed'	=> 'Maximum Memory allowed',
+	'server_vars'		=> 'Server Variables',
+	'data'				=> 'data',
+	'no_get' 			=> 'No GET data is available.',
+	'no_post' 			=> 'No POST data is available.',
+	'env_vars' 			=> 'Environment Variables',
+	'no_env' 			=> 'No Environment variables are available.',
+	'cookies' 			=> 'Cookies',
+	'no_cookies' 		=> 'No Cookie information is available.',
+	'session' 			=> 'Session',
+	'no_session'		=> 'No Session information is available.',
+	'db_not_loaded'		=> 'Database is not loaded',
+	'fw_path'			=> 'Framework Path',
+	'app_paths'			=> 'Application paths',
+	'inc_files'			=> 'Included Files'
+	);

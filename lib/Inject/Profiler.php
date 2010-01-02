@@ -11,6 +11,16 @@
 class Inject_Profiler implements Inject_LoggerInterface
 {
 	/**
+	 * If to enable the profiler, set to false to prevent it from displaying.
+	 * 
+	 * This is useful for eg. JSON or XML requests when additional HTML
+	 * might ruin the parsing.
+	 * 
+	 * @var bool
+	 */
+	static public $enabled = true;
+	
+	/**
 	 * The microtime this script was started.
 	 * 
 	 * @var float
@@ -88,6 +98,13 @@ class Inject_Profiler implements Inject_LoggerInterface
 	protected $queries = array();
 	
 	/**
+	 * Language translation object.
+	 * 
+	 * @var Inject_I18n
+	 */
+	protected $lang;
+	
+	/**
 	 * Creates a new Inject_Profiler.
 	 * 
 	 * @param  float	microtime(true) when the app was started.
@@ -139,9 +156,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Fetches data about included files.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	protected function getFileData()
 	{
@@ -161,9 +178,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Fetches data about memory usage.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	protected function getMemoryData()
 	{
@@ -182,9 +199,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Fetches data about framework settings.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	protected function getFrameworkData()
 	{
@@ -195,9 +212,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Gathers information about the queries which were issued during the run.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	protected function getQueryData()
 	{
@@ -222,12 +239,17 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Displays the profiler and gathers data.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	public function display()
 	{
+		if( ! self::$enabled)
+		{
+			return;
+		}
+		
 		$this->end_time = microtime(true);
 		$this->allowed_time = ini_get('max_execution_time');
 		
@@ -235,6 +257,8 @@ class Inject_Profiler implements Inject_LoggerInterface
 		$this->getMemoryData();
 		$this->getFrameworkData();
 		$this->getQueryData();
+		
+		$this->lang = new Inject_I18n('Profiler');
 		
 		$this->render();
 	}
@@ -577,19 +601,19 @@ function hideIFW()
 	<div class="IFW-Container">
 		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25B2;</a>
 		<ul>
-			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong>Console</strong></li>
-			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</strong> <span>Execution info</span></li>
-			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong><?php echo count($this->queries) ?> Queries</strong> <span>Database</span></li>
-			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> Files</strong> <span>Included</span></li>
+			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong><?php echo $this->lang->console ?></strong></li>
+			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</strong> <span><?php echo $this->lang->exec_info ?></span></li>
+			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong><?php echo count($this->queries) ?> <?php echo $this->lang->queries ?></strong> <span><?php echo $this->lang->database ?></span></li>
+			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> <?php echo $this->lang->files ?></strong> <span><?php echo $this->lang->included ?></span></li>
 		</ul>
 	
 		<div class="IFW-panes">
 			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
 				<div class="IFW-THead">
-					<div class="IFW-Cell" style="width: 60px">Level</div>
-					<div class="IFW-Cell" style="width: 70px">Time</div>
-					<div class="IFW-Cell" style="width: 70px">Source</div>
-					<div class="IFW-Cell" style="width: 485px">Message</div>
+					<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->level ?></div>
+					<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->time ?></div>
+					<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->source ?></div>
+					<div class="IFW-Cell" style="width: 485px"><?php echo $this->lang->message ?></div>
 					<span class="IFW-Clear"></span>
 				</div>
 				
@@ -607,25 +631,25 @@ function hideIFW()
 			<div id="IFW-Exec" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
 				<div class="IFW-THead">
 					<div class="IFW-Cell">
-						<strong>Total Execution time: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
+						<strong><?php echo $this->lang->tot_exec_time ?>: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
 					</div>
 					
 					<div class="IFW-Cell">
-						<strong>Maximum Execution time allowed: </strong> <?php echo $this->allowed_time ?> s
+						<strong><?php echo $this->lang->max_exec_time ?>: </strong> <?php echo $this->allowed_time ?> s
 					</div>
 
 					<div class="IFW-Cell">
-						<strong>Maximum Memory used: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
+						<strong><?php echo $this->lang->tot_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
 					</div>
 
 					<div class="IFW-Cell">
-						<strong>Maximum Memory allowed: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
+						<strong><?php echo $this->lang->max_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
 					</div>
 					
 					<span class="IFW-Clear"></span>
 				</div>
 				
-				<h3>Server Variables</h3>
+				<h3><?php echo $this->lang->server_vars ?></h3>
 				
 				<?php foreach($_SERVER as $k => $v): ?>
 				<div class="IFW-Row">
@@ -635,7 +659,7 @@ function hideIFW()
 				</div>
 				<?php endforeach; ?>
 				
-				<h3>GET data</h3>
+				<h3>GET <?php echo $this->lang->data ?></h3>
 				
 				<?php if( ! empty($_GET)): ?>
 				<?php foreach($_GET as $k => $v): ?>
@@ -647,11 +671,11 @@ function hideIFW()
 				<?php endforeach; ?>
 				<?php else:?>
 				<p>
-					No GET data is available.
+					<?php echo $this->lang->no_get ?>
 				</p>
 				<?php endif; ?>
 				
-				<h3>POST data</h3>
+				<h3>POST <?php echo $this->lang->data ?></h3>
 				
 				<?php if( ! empty($_POST)): ?>
 				<?php foreach($_POST as $k => $v): ?>
@@ -663,11 +687,11 @@ function hideIFW()
 				<?php endforeach; ?>
 				<?php else:?>
 				<p>
-					No POST data is available.
+					<?php echo $this->lang->no_post ?>
 				</p>
 				<?php endif; ?>
 				
-				<h3>Environment Variables</h3>
+				<h3><?php echo $this->lang->env_vars ?></h3>
 				
 				<?php if( ! empty($_ENV)): ?>
 				<?php foreach($_ENV as $k => $v): ?>
@@ -679,11 +703,11 @@ function hideIFW()
 				<?php endforeach; ?>
 				<?php else:?>
 				<p>
-					No Environment variables are available.
+					<?php echo $this->lang->no_env ?>
 				</p>
 				<?php endif; ?>
 				
-				<h3>Cookies</h3>
+				<h3><?php echo $this->lang->cookies ?></h3>
 				
 				<?php if( ! empty($_COOKIE)): ?>
 				<?php foreach($_COOKIE as $k => $v): ?>
@@ -695,11 +719,11 @@ function hideIFW()
 				<?php endforeach; ?>
 				<?php else:?>
 				<p>
-					No Cookie information is available.
+					<?php echo $this->lang->no_cookies ?>
 				</p>
 				<?php endif; ?>
 				
-				<h3>Session</h3>
+				<h3><?php echo $this->lang->session ?></h3>
 				
 				<?php if( ! empty($_SESSION)): ?>
 				<?php foreach($_SESSION as $k => $v): ?>
@@ -711,7 +735,7 @@ function hideIFW()
 				<?php endforeach; ?>
 				<?php else:?>
 				<p>
-					No Session information is available.
+					<?php echo $this->lang->no_session ?>
 				</p>
 				<?php endif; ?>
 			</div>
@@ -721,7 +745,7 @@ function hideIFW()
 					
 				<?php else: ?>
 				<h2>
-					Database is not loaded
+					<?php echo $this->lang->db_not_loaded ?>
 				</h2>
 				<?php endif; ?>
 			</div>
@@ -729,11 +753,11 @@ function hideIFW()
 			<div id="IFW-Files" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
 				<div class="IFW-THead">
 					<div class="IFW-Cell">
-						<strong>Framework path: </strong> <?php echo $this->fw_path ?>
+						<strong><?php echo $this->lang->fw_path ?>: </strong> <?php echo $this->fw_path ?>
 					</div>
 					
 					<div class="IFW-Cell">
-						<strong>Application paths:</strong>
+						<strong><?php echo $this->lang->app_paths ?>:</strong>
 						
 						<ol>
 							<?php foreach($this->app_paths as $p): ?>
@@ -745,7 +769,7 @@ function hideIFW()
 					<span class="IFW-Clear"></span>
 				</div>
 				
-				<h3>Included Files</h3>
+				<h3><?php echo $this->lang->inc_files ?></h3>
 				
 				<?php foreach($this->files as $file): ?>
 				<div class="IFW-Row">
