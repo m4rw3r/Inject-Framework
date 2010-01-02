@@ -90,15 +90,15 @@ final class Inject
 	
 	/**
 	 * A "namespacing" feature which enables the user to move a set of classes
-	 * to a directory alongside the libraries folder.
+	 * to a directory alongside the Libraries folder.
 	 * 
 	 * @var string
 	 */
 	private static $namespaces = array(
-									'Controller'	=> 'controllers',
+									'Controller'	=> 'Controllers',
 									'Inject'		=> 'Inject',
-									'Model'			=> 'models',
-									'Partial'		=> 'partials'
+									'Model'			=> 'Models',
+									'Partial'		=> 'Partials'
 									);
 	
 	/**
@@ -275,9 +275,9 @@ final class Inject
 			self::$paths[] = $p;
 			
 			// does the path have a configuration file
-			if(file_exists($p.'config/inject.php'))
+			if(file_exists($p.'Config/Inject.php'))
 			{
-				self::log('Inject', 'Loading framework configuration from "'.$p.'config/inject.php".', self::DEBUG);
+				self::log('Inject', 'Loading framework configuration from "'.$p.'Config/Inject.php".', self::DEBUG);
 				include $p.'config/inject.php';
 			}
 		}
@@ -324,7 +324,7 @@ final class Inject
 		}
 		else
 		{
-			$base = 'libraries';
+			$base = 'Libraries';
 		}
 		
 		// assemble the path
@@ -354,7 +354,7 @@ final class Inject
 		}
 		
 		// The file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
-		// 10 = length of "/libraries"
+		// 10 = length of "/Libraries"
 		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
 		{
 			self::log('Load', 'Failed to load the class file, resorting to loading core file for the class "'.$org_class.'".', self::DEBUG);
@@ -527,10 +527,10 @@ final class Inject
 		
 		foreach(self::$paths as $p)
 		{
-			if(file_exists($p.'config/'.$name.'.php'))
+			if(file_exists($p.'Config/'.$name.'.php'))
 			{
 				// include file and merge it
-				$c = array_merge(include $p.'config/'.$name.'.php', $c);
+				$c = array_merge(include $p.'Config/'.$name.'.php', $c);
 			}
 		}
 		

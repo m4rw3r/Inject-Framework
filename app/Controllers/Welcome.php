@@ -19,11 +19,11 @@ class Controller_Welcome extends Inject_Controller
 	 */
 	public function __call($method, $params = array())
 	{
-		echo "\nWelcome controller\nmethod: $method\nparams:\n";
+		//$cw = new Inject_Util_Loader_CacheWriter();
+		//$cw->writeIndex('index.php');
 		
-		print_r($this->request->getParameters());
-		
-		echo "\n";
+		$this->request->response = "\nWelcome controller\nmethod: $method\nparams:\n".
+		print_r($this->request->getParameters(), true)."\n";
 	}
 }
 
