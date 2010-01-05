@@ -124,28 +124,38 @@ final class Utf8
 		{
 			foreach($str as $key => $val)
 			{
-				// Filter key
-				$key = self::strip_ascii_ctrl($key);
-				
-				if( ! self::is_ascii($key))
+				if( ! self::compliant($key))
 				{
-					// iconv is expensive, so it is only used when needed
-					$key = iconv('UTF-8', 'UTF-8//IGNORE', $key);
+					// Filter key
+					$key = self::strip_ascii_ctrl($key);
+					
+					if( ! self::is_ascii($key))
+					{
+						// iconv is expensive, so it is only used when needed
+						$key = iconv('UTF-8', 'UTF-8//IGNORE', $key);
+					}
 				}
 				
-				// Filter value
-				$val = self::strip_ascii_ctrl($val);
-				
-				if( ! self::is_ascii($val))
+				if(is_array($val) OR is_object($val))
 				{
-					// iconv is expensive, so it is only used when needed
-					$val = iconv('UTF-8', 'UTF-8//IGNORE', $val);
+					$val = self::clean($val);
+				}
+				elseif( ! self::compliant($val))
+				{
+					// Filter value
+					$val = self::strip_ascii_ctrl($val);
+					
+					if( ! self::is_ascii($val))
+					{
+						// iconv is expensive, so it is only used when needed
+						$val = iconv('UTF-8', 'UTF-8//IGNORE', $val);
+					}
 				}
 				
 				$str[$key] = $val;
 			}
 		}
-		elseif(is_string($str) AND $str !== '')
+		elseif(is_string($str) AND $str !== '' && ! self::compliant($str))
 		{
 			// Remove control characters
 			$str = self::strip_ascii_ctrl($str);
@@ -158,6 +168,11 @@ final class Utf8
 		}
 		
 		return $str;
+	}
+	
+	public static function compliant($str)
+	{
+		return empty($str) OR preg_match('/\A([\x09\x0A\x0D\x20-\x7E]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})*\z/', $str) > 0;
 	}
 
 	/**
