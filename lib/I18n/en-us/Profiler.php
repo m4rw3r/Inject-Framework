@@ -14,7 +14,7 @@ return array(
 	'tot_exec_time'		=> 'Total Execution Time',
 	'max_exec_time' 	=> 'Maximum Execution time allowed',
 	'tot_mem_used'		=> 'Total Memory used',
-	'max_mem_allowed'	=> 'Maximum Memory allowed',
+	'max_mem_used'		=> 'Maximum Memory allowed',
 	'server_vars'		=> 'Server Variables',
 	'data'				=> 'data',
 	'no_get' 			=> 'No GET data is available.',
@@ -26,6 +26,7 @@ return array(
 	'session' 			=> 'Session',
 	'no_session'		=> 'No Session information is available.',
 	'db_not_loaded'		=> 'Database is not loaded',
+	'query'				=> 'Query',
 	'fw_path'			=> 'Framework Path',
 	'app_paths'			=> 'Application paths',
 	'inc_files'			=> 'Included Files'

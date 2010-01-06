@@ -91,6 +91,13 @@ class Inject_Profiler implements Inject_LoggerInterface
 	protected $app_paths = array();
 	
 	/**
+	 * Flag telling if the database is loaded.
+	 * 
+	 * @var bool
+	 */
+	protected $database_loaded = false;
+	
+	/**
 	 * A list of queries to print and their times.
 	 * 
 	 * @var array
@@ -223,6 +230,8 @@ class Inject_Profiler implements Inject_LoggerInterface
 		// Check if it is loaded
 		if(class_exists('Db', false))
 		{
+			$this->database_loaded = true;
+			
 			foreach(Db::getLoadedConnections() as $conn)
 			{
 				foreach($conn->queries as $k => $q)
@@ -742,7 +751,18 @@ function hideIFW()
 			
 			<div id="IFW-Db" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
 				<?php if($this->database_loaded): ?>
-					
+					<div class="IFW-THead">
+						<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->time ?></div>
+						<div class="IFW-Cell" style="width: 665px"><?php echo $this->lang->query ?></div>
+						<span class="IFW-Clear"></span>
+					</div>
+					<?php foreach($this->queries as $q): ?>
+						<div class="IFW-Row">
+							<div class="IFW-Cell" style="width: 60px"><?php echo number_format($q['time'] * 1000, 4) ?> ms</div>
+							<div class="IFW-Cell" style="width: 665px"><?php echo htmlspecialchars($q['query'], ENT_COMPAT, 'UTF-8') ?></div>
+							<span class="IFW-Clear"></span>
+						</div>
+					<?php endforeach; ?>
 				<?php else: ?>
 				<h2>
 					<?php echo $this->lang->db_not_loaded ?>
