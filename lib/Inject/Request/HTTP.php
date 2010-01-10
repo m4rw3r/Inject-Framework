@@ -18,6 +18,20 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	const ALLOWED_CHARACTERS_REGEX = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/iu';
 	
 	/**
+	 * The IP of the client.
+	 * 
+	 * @var string
+	 */
+	protected static $ip = null;
+	
+	/**
+	 * The user agent string supplied by the browser.
+	 * 
+	 * @var string
+	 */
+	protected static $user_agent = null;
+	
+	/**
 	 * Stores the class name for the controller
 	 * 
 	 * @var string
@@ -191,7 +205,14 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function getUserAgent()
 	{
-		// TODO: Code
+		if(isset(self::$user_agent))
+		{
+			return self::$user_agent;
+		}
+		else
+		{
+			return self::$user_agent = empty($_SERVER['HTTP_USER_AGENT']) ? false : $_SERVER['HTTP_USER_AGENT'];
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -203,7 +224,25 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function getUserIp()
 	{
-		// TODO: Code
+		if(isset(self::$ip))
+		{
+			return self::$ip;
+		}
+		
+		if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+		{
+			self::$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
+		elseif(isset($_SERVER['HTTP_CLIENT_IP']))
+		{
+			self::$ip = $_SERVER['HTTP_CLIENT_IP'];
+		}
+		elseif(isset($_SERVER['REMOTE_ADDR']))
+		{
+			self::$ip = $_SERVER['REMOTE_ADDR'];
+		}
+		
+		return self::$ip;
 	}
 	
 	// ------------------------------------------------------------------------
