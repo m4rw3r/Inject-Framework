@@ -58,9 +58,16 @@ class Inject_Profiler implements Inject_LoggerInterface
 	/**
 	 * Log messages.
 	 * 
-	 * @param array
+	 * @var array
 	 */
 	protected $log = array();
+	
+	/**
+	 * Summary of the logs.
+	 * 
+	 * @var array
+	 */
+	protected $log_summary;
 	
 	/**
 	 * A list of included files and their sizes.
@@ -163,6 +170,28 @@ class Inject_Profiler implements Inject_LoggerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Makes a summary of the different levels of console messages.
+	 * 
+	 * @return void
+	 */
+	protected function getConsoleData()
+	{
+		$this->log_summary = array(
+				Inject::ERROR => 0,
+				Inject::WARNING => 0,
+				Inject::NOTICE => 0,
+				Inject::DEBUG => 0
+			);
+		
+		foreach($this->log as $msg)
+		{
+			$this->log_summary[$msg['level']]++;
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Fetches data about included files.
 	 * 
 	 * @return void
@@ -227,8 +256,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 	{
 		// Assume RapidDataMapper
 		
-		// Check if it is loaded
-		if(class_exists('Db', false))
+		// Check if it is loaded, both the Db class and Db_Connection classes are
+		// needed to connect to the db
+		if(class_exists('Db', false) && class_exists('Db_Connection', false))
 		{
 			$this->database_loaded = true;
 			
@@ -262,6 +292,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 		$this->end_time = microtime(true);
 		$this->allowed_time = ini_get('max_execution_time');
 		
+		$this->getConsoleData();
 		$this->getFileData();
 		$this->getMemoryData();
 		$this->getFrameworkData();
@@ -585,19 +616,19 @@ function hideIFW()
 {
 	padding-left: 0;
 }
-#IFW-Profiler .IFW-ERROR
+#IFW-Profiler .IFW-ERROR, #IFW-Profiler .IFW-ERROR strong
 {
 	color: #f00;
 }
-#IFW-Profiler .IFW-WARNING
+#IFW-Profiler .IFW-WARNING, #IFW-Profiler .IFW-WARNING strong
 {
 	color: #ff9;
 }
-#IFW-Profiler .IFW-NOTICE
+#IFW-Profiler .IFW-NOTICE, #IFW-Profiler .IFW-NOTICE strong
 {
 	color: #fff;
 }
-#IFW-Profiler .IFW-DEBUG
+#IFW-Profiler .IFW-DEBUG, #IFW-Profiler .IFW-DEBUG strong
 {
 	color: #99c;
 }
@@ -618,6 +649,16 @@ function hideIFW()
 	
 		<div class="IFW-panes">
 			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
+				<div class="IFW-THead">
+					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::ERROR]) ? '' : ' IFW-ERROR' ?>" style="width: 120px"><strong><?php echo $this->lang->errors ?>: </strong> <?php echo $this->log_summary[Inject::ERROR] ?></div>
+					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::WARNING]) ? '' : ' IFW-WARNING' ?>" style="width: 120px"><strong><?php echo $this->lang->warnings ?>: </strong> <?php echo $this->log_summary[Inject::WARNING] ?></div>
+					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::NOTICE]) ? '' : ' IFW-NOTICE' ?>" style="width: 120px"><strong><?php echo $this->lang->notices ?>: </strong> <?php echo $this->log_summary[Inject::NOTICE] ?></div>
+					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::DEBUG]) ? '' : ' IFW-DEBUG' ?>" style="width: 120px"><strong><?php echo $this->lang->dbg_msgs ?>: </strong> <?php echo $this->log_summary[Inject::DEBUG] ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				
+				<h3><?php echo $this->lang->log ?></h3>
+				
 				<div class="IFW-THead">
 					<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->level ?></div>
 					<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->time ?></div>
