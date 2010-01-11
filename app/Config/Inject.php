@@ -64,7 +64,7 @@ Inject::attachLogger(new Inject_Logger_File('/Users/m4rw3r/Sites/Inject-Framewor
 /*
  * Set global instances and object instantiaters.
  * 
- * The Inject_Container class is a dependency injection container,
+ * The Inject_Library class is a dependency injection container,
  * this means that it handles the object instantiation (if needed)
  * and mapping resource names to classes.
  * 
@@ -74,18 +74,12 @@ Inject::attachLogger(new Inject_Logger_File('/Users/m4rw3r/Sites/Inject-Framewor
  */
 /*
 // Register a closure which creates the session object
-Inject_Container::setGlobalService('session', function()
+Inject_Library::setGlobalResource('session', function()
 {
-	return new Inject_Session(Inject_Container::getGlobalService('database'));
+	return new Inject_Session(Inject_Library::getGlobalResource('database'));
 });
 // Mapping the view resource name to a class, creating new instances all the time
-Inject_Container::setGlobalService('view', 'Inject_View', false);
+Inject_Library::setGlobalResource('view', 'Inject_View', false);
 */
-
-
-
-
-
-
 
 

@@ -8,7 +8,7 @@
 /**
  * 
  */
-abstract class Inject_Request extends Inject_Container
+abstract class Inject_Request extends Inject_Library
 {
 	/**
 	 * The list of HTTP headers which will be sent by header().
