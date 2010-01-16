@@ -641,7 +641,21 @@ function hideIFW()
 	<div class="IFW-Container">
 		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25B2;</a>
 		<ul>
-			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong><?php echo $this->lang->console ?></strong></li>
+			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong><?php echo $this->lang->console ?></strong><?php
+$str = '';
+foreach(array(Inject::DEBUG => $this->lang->dbg_msgs,
+              Inject::NOTICE => $this->lang->notices,
+              Inject::WARNING => $this->lang->warnings,
+              Inject::ERROR => $this->lang->errors) as $c => $s)
+{
+	if( ! empty($this->log_summary[$c]))
+	{
+		$str = '<span class="IFW-'.strtoupper(Inject_Util::errorConstToStr($c)).'">'.$this->log_summary[$c].' '.$s.'</span>';
+	}
+}
+
+echo $str;
+			?></li>
 			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</strong> <span><?php echo $this->lang->exec_info ?></span></li>
 			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong><?php echo count($this->queries) ?> <?php echo $this->lang->queries ?></strong> <span><?php echo $this->lang->database ?></span></li>
 			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> <?php echo $this->lang->files ?></strong> <span><?php echo $this->lang->included ?></span></li>
