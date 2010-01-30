@@ -6,7 +6,19 @@
  */
 
 /**
+ * The main framework class.
  * 
+ * This class handles the following:
+ * 
+ *  - Global error and exception handling
+ *  - Output buffering
+ *  - Events and filters
+ *  - Class loading, with "namespace" support
+ *  - Configuration fetching
+ *  - Request running
+ *  - Logging
+ * 
+ * @author Martin Wernståhl <m4rw3r at gmail dot com>
  */
 final class Inject
 {
@@ -217,7 +229,6 @@ final class Inject
 		self::$ob_level = ob_get_level();
 		
 		// Init UTF-8 support
-		// TODO: Is this support really needed at this stage? (eats over 3ms out of a total of ~6ms)
 		require self::$fw_path.'Utf8.php';
 	}
 	
@@ -418,6 +429,12 @@ final class Inject
 	 * Sets the folder for the files beginning on $prefix, so they are stored in
 	 * $folder alongside the library folder in the app folder (or system folder).
 	 * 
+	 * Example:
+	 * <code>
+	 * Inject::setNamespace('Foobar', 'Foobars');
+	 * // Foobar_Baz now resides in app/Foobars/Baz.php instead of app/Libraries/Foobar/Baz.php.
+	 * </code>
+	 * 
 	 * @param  string
 	 * @param  string
 	 * @return void
@@ -567,6 +584,18 @@ final class Inject
 		self::$run_level--;
 		
 		return $request->response;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the current topmost request.
+	 * 
+	 * @return Inject_Request
+	 */
+	public static function getMainRequest()
+	{
+		return self::$main_request;
 	}
 	
 	// ------------------------------------------------------------------------
