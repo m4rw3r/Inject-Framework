@@ -81,7 +81,7 @@ class Inject_Controller
 		if( ! $__found_file)
 		{
 			// Replace with appropriate exception
-			throw new Exception('Cannot find view "'.$view_name.$filetype.'"');
+			throw new Exception('Cannot find view "'.$view_name.'" filetype: "'.$filetype.'"');
 		}
 		
 		if($return_rendered)
