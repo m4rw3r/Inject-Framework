@@ -103,6 +103,14 @@ abstract class Inject_Request extends Inject_Library
 	 */
 	abstract public function getParameters();
 	
+	/**
+	 * Returns the name of the file format which the caller wishes to receive,
+	 * lowercase.
+	 * 
+	 * @return string
+	 */
+	abstract public function getFormat();
+	
 	// ------------------------------------------------------------------------
 	
 	/**

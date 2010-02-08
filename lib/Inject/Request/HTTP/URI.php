@@ -28,6 +28,8 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 			$this->routes = $routes;
 		}
 		
+		$this->extractFileFormat($uri);
+		
 		$this->setUri($this->route($uri));
 	}
 	

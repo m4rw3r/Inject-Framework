@@ -18,12 +18,15 @@ class Inject_Request_HMVC extends Inject_Request
 	
 	protected $parameters = array();
 	
-	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET')
+	protected $file_format = 'html'
+	
+	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET', $format = 'html')
 	{
 		$this->class_name = $class_name;
 		$this->action_name = $action_name;
 		$this->parameters = $parameters;
 		$this->method = $method;
+		$this->file_format = $format;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -66,6 +69,13 @@ class Inject_Request_HMVC extends Inject_Request
 	public function getParameters()
 	{
 		return $this->parameters;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function getFormat()
+	{
+		return $this->file_format;
 	}
 }
 

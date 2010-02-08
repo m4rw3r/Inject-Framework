@@ -53,6 +53,13 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	protected $parameters = array();
 	
 	/**
+	 * Contains the requested return format of this request.
+	 * 
+	 * @var string
+	 */
+	protected $format = 'html';
+	
+	/**
 	 * The protocol, http or https.
 	 * 
 	 * @var string
@@ -114,6 +121,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function setControllerClass($class)
 	{
+		// Important to get the correct controller file
 		$class = 'Controller_'.Utf8::ucfirst(preg_replace('/(_\w)/eu', "Utf8::strtoupper('$1')", Utf8::strtolower($class)));
 		
 		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $class))
@@ -128,6 +136,10 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	
 	public function setActionMethod($method)
 	{
+		// Case does not matter for the methods, as PHP is case insensitive and
+		// the class is already loaded
+		$method = 'action'.$method;
+		
 		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $method))
 		{
 			throw new Exception('Disallowed characters in action name.');
@@ -151,6 +163,25 @@ abstract class Inject_Request_HTTP extends Inject_Request
 			{
 				$this->parameters[urldecode($k)] = urldecode($v);
 			}
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Extracts the file format from the address string.
+	 * 
+	 * @param  string
+	 * @return void
+	 */
+	public function extractFileFormat(&$uri)
+	{
+		$p = strpos($uri, '.');
+		
+		if($p !== false)
+		{
+			$this->file_format = strtolower(substr($uri, $p + 1));
+			$uri = substr($uri, 0, $p);
 		}
 	}
 	
@@ -194,6 +225,13 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	public function getParameter($name, $default = null)
 	{
 		return isset($this->parameters[$name]) ? $this->parameters[$name] : $default;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function getFormat()
+	{
+		return $this->file_format;
 	}
 	
 	// ------------------------------------------------------------------------
