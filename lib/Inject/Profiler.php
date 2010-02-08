@@ -479,6 +479,10 @@ function hideIFW()
 	-moz-border-radius-topright: 10px;
 	-webkit-border-top-right-radius: 10px;
 }
+#IFW-Profiler ul
+{
+	height: 60px;
+}
 #IFW-Profiler ul li
 {
 	display: block;
@@ -541,7 +545,9 @@ function hideIFW()
 }
 #IFW-Profiler .IFW-Panes
 {
+	position: relative;
 	clear: both;
+	top: 0;
 }
 #IFW-Profiler .IFW-Pane
 {
