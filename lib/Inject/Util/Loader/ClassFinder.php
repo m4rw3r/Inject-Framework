@@ -37,7 +37,7 @@ class Inject_Util_Loader_ClassFinder
 		
 		// Use constant() to prevent compiler errors, if not PHP > 5.3 use a random
 		// (huge) number to prevent errors:
-		$this->namespace_token = version_compare(PHP_VERSION, '5.3', '>=') ? constant('T_NAMESPACE') : 476389246;
+		$this->namespace_token = version_compare(PHP_VERSION, '5.3', '>=') ? constant('T_NAMESPACE') : 47632389246;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class Inject_Util_Loader_ClassFinder
 			}
 		}
 		
-		Inject::log('ClassFinder', 'Found '.($c = count($this->list)).' files.', Inject::DEBUG);
+		Inject::log('ClassFinder', 'Found '.($c = count($this->list)).' classes.', Inject::DEBUG);
 		
 		return $this->list;
 	}
@@ -116,7 +116,7 @@ class Inject_Util_Loader_ClassFinder
 						break;
 				}
 				
-				// no class name nor namespace name can follow brackets
+				// no class name or namespace name can follow brackets
 				$is_classname = false;
 				$is_namespace = false;
 				
@@ -126,7 +126,7 @@ class Inject_Util_Loader_ClassFinder
 			switch($token[0])
 			{
 				case T_WHITESPACE:
-					// Not needed to be counted
+					// No need to count
 					break;
 					
 				case T_CLASS:
@@ -140,6 +140,7 @@ class Inject_Util_Loader_ClassFinder
 					// Next is a namespace and we're inside it
 					$is_namespace = true;
 					$inside_namespace = true;
+					
 					// reset so we're sure that we get an empty namespace if the user decides
 					// to create one ("namespace;"):
 					$current_ns = '';
