@@ -21,7 +21,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		// load the routes config if we don't have a supplied routes array
 		if(empty($routes))
 		{
-			$this->routes = Inject::getConfiguration('http_uri_routes', array());
+			$this->routes = Inject::getConfiguration('URI_Routes', array());
 		}
 		else
 		{
