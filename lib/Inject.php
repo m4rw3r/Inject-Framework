@@ -289,7 +289,7 @@ final class Inject
 			if(file_exists($p.'Config/Inject.php'))
 			{
 				self::log('Inject', 'Loading framework configuration from "'.$p.'Config/Inject.php".', self::DEBUG);
-				include $p.'config/inject.php';
+				include $p.'Config/Inject.php';
 			}
 		}
 	}
