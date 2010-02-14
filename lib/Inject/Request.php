@@ -15,7 +15,14 @@ abstract class Inject_Request extends Inject_Library
 	 * 
 	 * @var array
 	 */
-	public static $headers = array();
+	public $headers = array();
+	
+	/**
+	 * Response code.
+	 * 
+	 * @var int
+	 */
+	public $response_code = 200;
 	
 	// ------------------------------------------------------------------------
 
@@ -24,12 +31,15 @@ abstract class Inject_Request extends Inject_Library
 	 * 
 	 * @return void
 	 */
-	public static function sendHeaders()
+	public function sendHeaders()
 	{
-		foreach(self::$headers as $k => $v)
+		foreach($this->headers as $k => $v)
 		{
 			header($k.': '.$v);
 		}
+		
+		// Send response code
+		header('HTTP/1.1 '.$this->response_code);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -43,7 +53,20 @@ abstract class Inject_Request extends Inject_Library
 	 */
 	public function setHeader($header, $value)
 	{
-		self::$headers[$header] = $value;
+		$this->headers[$header] = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the response code to send to the client.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public function setResponseCode($code)
+	{
+		$this->response_code = $code;
 	}
 	
 	// ------------------------------------------------------------------------

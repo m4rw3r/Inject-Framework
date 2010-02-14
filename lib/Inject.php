@@ -243,7 +243,10 @@ final class Inject
 	public static function terminate()
 	{
 		// Send the headers
-		Inject_Request::sendHeaders();
+		if(isset(self::$main_request))
+		{
+			self::$main_request->sendHeaders();
+		}
 		
 		// clear all the buffers except for the last
 		while(ob_get_level() > self::$ob_level)
@@ -772,6 +775,8 @@ Trace:
 			{
 				ob_end_clean();
 			}
+			
+			header('HTTP/1.1 500');
 			
 			// add the output handler again, to add compression and the like
 			ob_start('Inject::parse_output');

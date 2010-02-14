@@ -88,7 +88,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	public function __construct()
 	{
 		// Add text/html content type and also charset.
-		self::$headers['Content-Type'] = 'text/html;charset=UTF-8';
+		$this->headers['Content-Type'] = 'text/html;charset=UTF-8';
 		
 		$this->protocol = (( ! empty($_SERVER['HTTPS'])) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
 		$this->method = isset($_SERVER['REQUEST_METHOD']) ? $method = $_SERVER['REQUEST_METHOD'] : 'GET';
