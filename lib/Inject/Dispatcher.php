@@ -104,6 +104,44 @@ class Inject_Dispatcher
 	// ------------------------------------------------------------------------
 
 	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function cli(Inject_Request_CLI $req)
+	{
+		// get the controller
+		$class = $req->getControllerClass();
+		
+		// get the action
+		$action = ($m = $req->getActionMethod()) ? $m : $this->default_action;
+		
+		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
+		try
+		{
+			 $this->run($req, $class, $action);
+		}
+		catch(Inject_Dispatcher_MethodException $e)
+		{
+			echo '
+ERROR: Action '.$class.'::'.$action.' cannot be called!
+';
+			
+			$req->showHelp();
+		}
+		catch(Inject_Dispatcher_ClassException $e)
+		{
+			echo '
+ERROR: Controller '.$class.' not found!
+';
+			
+			$req->showHelp();
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Dispatcher method for the Inject_Request_HMVC
 	 * 
 	 * @param  Inject_Request_HMVC
