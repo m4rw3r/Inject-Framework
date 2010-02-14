@@ -137,6 +137,21 @@ class Inject_Validator_ChainArray extends Inject_Validator_Chain
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Validates that the array contains exactly $num number of elements.
+	 * 
+	 * @param  int
+	 * @return self
+	 */
+	public function exactElements($num)
+	{
+		$this->array_validations[] = array(array($this, 'validateExactElements'), array($num));
+		
+		return $this;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Validator for maxElements().
 	 * 
 	 * @param  array
@@ -165,6 +180,23 @@ class Inject_Validator_ChainArray extends Inject_Validator_Chain
 		if(count($array) < $num)
 		{
 			throw new Inject_Validator_ErrorException('minElements', $num);
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Validator for exactElements().
+	 * 
+	 * @param  array
+	 * @param  int
+	 * @return void
+	 */
+	public function validateExactElements($array, $num)
+	{
+		if(count($array) != $num)
+		{
+			throw new Inject_Validator_ErrorException('exactElements', $num);
 		}
 	}
 }
