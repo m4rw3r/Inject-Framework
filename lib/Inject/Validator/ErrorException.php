@@ -9,7 +9,7 @@
  * Validation error, contains data about which validator it was thrown from and
  * which parameters were sent to the validator.
  */
-class Inject_Validator_ErrorException extends Exception
+class Inject_Validator_ErrorException extends Exception implements Inject_Exception
 {
 	/**
 	 * Contains the validator name, eg. isReuqired.
