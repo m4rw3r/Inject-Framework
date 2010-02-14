@@ -18,7 +18,7 @@ class Inject_Request_HMVC extends Inject_Request
 	
 	protected $parameters = array();
 	
-	protected $file_format = 'html'
+	protected $file_format = 'html';
 	
 	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET', $format = 'html')
 	{
@@ -80,5 +80,5 @@ class Inject_Request_HMVC extends Inject_Request
 }
 
 
-/* End of file Request.php */
-/* Location: ./Users/m4rw3r/Sites/Inject-Framework/lib/Inject/Request.php */
+/* End of file HMVC.php */
+/* Location: ./lib/Inject/Request */
