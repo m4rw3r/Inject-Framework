@@ -10,8 +10,7 @@ interface Inject_EncryptInterface
 	/**
 	 * Encrypts a string.
 	 * 
-	 * Should be secure; use at least a salt and the encryption key
-	 * defined in the Access_Config instance.
+	 * Should be secure; use at least a salt and an encryption key.
 	 * 
 	 * @param  string
 	 * @return string
@@ -25,7 +24,8 @@ interface Inject_EncryptInterface
 	 */
 	public function decryptStr($str);
 	/**
-	 * Encrypts a string with an extra salt which is added to the encrypt key.
+	 * Encrypts a string with an extra salt which is added to the encrypt key,
+	 * or which affects the encryption in some way.
 	 * 
 	 * @param  string
 	 * @param  string

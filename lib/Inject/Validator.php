@@ -106,6 +106,7 @@ class Inject_Validator implements ArrayAccess
 				
 				$this->errors[$key] = $e;
 				
+				// TODO: Remove, and create a validation error-string creator
 				var_dump($key.' does not match '.$e->getMessage());
 			}
 		}

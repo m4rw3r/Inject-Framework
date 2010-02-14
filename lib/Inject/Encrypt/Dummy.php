@@ -6,7 +6,7 @@
  */
 
 /**
- * Dummy encryptor, DO NOT USE WHEN NOT TESTING Access components!
+ * Dummy encryptor, DO NOT USE WHEN NOT TESTING!
  */
 class Inject_Encrypt_Dummy implements Inject_EncryptInterface
 {
