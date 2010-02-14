@@ -36,9 +36,10 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Performs the routing based on the routes property.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return string
 	 */
 	public function route($uri)
 	{
@@ -71,7 +72,6 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 				{
 					// regex routing
 					$uri = preg_replace('#^'.$key.'$#u', $val, $uri);
-					echo "'$uri'";
 				}
 				else
 				{
