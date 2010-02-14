@@ -105,9 +105,6 @@ class Inject_Validator implements ArrayAccess
 				$status = false;
 				
 				$this->errors[$key] = $e;
-				
-				// TODO: Remove, and create a validation error-string creator
-				var_dump($key.' does not match '.$e->getMessage());
 			}
 		}
 		
@@ -124,6 +121,65 @@ class Inject_Validator implements ArrayAccess
 	public function getProcessedData()
 	{
 		return $this->data;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the error list, consists of the field name as key and the
+	 * Inject_Validator_ErrorException as the value.
+	 * 
+	 * @return array
+	 */
+	public function getErrors()
+	{
+		return $this->errors;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Processes the error array and uses the supplied Inject_I18n object to
+	 * translate the error messages.
+	 * 
+	 * The messages are named as the validator method which is called
+	 * (eg. isRequired) and they must use the sprintf() string format.
+	 * The first string is the field name, the following are the parameters
+	 * sent to the validator.
+	 * 
+	 * Example usage:
+	 * <code>
+	 * $v = new Inject_Validator();
+	 * 
+	 * // Add rules
+	 * 
+	 * if( ! $v->validate($list))
+	 * {
+	 *     $msgs = new Inject_I18n('Validator');
+	 *     
+	 *     $errors = '<ul><li>'.
+	 *         implode('</li><li>', $v->createErrorMessages($msgs)).
+	 *         '</li></ul>';
+	 *     
+	 *     echo $errors;
+	 * }
+	 * </code>
+	 * 
+	 * @param  Inject_I18n  The object containing error message translations
+	 * @return array        List of messages
+	 */
+	public function createErrorMessages(Inject_I18n $messages)
+	{
+		$proc = array();
+		
+		foreach($this->errors as $f => $e)
+		{
+			$error = $e->getValidator();
+			
+			$proc[] = vsprintf($messages->$error, array_merge(array($f), $e->getParameters()));
+		}
+		
+		return $proc;
 	}
 	
 	// ------------------------------------------------------------------------
