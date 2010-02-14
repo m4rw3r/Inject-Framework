@@ -98,6 +98,13 @@ class Inject_Profiler implements Inject_LoggerInterface
 	protected $app_paths = array();
 	
 	/**
+	 * A list of the headers sent to the client.
+	 * 
+	 * @var array
+	 */
+	protected $headers = array();
+	
+	/**
 	 * Flag telling if the database is loaded.
 	 * 
 	 * @var bool
@@ -243,6 +250,13 @@ class Inject_Profiler implements Inject_LoggerInterface
 	{
 		$this->fw_path = Inject::getFrameworkPath();
 		$this->app_paths = Inject::getApplicationPaths();
+		
+		$r = Inject::getMainRequest();
+		
+		if( ! empty($r))
+		{
+			$this->headers = array_merge(array('HTTP/1.1' => $r->response_code), $r->headers);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -718,6 +732,16 @@ echo $str;
 					
 					<span class="IFW-Clear"></span>
 				</div>
+				
+				<h3><?php echo $this->lang->headers ?></h3>
+				
+				<?php foreach($this->headers as $k => $v): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+				<?php endforeach; ?>
 				
 				<h3><?php echo $this->lang->server_vars ?></h3>
 				

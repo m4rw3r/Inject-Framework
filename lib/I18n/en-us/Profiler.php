@@ -20,6 +20,7 @@ return array(
 	'max_exec_time' 	=> 'Maximum Execution time allowed',
 	'tot_mem_used'		=> 'Total Memory used',
 	'max_mem_used'		=> 'Maximum Memory allowed',
+	'headers'			=> 'Headers Sent',
 	'server_vars'		=> 'Server Variables',
 	'data'				=> 'data',
 	'no_get' 			=> 'No GET data is available.',
