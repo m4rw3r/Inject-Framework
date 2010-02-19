@@ -32,6 +32,13 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	protected static $user_agent = null;
 	
 	/**
+	 * List of formats supported by the browser.
+	 * 
+	 * @var array
+	 */
+	protected static $accepted_formats = null;
+	
+	/**
 	 * Stores the class name for the controller
 	 * 
 	 * @var string
@@ -51,13 +58,6 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 * @var array
 	 */
 	protected $parameters = array();
-	
-	/**
-	 * Contains the requested return format of this request.
-	 * 
-	 * @var string
-	 */
-	protected $format = 'html';
 	
 	/**
 	 * The protocol, http or https.
@@ -87,6 +87,8 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	 */
 	public function __construct()
 	{
+		parent::__construct();
+		
 		// Add text/html content type and also charset.
 		$this->headers['Content-Type'] = 'text/html;charset=UTF-8';
 		
@@ -167,25 +169,6 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * Extracts the file format from the address string.
-	 * 
-	 * @param  string
-	 * @return void
-	 */
-	public function extractFileFormat(&$uri)
-	{
-		$p = strpos($uri, '.');
-		
-		if($p !== false)
-		{
-			$this->file_format = strtolower(substr($uri, $p + 1));
-			$uri = substr($uri, 0, $p);
-		}
-	}
-	
-	// ------------------------------------------------------------------------
 	
 	public function getProtocol()
 	{
@@ -225,13 +208,6 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	public function getParameter($name, $default = null)
 	{
 		return isset($this->parameters[$name]) ? $this->parameters[$name] : $default;
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	public function getFormat()
-	{
-		return $this->file_format;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -281,6 +257,58 @@ abstract class Inject_Request_HTTP extends Inject_Request
 		}
 		
 		return self::$ip;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns a list of the formats the browser accepts, ordered by preference.
+	 * 
+	 * @return array
+	 */
+	public function getAcceptedFormats()
+	{
+		if(isset(self::$accepted_formats))
+		{
+			return self::$accepted_formats;
+		}
+		
+		$types = array();
+		
+		foreach(explode(',', $_SERVER['HTTP_ACCEPT']) as $type)
+		{
+			$parts = array_map('trim', explode(';', $type));
+			
+			$type = array_shift($parts);
+			$q = empty($parts) ? null : array_shift($parts);
+			
+			$q = substr($q, 0, 2) == 'q=' ? floatval(substr($q, 2)) : 1;
+			
+			if($q <= 0)
+			{
+				continue;
+			}
+			
+			$types[$type] = $q;
+		}
+		
+		// sort from highest to lowest q value
+		arsort($types);
+		
+		return self::$accepted_formats = $types;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the topmost format from $allowed_formats which the browser accepts.
+	 * 
+	 * @param  array  List of lowercase file extensions
+	 * @return string
+	 */
+	public function getPreferredFormat(array $allowed_formats)
+	{
+		return current(array_intersect($allowed_formats, array_map('Inject_MIME::mime2ext', array_keys($this->getAcceptedFormats()))));
 	}
 	
 	// ------------------------------------------------------------------------

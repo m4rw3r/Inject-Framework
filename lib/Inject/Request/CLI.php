@@ -20,10 +20,10 @@ class Inject_Request_CLI extends Inject_Request
 	
 	protected $parameters = array();
 	
-	protected $file_format = 'text';
-	
 	function __construct()
 	{
+		parent::__construct();
+		
 		if(strtolower(PHP_SAPI) !== 'cli')
 		{
 			throw new Exception('Cannot create a CLI request object when PHP is not running in CLI.');
@@ -195,9 +195,54 @@ To print this help again, use the --help, -help, -h or -? options.
 	
 	// ------------------------------------------------------------------------
 	
-	public function getFormat()
+	public function createCall($controller, $action = null, $parameters = array())
 	{
-		return $this->file_format;
+		if(is_array($controller))
+		{
+			throw new Exception('CODE NOT WRITTEN!');
+		}
+		
+		if(strpos(strtolower($controller), 'cli_') === 0)
+		{
+			$controller = substr($controller, 4);
+		}
+		
+		$params = $controller;
+		
+		if( ! empty($action))
+		{
+			$params .= ' '.$action;
+		}
+		
+		foreach($parameters as $k => $v)
+		{
+			$params .= ' -'.$k;
+			empty($v) OR $params .= ' '.$this->escapeForTerminal($v);
+		}
+		
+		return $this->script_name.' '.$params;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Escapes the value for usage in a terminal.
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+	protected function escapeForTerminal($value)
+	{
+		$chars_to_escape = array(' ', '"', '!');
+		
+		if(count(array_intersect($chars_to_escape, str_split($value))))
+		{
+			return '"'.addcslashes($value, '"').'"';
+		}
+		else
+		{
+			return $value;
+		}
 	}
 }
 

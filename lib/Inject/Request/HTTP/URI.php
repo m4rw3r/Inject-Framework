@@ -12,6 +12,8 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 {
 	protected $routes = array();
 	
+	protected $patterns = array();
+	
 	function __construct($uri = '', $routes = array())
 	{
 		Inject::log('Request', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
@@ -21,16 +23,36 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		// load the routes config if we don't have a supplied routes array
 		if(empty($routes))
 		{
-			$this->routes = Inject::getConfiguration('URI_Routes', array());
+			foreach(Inject::getApplicationPaths() as $p)
+			{
+				if(file_exists($p.'Config/URI_Routes.php'))
+				{
+					include $p.'Config/URI_Routes.php';
+				}
+			}
 		}
 		else
 		{
 			$this->routes = $routes;
 		}
 		
-		$this->extractFileFormat($uri);
-		
 		$this->setUri($this->route($uri));
+	}
+	
+	/**
+	 * Creates a rule for the specified pattern and path.
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @param  array
+	 */
+	public function matches($pattern, array $to)
+	{
+		$this->routes[] = $o = new Inject_Request_HTTP_URI_Route($pattern, $to);
+		
+		$reverse_match = strtolower((isset($to['controller']) ? $to['controller'] : '').'#'.(isset($to['action']) ? $to['action'] : ''));
+		
+		$this->patterns[$reverse_match][] = $o;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -51,36 +73,22 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 			return $this->routes[$uri];
 		}
 		
-		foreach($this->routes as $key => $val)
+		foreach($this->routes as $route)
 		{
-			if(preg_match('#^'.$key.'$#u', $uri, $m))
+			if($m = $route->matchUri($uri))
 			{
-				// get parameters from the regex, step 1: clean it from junk
-				foreach($m as $k => $v)
-				{
-					// skip numeric
-					if(is_numeric($k))
-					{
-						unset($m[$k]);
-					}
-				}
+				// Reset uri as we have a match
+				$uri = '';
+				
+				isset($m['controller']) && $this->setControllerClass($m['controller']);
+				isset($m['action']) && $this->setActionMethod($m['action']);
+				isset($m['uri']) && $uri = $m['uri'];
 				
 				// step 2: assign
 				$this->setParameters($m);
 				
-				if(strpos($val, '$') !== false)
-				{
-					// regex routing
-					$uri = preg_replace('#^'.$key.'$#u', $val, $uri);
-				}
-				else
-				{
-					// Standard routing
-					$uri = $val;
-				}
-				
-				Inject::log('Request', 'HTTP URI request routed by regex to "'.$uri.'".', Inject::DEBUG);
-				
+				Inject::log('Request', 'HTTP URI request routed by regex to "'.$this->getControllerClass().'::'.$this->getActionMethod().'".', Inject::DEBUG);
+
 				// A valid route has been found
 				break;
 			}
@@ -201,6 +209,58 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	public function getSegments()
 	{
 		return $this->segments;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public function createCall($controller, $action = null, $parameters = array())
+	{
+		if(is_array($controller))
+		{
+			throw new Exception('CODE NOT WRITTEN!');
+		}
+		
+		$controller = strtolower($controller);
+		$action = strtolower($action);
+		
+		// Remove controller
+		if(strpos($controller, 'controller_') === 0)
+		{
+			$controller = substr($controller, 11);
+		}
+		
+		// Do we have a matching Inject_Request_HTTP_URI_Route?
+		if(isset($this->patterns[$controller.'#'.$action]))
+		{
+			// Check if they really match (number of parameters):
+			foreach($this->patterns[$controller.'#'.$action] as $pattern)
+			{
+				if($u = $pattern->reverseRoute($controller, $action, $parameters))
+				{
+					// Match
+					return Inject_URI::getFrontController().'/'.$u;
+				}
+			}
+		}
+		
+		$uri = $controller;
+		
+		if( ! empty($action))
+		{
+			$uri .= '/'.$action;
+		}
+		
+		foreach($parameters as $k => $v)
+		{
+			if( ! is_numeric($k))
+			{
+				$uri .= '/'.$k;
+			}
+			
+			$uri .= '/'.$v;
+		}
+		
+		return Inject_URI::getFrontController().(empty($uri) ? '' : '/'.$uri);
 	}
 }
 
