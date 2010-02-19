@@ -10,6 +10,10 @@
  */
 class Inject_Dispatcher
 {
+	const SUCCESS = 1;
+	const MISSING_CLASS = 2;
+	const MISSING_ACTION = 3;
+	
 	/**
 	 * The default class to call.
 	 * 
@@ -84,20 +88,27 @@ class Inject_Dispatcher
 		// get the action
 		$action = ($m = $req->getActionMethod()) ? $m : $this->default_action;
 		
-		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
-		try
+		switch($this->run($req, $class, $action))
 		{
-			 $this->run($req, $class, $action);
-		}
-		catch(Inject_DispatcherException $e)
-		{
-			Inject::log('Dispatcher', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::NOTICE);
-			
-			// nope, show an error
-			$class = $this->missing_class;
-			$action = $this->missing_action;
-			
-			$this->run($req, $class, $action);
+			case Inject_Dispatcher::SUCCESS:
+				return;
+			case Inject_Dispatcher::MISSING_CLASS:
+			case Inject_Dispatcher::MISSING_ACTION:
+				Inject::log('Dispatcher', '404 Error on class: "'.$class.'", action: "'.$action.'", going to the 404 handler.', Inject::NOTICE);
+
+				// nope, show an error
+				$class = $this->missing_class;
+				$action = $this->missing_action;
+
+				switch($this->run($req, $class, $action))
+				{
+					case Inject_Dispatcher::SUCCESS:
+						return;
+					case Inject_Dispatcher::MISSING_CLASS:
+						throw new Inject_Dispatcher_ClassException('Controller class "'.$lass.'" cannot be found.');
+					case Inject_Dispatcher::MISSING_ACTION:
+						throw new Inject_Dispatcher_MethodException('Action method "'.$action.'" cannot be called');
+				}
 		}
 	}
 	
@@ -117,21 +128,19 @@ class Inject_Dispatcher
 		$action = ($m = $req->getActionMethod()) ? $m : $this->default_action;
 		
 		// does the class exists? (enable autoload, so the autoloader(s) can search for it)
-		try
+		switch($this->run($req, $class, $action))
 		{
-			 $this->run($req, $class, $action);
-		}
-		catch(Inject_Dispatcher_MethodException $e)
-		{
-			echo '
+			case Inject_Dispatcher::MISSING_ACTION:
+				echo '
 ERROR: Action '.$class.'::'.$action.' cannot be called!
 ';
-			
-			$req->showHelp();
-		}
-		catch(Inject_Dispatcher_ClassException $e)
-		{
-			echo '
+				
+				$req->showHelp();
+				
+				break;
+				
+			case Inject_Dispatcher::MISSING_CLASS:
+				echo '
 ERROR: Controller '.$class.' not found!
 ';
 			
@@ -182,7 +191,7 @@ ERROR: Controller '.$class.' not found!
 		// validate again, to make sure it hasn't gone FUBAR
 		if( ! class_exists($controller, false) && ! Inject::load($controller, Inject::NOTICE))
 		{
-			throw new Inject_Dispatcher_ClassException('Controller class "'.$controller.'" cannot be found.');
+			return Inject_Dispatcher::MISSING_CLASS;
 		}
 		
 		// check if the method can be called
@@ -190,7 +199,7 @@ ERROR: Controller '.$class.' not found!
 		
 		if(( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic()) && ! $r->hasMethod('__call'))
 		{
-			throw new Inject_Dispatcher_MethodException('Action method "'.$action.'" cannot be called');
+			return Inject_Dispatcher::MISSING_ACTION;
 		}
 		
 		// load the controller
@@ -200,6 +209,8 @@ ERROR: Controller '.$class.' not found!
 		
 		// call the action
 		$controller->$action();
+		
+		return Inject_Dispatcher::SUCCESS;
 	}
 	
 	// ------------------------------------------------------------------------
