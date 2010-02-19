@@ -54,7 +54,7 @@ Inject::addPaths(array('app'));
  * to run and the response will be returned from Inject::run(),
  * which means that we have to echo it to the buffers.
  */
-echo Inject::run(new Inject_Request_CLI);
+echo Inject::run(new Inject_Request_CLI)->body;
 
 
 /*
