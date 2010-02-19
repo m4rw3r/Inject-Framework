@@ -253,9 +253,9 @@ class Inject_Profiler implements Inject_LoggerInterface
 		
 		$r = Inject::getMainRequest();
 		
-		if( ! empty($r))
+		if( ! empty($r->response))
 		{
-			$this->headers = array_merge(array('HTTP/1.1' => $r->response_code), $r->headers);
+			$this->headers = array_merge(array('HTTP/1.1' => $r->response->response_code), $r->headers);
 		}
 	}
 	

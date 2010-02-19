@@ -107,11 +107,12 @@ final class Inject
 	 * @var string
 	 */
 	private static $namespaces = array(
-									'Controller'	=> 'Controllers',
-									'Inject'		=> 'Inject',
-									'Model'			=> 'Models',
-									'Partial'		=> 'Partials'
-									);
+	                                  'Cli'         => 'Cli',
+	                                  'Controller'  => 'Controllers',
+	                                  'Inject'      => 'Inject',
+	                                  'Model'       => 'Models',
+	                                  'Partial'     => 'Partials'
+	                                  );
 	
 	/**
 	 * A cache of all the classes and their respective files.
@@ -245,7 +246,7 @@ final class Inject
 		// Send the headers
 		if(isset(self::$main_request))
 		{
-			self::$main_request->sendHeaders();
+			self::$main_request->response->sendHeaders();
 		}
 		
 		// clear all the buffers except for the last

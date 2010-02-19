@@ -11,62 +11,13 @@
 abstract class Inject_Request extends Inject_Library
 {
 	/**
-	 * The list of HTTP headers which will be sent by header().
 	 * 
-	 * @var array
-	 */
-	public $headers = array();
-	
-	/**
-	 * Response code.
 	 * 
-	 * @var int
+	 * @return 
 	 */
-	public $response_code = 200;
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sends all response headers which has been set.
-	 * 
-	 * @return void
-	 */
-	public function sendHeaders()
+	public function __construct()
 	{
-		foreach($this->headers as $k => $v)
-		{
-			header($k.': '.$v);
-		}
-		
-		// Send response code
-		header('HTTP/1.1 '.$this->response_code);
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets a response header, overwrites any existing header with the same name.
-	 * 
-	 * @param  string
-	 * @param  string
-	 * @return void
-	 */
-	public function setHeader($header, $value)
-	{
-		$this->headers[$header] = $value;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the response code to send to the client.
-	 * 
-	 * @param  int
-	 * @return void
-	 */
-	public function setResponseCode($code)
-	{
-		$this->response_code = $code;
+		$this->response = new Inject_Response();
 	}
 	
 	// ------------------------------------------------------------------------
@@ -74,9 +25,9 @@ abstract class Inject_Request extends Inject_Library
 	/**
 	 * The response from this request.
 	 * 
-	 * @var string
+	 * @var Inject_Response
 	 */
-	public $response = '';
+	public $response;
 	
 	// ------------------------------------------------------------------------
 	
@@ -127,12 +78,15 @@ abstract class Inject_Request extends Inject_Library
 	abstract public function getParameters();
 	
 	/**
-	 * Returns the name of the file format which the caller wishes to receive,
-	 * lowercase.
+	 * Creates a URL or command which can be run to execute the specified
+	 * controller and action with supplied parameters.
 	 * 
+	 * @param  array|string  A named call or a controller name
+	 * @param  string        The action name
+	 * @param  array         The array of parameters
 	 * @return string
 	 */
-	abstract public function getFormat();
+	abstract public function createCall($controller, $action = null, $parameters = array());
 	
 	// ------------------------------------------------------------------------
 	

@@ -17,9 +17,17 @@ class Inject_Controller
 	 */
 	public $request;
 	
+	/**
+	 * The response to send to the client.
+	 * 
+	 * @var Inject_Response
+	 */
+	public $response;
+	
 	function __construct(Inject_Request $req)
 	{
 		$this->request = $req;
+		$this->response = $req->response;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -27,7 +35,7 @@ class Inject_Controller
 	/**
 	 * Uses the request's dependency injection container to fetch needed stuff.
 	 * 
-	 * Means that the database is autoloaded on usage:
+	 * Means that eg. the database is autoloaded on usage:
 	 * <code>
 	 * $this->db->doSomething();
 	 * </code>
@@ -90,7 +98,7 @@ class Inject_Controller
 		}
 		else
 		{
-			$this->request->response = $buffer;
+			$this->response->body = $buffer;
 		}
 	}
 }
