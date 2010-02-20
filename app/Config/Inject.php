@@ -1,29 +1,6 @@
 <?php
 
 /*
- * Create the standard dispatcher object.
- *
- * The dispatcher is the object which is responsible for instantiating
- * and calling the class->method it receives from the request object.
- * It is also responsible for any default class/method to run.
- */
-
-// Use the default dispatcher
-$d = new Inject_Dispatcher();
-
-// Set default controller and action
-$d->setDefaultHandler('Controller_Welcome', 'index');
-
-// Set the error handlers in case something goes wrong
-$d->set404Handler('Controller_Welcome', 'error');
-
-// Tell Inject to use the configured dispatcher
-Inject::setDispatcher($d);
-
-
-
-
-/*
  * Set error handling settings.
  * 
  * The Inject class also has settings for error handling, if the error should
@@ -35,7 +12,30 @@ Inject::setDispatcher($d);
 Inject::setErrorLevel(Inject::ERROR | Inject::WARNING);
 
 // Determines if the user should see the errors, false is yes
-Inject::setProduction(false);
+Inject::setIsProduction(false);
+
+
+
+
+/*
+ * Create the standard dispatcher object.
+ *
+ * The dispatcher is the object which is responsible for instantiating
+ * and calling the class->method it receives from the request object.
+ * It is also responsible for any default class/method to run.
+ */
+
+// Use the default dispatcher
+$d = new Inject_Dispatcher();
+
+// Set default controller and action
+$d->setDefaultHandler('Controller_Welcome', 'actionIndex');
+
+// Set the error handlers in case something goes wrong
+$d->set404Handler('Controller_Welcome', 'error');
+
+// Tell Inject to use the configured dispatcher
+Inject::setDispatcher($d);
 
 
 
@@ -81,5 +81,4 @@ Inject_Library::setGlobalResource('session', function()
 // Mapping the view resource name to a class, creating new instances all the time
 Inject_Library::setGlobalResource('view', 'Inject_View', false);
 */
-
 
