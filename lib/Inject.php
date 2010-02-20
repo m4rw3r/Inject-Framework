@@ -409,7 +409,7 @@ final class Inject
 	 * @param  bool
 	 * @return void
 	 */
-	public static function setProduction($value)
+	public static function setIsProduction($value)
 	{
 		self::$production = (bool) $value;
 	}
@@ -453,7 +453,7 @@ final class Inject
 	/**
 	 * Sets the dispatcher object.
 	 * 
-	 * @param  Inject_Dispatcher
+	 * @param  Inject_Dispatcher|objcet
 	 */
 	public static function setDispatcher($disp)
 	{
@@ -508,6 +508,18 @@ final class Inject
 	public static function getNamespaceMappings()
 	{
 		return self::$namespaces;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the production flag, true if the site is in production mode.
+	 * 
+	 * @return bool
+	 */
+	public function getIsProduction()
+	{
+		return self::$production;
 	}
 	
 	// ------------------------------------------------------------------------
