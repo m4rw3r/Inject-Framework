@@ -10,10 +10,27 @@
  */
 class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 {
+	/**
+	 * A list of Inject_Request_HTTP_URI_Route objects.
+	 * 
+	 * @var array
+	 */
 	protected $routes = array();
 	
+	/**
+	 * Stores a list of Inject_Request_HTTP_URI_Route objects in a hash
+	 * of the controller and action, making for faster lookups in reverse routing.
+	 * 
+	 * @var array
+	 */
 	protected $patterns = array();
 	
+	/**
+	 * Creates a new URI based request.
+	 * 
+	 * @param  string
+	 * @param  array
+	 */
 	function __construct($uri = '', $routes = array())
 	{
 		Inject::log('Request', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
@@ -33,10 +50,11 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		}
 		else
 		{
+			// TODO: Put the routes in the reverse router pattern map
 			$this->routes = $routes;
 		}
 		
-		$this->setUri($this->route($uri));
+		$this->route($uri);
 	}
 	
 	/**
@@ -75,6 +93,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		
 		foreach($this->routes as $route)
 		{
+			// Step 1: Match to a route
 			if($m = $route->matchUri($uri))
 			{
 				// Reset uri as we have a match
@@ -84,17 +103,21 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 				isset($m['action']) && $this->setActionMethod($m['action']);
 				isset($m['uri']) && $uri = $m['uri'];
 				
-				// step 2: assign
+				// Step 2: Assign parameters
 				$this->setParameters($m);
+
+				// Step 3: check the extra segments
+				$this->setExtraSegments(explode('/', $uri));
 				
 				Inject::log('Request', 'HTTP URI request routed by regex to "'.$this->getControllerClass().'::'.$this->getActionMethod().'".', Inject::DEBUG);
-
+				
 				// A valid route has been found
-				break;
+				return;
 			}
 		}
 		
-		return str_replace('//', '/', $uri);
+		// Fallback
+		$this->setUri($uri);
 	}
 	
 	// ------------------------------------------------------------------------
