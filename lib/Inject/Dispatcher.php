@@ -105,7 +105,7 @@ class Inject_Dispatcher
 					case Inject_Dispatcher::SUCCESS:
 						return;
 					case Inject_Dispatcher::MISSING_CLASS:
-						throw new Inject_Dispatcher_ClassException('Controller class "'.$lass.'" cannot be found.');
+						throw new Inject_Dispatcher_ClassException('Controller class "'.$class.'" cannot be found.');
 					case Inject_Dispatcher::MISSING_ACTION:
 						throw new Inject_Dispatcher_MethodException('Action method "'.$action.'" cannot be called');
 				}
@@ -115,9 +115,10 @@ class Inject_Dispatcher
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * Handles a CLI request.
+	 *
+	 * @param Inject_Request_CLI
+	 * @return void
 	 */
 	public function cli(Inject_Request_CLI $req)
 	{
@@ -188,27 +189,46 @@ ERROR: Controller '.$class.' not found!
 	{
 		Inject::log('Dispatcher', 'Loading controller class "'.$controller.'".', Inject::DEBUG);
 		
-		// validate again, to make sure it hasn't gone FUBAR
+		// If to fallback to the catch all __actionCall($method) method
+		$fallback = false;
+		
+		// Validate again, to make sure it hasn't gone FUBAR
 		if( ! class_exists($controller, false) && ! Inject::load($controller, Inject::NOTICE))
 		{
 			return Inject_Dispatcher::MISSING_CLASS;
 		}
 		
-		// check if the method can be called
+		// Check if the method can be called
 		$r = new ReflectionClass($controller);
 		
-		if(( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic()) && ! $r->hasMethod('__call'))
+		if(( ! $r->hasMethod($action) OR ! $m = $r->getMethod($action) OR ! $m->isPublic() OR $m->isStatic()))
 		{
-			return Inject_Dispatcher::MISSING_ACTION;
+			if( ! $r->hasMethod('__actionCall'))
+			{
+				return Inject_Dispatcher::MISSING_ACTION;
+			}
+			else
+			{
+				$fallback = true;
+			}
 		}
 		
-		// load the controller
+		// Load the controller
 		$controller = new $controller($req);
 		
-		Inject::log('Dispatcher', 'Calling action "'.$action.'".', Inject::DEBUG);
+		if( ! $fallback)
+		{
+			// Call the action
+			Inject::log('Dispatcher', 'Calling action "'.$action.'".', Inject::DEBUG);
+			$controller->$action();
+		}
+		else
+		{
+			// Call fallback
+			Inject::log('Dispatcher', 'Calling fallback action (__actionCall) with "'.$action.'".', Inject::DEBUG);
+			$controller->__actionCall($action);
+		}
 		
-		// call the action
-		$controller->$action();
 		
 		return Inject_Dispatcher::SUCCESS;
 	}
