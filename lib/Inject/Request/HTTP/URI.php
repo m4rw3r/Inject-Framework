@@ -13,17 +13,9 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	/**
 	 * A list of Inject_Request_HTTP_URI_Route objects.
 	 * 
-	 * @var array
+	 * @var Inject_Request_HTTP_URI_RouterInterface
 	 */
-	protected $routes = array();
-	
-	/**
-	 * Stores a list of Inject_Request_HTTP_URI_Route objects in a hash
-	 * of the controller and action, making for faster lookups in reverse routing.
-	 * 
-	 * @var array
-	 */
-	protected $patterns = array();
+	protected $router = null;
 	
 	/**
 	 * Creates a new URI based request.
@@ -31,7 +23,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	 * @param  string
 	 * @param  array
 	 */
-	function __construct($uri = '', $routes = array())
+	function __construct($uri = '', Inject_Request_HTTP_URI_RouterInterface $routes = null)
 	{
 		Inject::log('Request', 'HTTP URI request initializing, URI: "'.$uri.'".', Inject::DEBUG);
 		
@@ -40,91 +32,35 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		// load the routes config if we don't have a supplied routes array
 		if(empty($routes))
 		{
-			foreach(Inject::getApplicationPaths() as $p)
-			{
-				if(file_exists($p.'Config/URI_Routes.php'))
-				{
-					include $p.'Config/URI_Routes.php';
-				}
-			}
+			$this->loadCache();
+		}
+		elseif( ! empty($routes))
+		{
+			$this->router = $routes;
+		}
+		
+		// Step 1: Match to a route
+		if($m = $this->router->matches($uri))
+		{
+			// Step 2:
+			// Check if we have a class or a controller name
+			isset($m['_class']) && $this->setRawControllerClass($m['_class']) ||
+				isset($m['_controller']) && $this->setControllerClass($m['_controller']);
+			
+			// Do we have an action?
+			isset($m['_action']) && $this->setActionMethod($m['_action']);
+			
+			// Step 3: Assign parameters
+			$this->setParameters($m);
+        	
+			// Step 4: Any remaining dynamic URI parameters?
+			isset($m['_uri']) && $this->setExtraSegments(explode('/', $m['_uri']));
 		}
 		else
 		{
-			// TODO: Put the routes in the reverse router pattern map
-			$this->routes = $routes;
+			// Fallback
+			$this->setUri($uri);
 		}
-		
-		$this->route($uri);
-	}
-	
-	/**
-	 * Creates a rule for the specified pattern and path.
-	 * 
-	 * @param  string
-	 * @param  string
-	 * @param  array
-	 */
-	public function matches($pattern, array $to)
-	{
-		$this->routes[] = $o = new Inject_Request_HTTP_URI_Route($pattern, $to);
-		
-		$reverse_match = strtolower((isset($to['_controller']) ? $to['_controller'] : '').'#'.(isset($to['_action']) ? $to['_action'] : ''));
-		
-		$this->patterns[$reverse_match][] = $o;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Performs the routing based on the routes property.
-	 * 
-	 * @param  string
-	 * @return string
-	 */
-	public function route($uri)
-	{
-		// literal match, has highest priority
-		if(isset($this->routes[$uri]))
-		{
-			Inject::log('Request', 'HTTP URI request routed to "'.$this->routes[$uri].'".', Inject::DEBUG);
-			
-			return $this->routes[$uri];
-		}
-		
-		foreach($this->routes as $route)
-		{
-			// Step 1: Match to a route
-			if($m = $route->matchUri($uri))
-			{
-				// Reset uri as we have a match
-				$uri = '';
-				
-				// Step 2:
-				// Check if we have a class or a controller name
-				isset($m['_class']) && $this->setRawControllerClass($m['_class']) ||
-					isset($m['_controller']) && $this->setControllerClass($m['_controller']);
-				
-				// Do we have an action?
-				isset($m['_action']) && $this->setActionMethod($m['_action']);
-				
-				// Any remaining dynamic URI parameters?
-				isset($m['_uri']) && $uri = $m['_uri'];
-				
-				// Step 3: Assign parameters
-				$this->setParameters($m);
-
-				// Step 4: check the extra segments
-				$this->setExtraSegments(explode('/', $uri));
-				
-				Inject::log('Request', 'HTTP URI request routed by regex to "'.$this->getControllerClass().'::'.$this->getActionMethod().'".', Inject::DEBUG);
-				
-				// A valid route has been found
-				return;
-			}
-		}
-		
-		// Fallback
-		$this->setUri($uri);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -246,42 +182,25 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	public function createCall($controller, $action = null, $parameters = array())
 	{
 		// TODO: Support for the _class parameter, as it can be used too
-		if(is_array($controller))
+		if( ! is_array($controller))
 		{
-			throw new Exception('CODE NOT WRITTEN!');
+			$controller = array_merge($parameters, array('_controller' => $controller, '_action' => $action));
 		}
 		
-		$controller = strtolower($controller);
-		$action = strtolower($action);
-		
-		// Remove controller
-		if(strpos($controller, 'controller_') === 0)
+		if($m = $this->router->reverseRoute($controller))
 		{
-			$controller = substr($controller, 11);
+			return Inject_URI::getFrontController().(empty($m) ? '' : '/'.$m);
 		}
 		
-		// Do we have a matching Inject_Request_HTTP_URI_Route?
-		if(isset($this->patterns[$controller.'#'.$action]))
+		// Default algorithm:
+		$uri = strtolower($controller['_controller']);
+		
+		if( ! empty($controller['_action']))
 		{
-			// Check if they really match (number of parameters):
-			foreach($this->patterns[$controller.'#'.$action] as $pattern)
-			{
-				if($u = $pattern->reverseRoute($controller, $action, $parameters))
-				{
-					// Match
-					return Inject_URI::getFrontController().'/'.$u;
-				}
-			}
+			$uri .= '/'.strtolower($controller['_action']);
 		}
 		
-		$uri = $controller;
-		
-		if( ! empty($action))
-		{
-			$uri .= '/'.$action;
-		}
-		
-		foreach($parameters as $k => $v)
+		foreach(array_diff_key($parameters, array('_class' => true, '_action' => true, '_controller' => true)) as $k => $v)
 		{
 			if( ! is_numeric($k))
 			{
@@ -292,6 +211,55 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 		}
 		
 		return Inject_URI::getFrontController().(empty($uri) ? '' : '/'.$uri);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Tries to load the cached router, if not found, creates a new router.
+	 * 
+	 * @return bool
+	 */
+	protected function loadCache()
+	{
+		$f = current(Inject::getApplicationPaths()).'Cache/URI_Router.php';
+		
+		if( ! file_exists($f) OR ! Inject::getIsProduction())
+		{
+			// No prod, check if we have an old one:
+			
+			$files = array();
+			foreach(Inject::getApplicationPaths() as $p)
+			{
+				if(file_exists($p.'Config/URI_Routes.php'))
+				{
+					$files[] = $p.'Config/URI_Routes.php';
+				}
+			}
+			
+			if( ! Inject_Util_Cache::isCurrent('URI_Router.php', $files))
+			{
+				$this->createRouterBuilder()->writeCache();
+			}
+		}
+		
+		require $f;
+		
+		$this->router = new Inject_Request_HTTP_URI_CachedRouter();
+		
+		return true;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Creates the new RouterBuilder instance.
+	 * 
+	 * @return Inject_Request_HTTP_URI_RouterBuilder
+	 */
+	public function createRouterBuilder()
+	{
+		return new Inject_Request_HTTP_URI_RouterBuilder('Inject_Request_HTTP_URI_CachedRouter');
 	}
 }
 
