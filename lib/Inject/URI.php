@@ -61,44 +61,18 @@ class Inject_URI
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Uses the $_SERVER variable to determine the URI and front_controller.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	protected static function parseURI()
 	{
 		$source = 'None';
-		
-		/*if(isset($_GET['inject_uri']))
-		{
-			// Use the URI defined in the query string
-			$current_uri = $_GET['inject_uri'];
-			
-			// $_GET is already urldecoded when Utf8::clean gets its hands on it
-			
-			// Remove the URI from $_GET
-			unset($_GET['inject_uri']);
-			
-			// Remove the URI from $_SERVER['QUERY_STRING']
-			$_SERVER['QUERY_STRING'] = preg_replace('~\binject_uri\b[^&]*+&?~', '', $_SERVER['QUERY_STRING']);
-			
-			if($p = strpos($_SERVER['REQUEST_URI'], '?') !== false)
-			{
-				/*
-				 * remove the query string from the REQUEST URI to create the front controller path
-				 * add ?inject_uri= to create the final front controller.
-				 *//*
-				self::$front_controller = substr($_SERVER['REQUEST_URI'], 0, $p).'?inject_uri=';
-			}
-			
-			$source = 'Query String';
-		}
-		else*/
+		$current_uri = '';
 		
 		if(isset($_SERVER['PATH_INFO']) AND $_SERVER['PATH_INFO'])
 		{
-			// Already urldecoded and then cleaned by Utf8::clean
-			$current_uri = $_SERVER['PATH_INFO'];
+			$current_uri = Utf8::clean($_SERVER['PATH_INFO']);
 			
 			$source = 'Path Info';
 		}
@@ -111,20 +85,19 @@ class Inject_URI
 		}
 		elseif(isset($_SERVER['PHP_SELF']) AND $_SERVER['PHP_SELF'])
 		{
-			// Already urldecoded (because it is from PHP, not the server) and cleaned by Utf8::clean
-			$current_uri = $_SERVER['PHP_SELF'];
+			$current_uri = Utf8::clean($_SERVER['PHP_SELF']);
 			
 			$source = 'PHP_SELF';
 		}
 		
 		// remove the current script name if there is one
-		if(isset($_SERVER['PHP_SELF']) && strpos($current_uri, $_SERVER['PHP_SELF']) === 0)
+		if(isset($_SERVER['PHP_SELF']) && strpos($current_uri, $ps = Utf8::clean($_SERVER['PHP_SELF'])) === 0)
 		{
 			// Remove the front controller from the current uri
-			$current_uri = (string) substr($current_uri, strlen($_SERVER['PHP_SELF']));
+			$current_uri = (string) substr($current_uri, strlen($ps));
 			
 			// the PHP_SELF variable is the front controller
-			self::$front_controller = $_SERVER['PHP_SELF'];
+			self::$front_controller = $ps;
 		}
 		// do we have to deduce the front_controller?
 		elseif(empty(self::$front_controller))

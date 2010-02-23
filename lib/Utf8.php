@@ -85,7 +85,7 @@ else
 define('UTF8_LIBPATH', dirname(__FILE__) . '/Utf8/');
 
 // Convert all global variables to UTF-8.
-$_GET    = utf8::clean($_GET);
+/*$_GET    = utf8::clean($_GET);
 $_POST   = utf8::clean($_POST);
 $_COOKIE = utf8::clean($_COOKIE);
 $_SERVER = utf8::clean($_SERVER);
@@ -94,7 +94,7 @@ if(PHP_SAPI == 'cli')
 {
 	// Convert command line arguments
 	$_SERVER['argv'] = utf8::clean($_SERVER['argv']);
-}
+}*/
 
 final class Utf8
 {
