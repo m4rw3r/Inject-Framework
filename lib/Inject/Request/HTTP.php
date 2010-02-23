@@ -90,7 +90,7 @@ abstract class Inject_Request_HTTP extends Inject_Request
 		parent::__construct();
 		
 		// Add text/html content type and also charset.
-		$this->headers['Content-Type'] = 'text/html;charset=UTF-8';
+		$this->response->headers['Content-Type'] = 'text/html;charset=UTF-8';
 		
 		$this->protocol = (( ! empty($_SERVER['HTTPS'])) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
 		$this->method = isset($_SERVER['REQUEST_METHOD']) ? $method = $_SERVER['REQUEST_METHOD'] : 'GET';
@@ -132,6 +132,28 @@ abstract class Inject_Request_HTTP extends Inject_Request
 		}
 		
 		$this->controller_class = $class;
+		
+		return true;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Does not make any changes to the controller class name, only use internally.
+	 * 
+	 * @param  string
+	 * @return void
+	 */
+	public function setRawControllerClass($class)
+	{
+		if( ! preg_match(self::ALLOWED_CHARACTERS_REGEX, $class))
+		{
+			throw new Exception('Disallowed characters in controller name.');
+		}
+		
+		$this->controller_class = $class;
+		
+		return true;
 	}
 	
 	// ------------------------------------------------------------------------

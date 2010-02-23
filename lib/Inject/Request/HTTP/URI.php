@@ -68,7 +68,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	{
 		$this->routes[] = $o = new Inject_Request_HTTP_URI_Route($pattern, $to);
 		
-		$reverse_match = strtolower((isset($to['controller']) ? $to['controller'] : '').'#'.(isset($to['action']) ? $to['action'] : ''));
+		$reverse_match = strtolower((isset($to['_controller']) ? $to['_controller'] : '').'#'.(isset($to['_action']) ? $to['_action'] : ''));
 		
 		$this->patterns[$reverse_match][] = $o;
 	}
@@ -99,14 +99,21 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 				// Reset uri as we have a match
 				$uri = '';
 				
-				isset($m['controller']) && $this->setControllerClass($m['controller']);
-				isset($m['action']) && $this->setActionMethod($m['action']);
-				isset($m['uri']) && $uri = $m['uri'];
+				// Step 2:
+				// Check if we have a class or a controller name
+				isset($m['_class']) && $this->setRawControllerClass($m['_class']) ||
+					isset($m['_controller']) && $this->setControllerClass($m['_controller']);
 				
-				// Step 2: Assign parameters
+				// Do we have an action?
+				isset($m['_action']) && $this->setActionMethod($m['_action']);
+				
+				// Any remaining dynamic URI parameters?
+				isset($m['_uri']) && $uri = $m['_uri'];
+				
+				// Step 3: Assign parameters
 				$this->setParameters($m);
 
-				// Step 3: check the extra segments
+				// Step 4: check the extra segments
 				$this->setExtraSegments(explode('/', $uri));
 				
 				Inject::log('Request', 'HTTP URI request routed by regex to "'.$this->getControllerClass().'::'.$this->getActionMethod().'".', Inject::DEBUG);
@@ -238,6 +245,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	
 	public function createCall($controller, $action = null, $parameters = array())
 	{
+		// TODO: Support for the _class parameter, as it can be used too
 		if(is_array($controller))
 		{
 			throw new Exception('CODE NOT WRITTEN!');

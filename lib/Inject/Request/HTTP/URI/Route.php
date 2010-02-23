@@ -38,7 +38,7 @@ class Inject_Request_HTTP_URI_Route
 
 			foreach($matches as $m)
 			{
-				$regex = str_replace(':'.$m[1], '(?<'.$m[1].'>'.(isset($to['constraints'][$m[1]]) ? $to['constraints'][$m[1]] : '\w+').')', $regex);
+				$regex = str_replace(':'.$m[1], '(?<'.$m[1].'>'.(isset($this->options['_constraints'][$m[1]]) ? $this->options['_constraints'][$m[1]] : '\w+').')', $regex);
 			}
 			
 			$this->regex = $regex;
@@ -46,7 +46,7 @@ class Inject_Request_HTTP_URI_Route
 		
 		if(preg_match('#^'.$this->regex.'$#u', $uri, $m))
 		{
-			// get parameters from the regex, step 1: clean it from junk
+			// get parameters from the regex, clean it from junk
 			foreach($m as $k => $v)
 			{
 				// skip numeric
@@ -56,7 +56,7 @@ class Inject_Request_HTTP_URI_Route
 				}
 			}
 			
-			// Merge with 
+			// Merge with default values
 			return array_merge($this->options, $m);
 		}
 		else
@@ -87,21 +87,23 @@ class Inject_Request_HTTP_URI_Route
 			}
 		}
 		
-		if(strpos($ret, ':action') !== false)
+		if(strpos($ret, ':_action') !== false)
 		{
 			if(empty($action))
 			{
 				return false;
 			}
 			
-			$ret = str_replace(':action', $action, $ret);
+			$ret = str_replace(':_action', $action, $ret);
 		}
 		
 		$ret = preg_replace('/\(.*?:.*?\)/', '', $ret);
 		
-		if(strpos(':', $ret) !== false)
+		if(strpos($ret, ':') !== false)
 		{
-			return false;
+			preg_match('/:([^:\\/\\)\\(\\?]*)/', $ret, $m);
+			
+			throw new Exception(sprintf('Route "%s" is missing the parameter "%s".', $this->pattern, $m[1]));
 		}
 		
 		return str_replace(array('(', ')'), array(), $ret);
