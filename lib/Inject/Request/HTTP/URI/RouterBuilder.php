@@ -85,19 +85,19 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 */
 	public function matches($pattern, array $options)
 	{
-		if( ! isset($options['_controller']) && ! isset($options['_class']) &&
-			preg_match('#:_controller(?:[^:/\d]|$)#u', $pattern) === false)
+		if( ! (isset($options['_controller']) OR isset($options['_class'])) &&
+			preg_match('#:_controller(?!>[\w])#u', $pattern) == false)
 		{
 			throw new Exception(sprintf('The pattern "%s" is missing a _controller or _class option.', $pattern));
 		}
 		
 		if(strpos($pattern, ':') === false)
 		{
-			$this->static_routes[] = $r = new Inject_Request_HTTP_URI_RouteBuilderStatic($pattern, $options);
+			$this->static_routes[] = $r = new Inject_Request_HTTP_URI_RouteBuilder_Static($pattern, $options);
 		}
 		else
 		{
-			$this->regex_routes[] = $r = new Inject_Request_HTTP_URI_RouteBuilderRegex($pattern, $options);
+			$this->regex_routes[] = $r = new Inject_Request_HTTP_URI_RouteBuilder_Regex($pattern, $options);
 		}
 		
 		// Create reverse route tree
@@ -267,8 +267,6 @@ class '.$this->class_name.' implements Inject_Request_HTTP_URI_RouterInterface
 		{
 			';
 			
-			var_dump($routes);
-			
 			foreach($routes as $r)
 			{
 				$s .= $r->getReverseMatchCode()."\n\t\t\t";
@@ -285,8 +283,6 @@ class '.$this->class_name.' implements Inject_Request_HTTP_URI_RouterInterface
 			$s = 'if(empty($options[\'_action\']))
 		{
 			';
-			
-			var_dump($this->reverse_route_dynamic_tree['no_action']);
 			
 			foreach($this->reverse_route_dynamic_tree['no_action'] as $r)
 			{

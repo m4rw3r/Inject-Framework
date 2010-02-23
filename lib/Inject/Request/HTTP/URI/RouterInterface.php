@@ -13,7 +13,7 @@ interface Inject_Request_HTTP_URI_RouterInterface
 	 * @param  string
 	 * @return array
 	 */
-	public function route($uri);
+	public function matches($uri);
 	
 	/**
 	 * Returns the appropriate reverse route of the supplied parameters.
