@@ -33,20 +33,30 @@ class Inject_Validator_Chain
 	 */
 	protected $required = false;
 	
+	/**
+	 * The parent Inject_Validator object, only populated during validation.
+	 * 
+	 * @var Inject_Validator
+	 */
+	protected $parent = null;
+	
 	// ------------------------------------------------------------------------
 
 	/**
 	 * Validates the value of the $key.
 	 * 
 	 * @param  string
+	 * @param  Inject_Validator
 	 * @return string
 	 */
-	public function validate($data)
+	public function validate($data, Inject_Validator $parent)
 	{
 		if( ! $this->required && empty($data))
 		{
 			return $data;
 		}
+		
+		$this->parent = $parent;
 		
 		foreach($this->validations as $callback)
 		{
@@ -64,6 +74,8 @@ class Inject_Validator_Chain
 				$data = $r;
 			}
 		}
+		
+		$this->parent = null;
 		
 		return $data;
 	}
@@ -195,6 +207,23 @@ class Inject_Validator_Chain
 	public function trim()
 	{
 		$this->validations[] = array('trim', array());
+		
+		return $this;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Validates that the field's contents is identical to another field.
+	 * 
+	 * NOTE: The other field must be validated first.
+	 * 
+	 * @param  string
+	 * @return self
+	 */
+	public function matches($fieldname)
+	{
+		$this->validations[] = array(array($this, 'validateMatches'), array($fieldname));
 		
 		return $this;
 	}
@@ -347,6 +376,20 @@ class Inject_Validator_Chain
 		}
 	}
 	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Validator for matches().
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return void
+	 */
+	public function validateMatches($field, $fieldname)
+	{
+		// Forward to Inject_Validator as it has the field contents
+		$this->parent->validateMatches($field, $fieldname);
+	}
 }
 
 

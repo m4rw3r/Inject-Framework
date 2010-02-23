@@ -30,9 +30,10 @@ class Inject_Validator_ChainArray extends Inject_Validator_Chain
 	 * Validates the values in the array named $key.
 	 * 
 	 * @param  array|string
+	 * @param  Inject_Validator
 	 * @return array
 	 */
-	public function validate($data)
+	public function validate($data, Inject_Validator $parent)
 	{
 		if( ! $this->required && empty($data))
 		{
@@ -81,7 +82,7 @@ class Inject_Validator_ChainArray extends Inject_Validator_Chain
 		// Validate individual elements
 		foreach($data as $k => $v)
 		{
-			$data[$k] = parent::validate($v);
+			$data[$k] = parent::validate($v, $parent);
 		}
 		
 		return $data;

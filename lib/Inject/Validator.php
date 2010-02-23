@@ -98,7 +98,7 @@ class Inject_Validator implements ArrayAccess
 			
 			try
 			{
-				$this->data[$key] = $chain->validate($v);
+				$this->data[$key] = $chain->validate($v, $this);
 			}
 			catch(Inject_Validator_ErrorException $e)
 			{
@@ -165,21 +165,48 @@ class Inject_Validator implements ArrayAccess
 	 * }
 	 * </code>
 	 * 
-	 * @param  Inject_I18n  The object containing error message translations
-	 * @return array        List of messages
+	 * @param  Inject_I18n       The object containing error message translations
+	 * @param  Inject_I18n|array List or object containing field name translations
+	 * @return array             List of messages
 	 */
-	public function createErrorMessages(Inject_I18n $messages)
+	public function createErrorMessages(Inject_I18n $messages, $field_translations = array())
 	{
 		$proc = array();
 		
 		foreach($this->errors as $f => $e)
 		{
 			$error = $e->getValidator();
+
+			if(is_array($field_translations))
+			{
+				isset($field_translations[$f]) && $f = $field_translations[$f];
+			}
+			elseif($field_translations instanceof Inject_I18n)
+			{
+				$f = $field_translations->__get($f);
+			}
 			
-			$proc[] = vsprintf($messages->$error, array_merge(array($f), $e->getParameters()));
+			$proc[] = vsprintf($messages->__get($error), array_merge(array($f), $e->getParameters()));
 		}
 		
 		return $proc;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Validator for Inject_Validator_Chain::matches().
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return void
+	 */
+	public function validateMatches($field, $fieldname)
+	{
+		if( ! isset($this->data[$fieldname]) OR $field !== $this->data[$fieldname])
+		{
+			throw new Inject_Validator_ErrorException('matches', $fieldname);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
