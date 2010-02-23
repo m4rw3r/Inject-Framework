@@ -9,6 +9,7 @@ return array(
 	'maxLength' => 'The %s field is not allowed to be longer than %d characters.',
 	'minLength' => 'The %s field must be at least %d characters long.',
 	'exactLength' => 'The %s field must contain exactly %d characters.',
+	'matches' => 'The %s field must match the content of the %s field.',
 	'maxElements' => 'The %s fields is not allowed to contain more than %d elements',
 	'minElements' => 'The %s fields must contain at least %d elements.',
 	'exactElements' => 'The %s fields must contain exactly %d elements.'
