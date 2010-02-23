@@ -97,6 +97,20 @@ class Inject_Response
 		// Send response code
 		header('HTTP/1.1 '.$this->response_code);
 	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sends this request to the client.
+	 * 
+	 * @return void
+	 */
+	public function send()
+	{
+		$this->sendHeaders();
+		
+		echo $this->body;
+	}
 }
 
 

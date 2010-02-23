@@ -243,12 +243,6 @@ final class Inject
 	 */
 	public static function terminate()
 	{
-		// Send the headers
-		if(isset(self::$main_request))
-		{
-			self::$main_request->response->sendHeaders();
-		}
-		
 		// clear all the buffers except for the last
 		while(ob_get_level() > self::$ob_level)
 		{
@@ -309,9 +303,6 @@ final class Inject
 	 */
 	public static function load($class, $error_level = false)
 	{
-		// Remove namespace separators which can make a file load twice
-		$class = trim($class, '\\');
-		
 		// Check if we have a cache
 		if(isset(self::$loader_cache[$class]))
 		{
@@ -320,43 +311,29 @@ final class Inject
 			return true;
 		}
 		
-		$org_class = $class;
-		
-		// convert namespace\class_name to namespace/class/name
-		$class = strtr($class, '_\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR);
-		
-		// fetch the prefix (also respects namespaces)
-		$prefix = ($p = strpos($class, '/')) ? substr($class, 0, $p) : '';
-		
-		// do not search in the libraries folder for the following class types:
-		if(isset(self::$namespaces[$prefix]))
+		if(($pos = strpos($class, '_')) !== false &&
+			($ns = substr($class, 0, $pos)) && isset(self::$namespaces[$ns]))
 		{
-			// get folder / path
-			$base = self::$namespaces[$prefix];
-			
-			// remove the prefix, as the namespace tells us what to place instad
-			$class = substr($class, $p + 1);
+			$file = self::$namespaces[$ns].DIRECTORY_SEPARATOR.strtr(substr($class, $pos + 1), '\\_', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR).'.php';
 		}
 		else
 		{
-			$base = 'Libraries';
+			$file = 'Libraries'.DIRECTORY_SEPARATOR.strtr($class, '\\_', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR).'.php';
 		}
-		
-		// assemble the path
-		$path = $base.DIRECTORY_SEPARATOR.$class.'.php';
 		
 		// find the file
 		foreach(array_merge(self::$paths, array(self::$fw_path)) as $p)
 		{
-			if(file_exists($p . $path))
+			if(file_exists($p . $file))
 			{
-				self::log('Load', 'Loading "'.$org_class.'".', self::DEBUG);
+				self::log('Load', 'Loading "'.$class.'".', self::DEBUG);
 				
 				// load the file
-				require $p . $path;
+				require $p . $file;
 				
-				if( ! (class_exists($org_class, false) OR interface_exists($org_class, false)))
+				if( ! (class_exists($class, false) OR interface_exists($class, false)))
 				{
+					
 					// File did not contain the requested class/interface
 					continue;
 				}
@@ -367,23 +344,6 @@ final class Inject
 				}
 			}
 		}
-		
-		// The file does not exist and it isn't a namespaced file, try to load a core file (check if it exists first)
-		// 10 = length of "/Libraries"
-		if( ! isset(self::$namespaces[$prefix]) && file_exists(self::$fw_path.'Inject/'.substr($path, 10)))
-		{
-			self::log('Load', 'Failed to load the class file, resorting to loading core file for the class "'.$org_class.'".', self::DEBUG);
-			
-			eval('class '.$class.' extends Inject_'.$class.'{}');
-			
-			return true;
-		}
-		
-		self::log(
-				'Load',
-				'Failed to load "'.$path.'" for the class "'.$org_class.'".',
-				$error_level ? $error_level : self::WARNING
-			);
 		
 		return false;
 	}

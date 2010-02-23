@@ -15,7 +15,7 @@ $start = microtime(true);
  * This is to let all errors go to Inject, making it handle them all.
  * It makes it possible to selectively log everything or nothing by
  * the custom loggers (which will be responsible for all error
- * displays).
+ * displays except for fatal errors).
  */
 error_reporting(E_ALL | E_DEPRECATED);
 ini_set('display_errors', '0');
@@ -71,7 +71,7 @@ Inject::addPaths(array('app'));
  * to run and the response will be returned from Inject::run(),
  * which means that we have to echo it to the buffers.
  */
-echo Inject::run(new Inject_Request_HTTP_URI(Inject_URI::getCurrentURI()))->body;
+Inject::run(new Inject_Request_HTTP_URI(Inject_URI::getCurrentURI()))->send();
 
 
 /*
