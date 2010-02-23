@@ -137,7 +137,7 @@ class Inject_Request_HTTP_URI_RouterBuilder
 		}
 		
 		// Register written file
-		Inject_Util_Cache::registerCacheFile($file, $this->files);
+		//Inject_Util_Cache::registerCacheFile($file, $this->files);
 	}
 	
 	// ------------------------------------------------------------------------
