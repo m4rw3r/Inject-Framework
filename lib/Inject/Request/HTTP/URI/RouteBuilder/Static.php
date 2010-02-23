@@ -8,7 +8,7 @@
 /**
  * Static route matcher builder, for routes which does not utilize regex matches.
  */
-class Inject_Request_HTTP_URI_RouteBuilderStatic extends Inject_Request_HTTP_URI_RouteBuilderAbstract
+class Inject_Request_HTTP_URI_RouteBuilder_Static extends Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
 	public function __construct($pattern, $options)
 	{

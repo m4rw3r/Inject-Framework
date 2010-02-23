@@ -6,9 +6,12 @@
  */
 
 /**
+ * The route builder for a regex route.
  * 
+ * TODO: Implement support for :_uri setting in reverse routing, so the extra parameters will end up at the correct place of the route
+ * TODO: Add support for nested optionals?
  */
-class Inject_Request_HTTP_URI_RouteBuilderRegex extends Inject_Request_HTTP_URI_RouteBuilderAbstract
+class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
 	protected $regex;
 	

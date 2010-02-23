@@ -8,7 +8,7 @@
 /**
  * 
  */
-abstract class Inject_Request_HTTP_URI_RouteBuilderAbstract
+abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
 	protected $controller_class;
 	
