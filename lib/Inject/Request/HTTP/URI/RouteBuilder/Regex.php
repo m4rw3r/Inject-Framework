@@ -82,6 +82,8 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 	{
 		// Build token list
 		$list = array();
+		// Number of optional segments
+		$num_opt = 0;
 		
 		// Nowdoc to avoid PHP's \\ escaping occuring in string literals, only PHP 5.3
 		/* $regex = <<<'EOP'
@@ -101,6 +103,7 @@ EOP;*/
 			
 			if( ! empty($capture))
 			{
+				// Check for invalid captures:
 				if(in_array($capture, self::$disallowed_captures))
 				{
 					throw new Exception(sprintf('The capture "%s" is not allowed to be used as a capture name, in pattern "%s".', $capture, $this->pattern));
@@ -110,7 +113,26 @@ EOP;*/
 			}
 			elseif( ! empty($operator))
 			{
-				$list[] = array($operator === '(' ? self::OPTBEGIN : self::OPTEND, $operator);
+				if($operator == '(')
+				{
+					$num_opt++;
+					
+					$list[] = array(self::OPTBEGIN, '(');
+				}
+				elseif($operator == ')')
+				{
+					$num_opt--;
+					
+					// Check parse error
+					if($num_opt < 0)
+					{
+						throw new Exception(sprintf('Missing start parenthesis in route "%s".', $this->pattern));
+					}
+					
+					$list[] = array(self::OPTEND, ')');
+				}
+				
+				
 			}
 		}
 		
@@ -118,6 +140,12 @@ EOP;*/
 		if( ! empty($pattern))
 		{
 			$list[] = array(self::LITERAL, self::cleanLiteral($pattern));
+		}
+		
+		// Check parse error
+		if($num_opt > 0)
+		{
+			throw new Exception(sprintf('Missing end parenthesis in route "%s".', $this->pattern));
 		}
 		
 		return $list;
@@ -155,29 +183,14 @@ EOP;*/
 				
 				// Optional section start
 				case self::OPTBEGIN:
-					$num_opt++;
 					$regex .= '(?:';
 					break;
 				
 				// Optional section end
 				case self::OPTEND:
-					$num_opt--;
-					
-					// Check parse error
-					if($num_opt < 0)
-					{
-						throw new Exception(sprintf('Missing start parenthesis in route "%s".', $pattern));
-					}
-					
 					$regex .= ')?';
 					break;
 			}
-		}
-		
-		// Check parse error
-		if($num_opt > 0)
-		{
-			throw new Exception(sprintf('Missing end parenthesis in route "%s".', $pattern));
 		}
 		
 		return $regex;
