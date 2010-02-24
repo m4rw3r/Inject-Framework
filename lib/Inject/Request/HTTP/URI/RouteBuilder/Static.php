@@ -12,14 +12,16 @@ class Inject_Request_HTTP_URI_RouteBuilder_Static extends Inject_Request_HTTP_UR
 {
 	public function __construct($pattern, $options)
 	{
-		parent::__construct($pattern, $options);
+		// Remove the escaping from the instructions in the route
+		parent::__construct(self::cleanLiteral($pattern), $options);
 	}
 	
 	public function getMatchCode()
 	{
 		// Static routes are only to match
-		return 'if($uri === \''.addcslashes($this->pattern, '\'').'\')
+		return 'if($uri === \''.addcslashes($this->pattern, '\'\\').'\')
 		{
+			// '.addcslashes($this->pattern, ':()').'
 			return '.var_export($this->options, true).';
 		}';
 	}
@@ -34,7 +36,8 @@ class Inject_Request_HTTP_URI_RouteBuilder_Static extends Inject_Request_HTTP_UR
 			// No action check
 			return 'if('.$param_check.')
 				{
-					return \''.addcslashes($this->pattern, "'").'\';
+					// '.addcslashes($this->pattern, ':()').'
+					return \''.addcslashes($this->pattern, "'\\").'\';
 				}';
 		}
 		else
@@ -42,7 +45,8 @@ class Inject_Request_HTTP_URI_RouteBuilder_Static extends Inject_Request_HTTP_UR
 			// Action check
 			return 'if($options[\'_action\'] === \''.$this->getAction().'\' && '.$param_check.')
 				{
-					return \''.addcslashes($this->pattern, "'").'\';
+					// '.addcslashes($this->pattern, ':()').'
+					return \''.addcslashes($this->pattern, "'\\").'\';
 				}';
 		}
 	}

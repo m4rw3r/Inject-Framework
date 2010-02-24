@@ -9,124 +9,253 @@
  * The route builder for a regex route.
  * 
  * TODO: Implement support for :_uri setting in reverse routing, so the extra parameters will end up at the correct place of the route
- * TODO: Add support for nested optionals?
  */
 class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
+	/**
+	 * A token containing text to match.
+	 */
+	const LITERAL = 1;
+	/**
+	 * A token containing a capture name.
+	 */
+	const CAPTURE = 2;
+	/**
+	 * A token telling that an optional match begins.
+	 */
+	const OPTBEGIN = 3;
+	/**
+	 * A token telling that an optional match ends.
+	 */
+	const OPTEND = 4;
+	
+	/**
+	 * A list of names which are disallowed to be used as capture names.
+	 * 
+	 * @var array
+	 */
+	protected static $disallowed_captures = array('_class');
+	
+	/**
+	 * The generated regular expression to match the URI.
+	 * 
+	 * @var string
+	 */
 	protected $regex;
 	
-	protected $keys = array();
-	
+	/**
+	 * A list of the parameters which are required by the pattern,
+	 * used by the reverse routing.
+	 * 
+	 * @var array
+	 */
 	protected $required_keys = array();
 	
+	/**
+	 * The PHP code which will assemble the reverse route from the $options array.
+	 * 
+	 * @var string
+	 */
 	protected $reverse_code;
 	
 	public function __construct($pattern, $options)
 	{
-		parent::__construct($pattern, array_diff_key($options, array('_constraints' => true)));
+		parent::__construct($pattern, $options);
 		
-		// Add optional segments
-		$regex = str_replace(array('(', ')'), array('(?:', ')?'), $pattern);
+		// Create a list of tokens to convert
+		$tokens = $this->tokenize($pattern);
 		
-		// Get catches
-		preg_match_all('/(?<!\?):(\w+)/', $regex, $matches, PREG_SET_ORDER);
+		$this->regex = $this->createRegex($tokens);
+		
+		list($this->required_keys, $this->reverse_code) = $this->createReverseCode($tokens);
+	}
+	
+	// ------------------------------------------------------------------------
 
-		foreach($matches as $m)
+	/**
+	 * Tokenizes the pattern into a token list.
+	 * 
+	 * @param  string
+	 * @return array
+	 */
+	public function tokenize($pattern)
+	{
+		// Build token list
+		$list = array();
+		
+		// Nowdoc to avoid PHP's \\ escaping occuring in string literals, only PHP 5.3
+		/* $regex = <<<'EOP'
+/^([\w\W]*?(?:\\\\|\\:|\\\(|\\\))?)(?::(\w*)|(\(|\)))([\w\W]*)$/u
+EOP;*/
+		
+		$regex = '/^([\w\W]*?(?:\\\\\\\\|\\\\:|\\\\\\(|\\\\\\))?)(?::(\w*)|(\\(|\\)))([\w\W]*)$/';
+		
+		while(preg_match($regex, $pattern, $matches))
 		{
-			// Replace catches with their match code (can come from _constraints parameter)
-			$regex = str_replace(':'.$m[1], '(?<'.$m[1].'>'.(isset($options['_constraints'][$m[1]]) ? $options['_constraints'][$m[1]] : '\w+').')', $regex);
-		}
-		
-		// Done with regex generation
-		$this->regex = $regex;
-		
-		// Build reverse routing code
-		$code = array();
-		
-		// Find all segments and also the optional blocks
-		while(preg_match('/([\w\W]*?)(?::([\w]*)|\\((.*?)\\))([\w\W]*)/', $pattern, $matches))
-		{
-			list(, $pre, $required, $opt, $pattern) = $matches;
+			list(, $literal, $capture, $operator, $pattern) = $matches;
 			
-			// Literal string, add
-			if( ! empty($pre))
+			if( ! empty($literal))
 			{
-				$code[] = "'".addcslashes($pre, "'")."'";
+				$list[] = array(self::LITERAL, self::cleanLiteral($literal));
 			}
 			
-			// No required segment, use optional routing
-			if(empty($required))
+			if( ! empty($capture))
 			{
-				// Get all captures in the optional segment
-				preg_match_all('/(?<!\?):(\w+)/', $opt, $captures, PREG_SET_ORDER);
-				
-				$condition = array();
-				
-				// Create conditions, because of the segment needs all the matching params
-				foreach($captures as $c)
+				if(in_array($capture, self::$disallowed_captures))
 				{
-					$condition[] = 'isset($options[\''.$c[1].'\'])';
+					throw new Exception(sprintf('The capture "%s" is not allowed to be used as a capture name, in pattern "%s".', $capture, $this->pattern));
 				}
 				
-				// No condition, no need to add anything
-				if(empty($condition))
-				{
-					continue;
-				}
-				
-				// Merge conditions
-				$str = '('.implode(' && ', $condition).' ? ';
-				$inner_code = array();
-				
-				// Replace the captures with code which prints the segment data
-				while(preg_match('/([\w\W]*?)(?<!\?):(\w+)([\W\w]*)/', $opt, $keys))
-				{
-					list(, $pre_opt, $key, $opt) = $keys;
-					
-					// Literal preceeding the optional segment, add
-					if( ! empty($pre_opt))
-					{
-						$inner_code[] = "'".addcslashes($pre_opt, "'")."'";
-					}
-					
-					$inner_code[] = '$options[\''.$key.'\']';
-				}
-				
-				// Literal after the optional segment, add
-				if( ! empty($opt))
-				{
-					$inner_code[] = "'".addcslashes($opt, "'")."'";
-				}
-				
-				// Add the optional segment
-				$code[] = $str.implode('.', $inner_code).' : \'\')';
+				$list[] = array(self::CAPTURE, $capture);
 			}
-			else
+			elseif( ! empty($operator))
 			{
-				// Required segment, should already have been validated
-				$this->required_keys[] = $required;
-				
-				$code[] = '$options[\''.$required.'\']';
+				$list[] = array($operator === '(' ? self::OPTBEGIN : self::OPTEND, $operator);
 			}
 		}
 		
-		// Literal after all matches, add
+		// Don't forget the trailing literals!
 		if( ! empty($pattern))
 		{
-			$code[] = "'".addcslashes($pattern, "'")."'";
+			$list[] = array(self::LITERAL, self::cleanLiteral($pattern));
 		}
 		
-		// Implode with concatenation operator
-		$this->reverse_code = implode('.', $code);
+		return $list;
 	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Creates the regex for this rule.
+	 * 
+	 * @param  array
+	 * @return string
+	 */
+	public function createRegex($token_list)
+	{
+		// Start to create the regex
+		$regex = '';
+		$num_opt = 0;
+		
+		foreach($token_list as $t)
+		{
+			list($type, $data) = $t;
+			
+			switch($type)
+			{
+				case self::LITERAL:
+					// escape the literal so we won't have junk in our regexes
+					$regex .= addcslashes(preg_quote($data, '#'), '\'\\');
+					break;
+				
+				case self::CAPTURE:
+					// Capture and then also check for regex matching constraints
+					$regex .= '(?<'.addcslashes(preg_quote($data, '#'), '\'\\').'>'.(isset($this->options['_constraints'][$data]) ? addcslashes($this->options['_constraints'][$data], '\'\\') : '\w+').')';
+					break;
+				
+				// Optional section start
+				case self::OPTBEGIN:
+					$num_opt++;
+					$regex .= '(?:';
+					break;
+				
+				// Optional section end
+				case self::OPTEND:
+					$num_opt--;
+					
+					// Check parse error
+					if($num_opt < 0)
+					{
+						throw new Exception(sprintf('Missing start parenthesis in route "%s".', $pattern));
+					}
+					
+					$regex .= ')?';
+					break;
+			}
+		}
+		
+		// Check parse error
+		if($num_opt > 0)
+		{
+			throw new Exception(sprintf('Missing end parenthesis in route "%s".', $pattern));
+		}
+		
+		return $regex;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Creates the reverse route code which renders the URI.
+	 * 
+	 * @param  array
+	 * @return array(array required_keys, string code)
+	 */
+	public function createReverseCode(&$token_list)
+	{
+		// Code parts to be concatenated together
+		$code = array();
+		// Keys that are required for this part
+		$required_keys = array();
+		
+		while( ! empty($token_list))
+		{
+			list($type, $data) = array_shift($token_list);
+			
+			switch($type)
+			{
+				case self::LITERAL:
+					$code[] = '\''.addcslashes($data, '\'\\').'\'';
+					break;
+				
+				case self::CAPTURE:
+					$required_keys[] = $data;
+					$code[] = '$options[\''.$data.'\']';
+					break;
+				
+				// Optional section start
+				case self::OPTBEGIN:
+					// Render subpattern
+					list($keys, $data) = $this->createReverseCode($token_list);
+					
+					// Just visual sugar on the URI, no need to render
+					if(empty($keys))
+					{
+						continue;
+					}
+					
+					// Create conditionals to tell if we should render the optional subpart
+					$condition = array();
+					foreach($keys as $key)
+					{
+						$condition[] = 'isset($options[\''.$key.'\'])';
+					}
+					
+					$code[] = '('.implode(' && ', $condition).' ? '.$data.' : \'\')';
+					break;
+				
+				// Optional section end
+				case self::OPTEND:
+					// We're done with this part
+					break 2;
+			}
+		}
+		
+		return array($required_keys, implode('.', $code));
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function getMatchCode()
 	{
-		return 'if(preg_match(\'#^'.addcslashes($this->regex, "'").'$#u\', $uri))
+		return 'if(preg_match(\'#^'.addcslashes($this->regex, "'\\").'$#u\', $uri, $m))
 		{
-			return array_merge($m, '.var_export($this->options, true).');
+			// '.$this->pattern.'
+			return '.(empty($this->options) ? '$m;' : 'array_merge('.var_export($this->options, true).', $m);').'
 		}';
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function getReverseMatchCode()
 	{
@@ -135,13 +264,15 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 			// No need to check for parameters, all are optional
 			if( ! $this->hasAction() OR ! $this->hasClass())
 			{
-				return 'return '.$this->reverse_code.';';
+				return '// '.$this->pattern.'
+				return '.$this->reverse_code.';';
 			}
 			else
 			{
 				// Check for action
 				return 'if($options[\'_action\'] === \''.$this->getAction().'\')
 					{
+						// '.$this->pattern.'
 						return '.$this->reverse_code.';
 					}';
 			}
@@ -156,6 +287,7 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 			{
 				return 'if('.$param_check.')
 				{
+					// '.$this->pattern.'
 					return '.$this->reverse_code.';
 				}';
 			}
@@ -164,6 +296,7 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 				// Check for action
 				return 'if($options[\'_action\'] === \''.$this->getAction().'\' &&'.$param_check.')
 				{
+					// '.$this->pattern.'
 					return '.$this->reverse_code.';
 				}';
 			}

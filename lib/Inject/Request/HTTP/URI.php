@@ -239,7 +239,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 			
 			if( ! Inject_Util_Cache::isCurrent('URI_Router.php', $files))
 			{
-				$this->createRouterBuilder()->writeCache();
+				$this->createRouterBuilder($files)->writeCache('URI_Router.php');
 			}
 		}
 		
@@ -257,9 +257,9 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	 * 
 	 * @return Inject_Request_HTTP_URI_RouterBuilder
 	 */
-	public function createRouterBuilder()
+	public function createRouterBuilder(array $files)
 	{
-		return new Inject_Request_HTTP_URI_RouterBuilder('Inject_Request_HTTP_URI_CachedRouter');
+		return new Inject_Request_HTTP_URI_RouterBuilder('Inject_Request_HTTP_URI_CachedRouter', $files);
 	}
 }
 

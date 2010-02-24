@@ -6,33 +6,58 @@
  */
 
 /**
- * 
+ * Base class for a route creating object.
  */
 abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
+	/**
+	 * Contains the controller class if it has one in the options.
+	 * 
+	 * @var string
+	 */
 	protected $controller_class;
 	
+	/**
+	 * Contains the controller action if it has one in the options.
+	 * 
+	 * @var string
+	 */
 	protected $controller_action;
 	
+	/**
+	 * A list of parameters (not including _class, _controller, _action or _constraints).
+	 * 
+	 * @var array
+	 */
 	protected $parameters = array();
 	
+	/**
+	 * The complete options array.
+	 * 
+	 * @var array
+	 */
 	protected $options = array();
 	
+	/**
+	 * The pattern to match.
+	 * 
+	 * @var string
+	 */
 	protected $pattern;
 	
 	// ------------------------------------------------------------------------
 
 	/**
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array 
 	 */
 	public function __construct($pattern, array $options)
 	{
 		$this->pattern = $pattern;
 		$this->options = $options;
 		
-		$this->parameters = array_diff_key($options, array('_class' => true, '_action' => true, '_controller' => true));
+		$this->parameters = array_diff_key($options, array('_class' => true, '_action' => true, '_controller' => true, '_constraints' => true));
 		
 		if(isset($options['_controller']))
 		{
@@ -140,6 +165,19 @@ abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 	public function getOptions()
 	{
 		return $this->options;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Cleans a route literal from escape characters "\".
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+	public static function cleanLiteral($string)
+	{
+		return preg_replace('/\\\\(\\\\|:|\\(|\\))/', '$1', $string);
 	}
 }
 
