@@ -113,8 +113,8 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * The captures will override the contents of the $options array if they
 	 * use the same name. For example the "id" option (or parameter in this case)
 	 * will be overridden in "page(/:id)" if eg. "page/34" is the URI (then the
-	 * id parameter will be 34, otherwise it will be whatever it is in the
-	 * $options array).
+	 * id parameter will be 34, if no slash comes after "page" or if there is no
+	 * data after the slash, id will be whatever it is in the $options array).
 	 * 
 	 * So you can for example specify an action to be called if the URI matches
 	 * :_controller/foo, and then the controller name will be fetched from the URI.
@@ -128,7 +128,7 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * 
 	 * <code>
 	 * :foo  = matches a segment into the parameter foo
-	 * (bar) = optionally match bar, tries to matches if present
+	 * (bar) = optionally match bar, tries to match if present
 	 * \(    = escaped parenthesis
 	 * \)    = escaped closing parenthesis
 	 * \:    = escaped match statement
@@ -141,15 +141,15 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * <code>
 	 * page/foo              = matches "page/foo".
 	 *                       
-	 * page/:id              = matches "welcome/" and then an URI segment which then
+	 * page/:id              = matches "page/" and then an URI segment which then
 	 *                         is stored in the id parameter.
 	 *                       
-	 * page(/:id)            = matches "welcome" and then an optional "/" followed
-	 *                         by a segment which is stored in the id parameter.
+	 * page(/:id)            = matches "page" and then an optional "/" followed
+	 *                         by an optional capture which is stored in the id parameter.
 	 *                       
 	 * (:lang/)page(/:id)    = matches an optional segment whose content will be put
-	 *                         in the lang parameter, then "page" and finally a
-	 *                         segment which will be put in the id parameter.
+	 *                         in the lang parameter, then "page" and finally an
+	 *                         optional segment which will be put in the id parameter.
 	 *                       
 	 * \:page:name           = matches ":page" and then the following text goes into
 	 *                         the name parameter.
@@ -188,6 +188,10 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * 
 	 * This will force the method to be a letter (a-z, at least one char)
 	 * and the id to be numeric (0-9).
+	 * 
+	 * 
+	 * CAUTION:
+	 * Keep in mind that PHP needs escaping of the "\" character in string literals!
 	 * 
 	 * @param  string
 	 * @param  array
