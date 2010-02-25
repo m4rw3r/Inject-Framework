@@ -200,7 +200,31 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 			$uri .= '/'.strtolower($controller['_action']);
 		}
 		
-		foreach(array_diff_key($parameters, array('_class' => true, '_action' => true, '_controller' => true)) as $k => $v)
+		$parameters = array_diff_key($parameters, array('_class' => true, '_action' => true, '_controller' => true, '_constraints' => true));
+		
+		$uri .= self::createParameterList($parameters);
+		
+		return Inject_URI::getFrontController().(empty($uri) ? '' : '/'.$uri);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Converts a key => value parameter list to its URI representation.
+	 * 
+	 * @param  array   A key => value array of parameters
+	 * @param  array   A parameter_key => true array of parameters to skip
+	 * @return string
+	 */
+	public static function createParameterList(array $parameters, array $skip = array())
+	{
+		if(empty($parameters))
+		{
+			return '';
+		}
+		
+		$uri = '';
+		foreach(array_diff_key($parameters, $skip) as $k => $v)
 		{
 			if( ! is_numeric($k))
 			{
@@ -210,7 +234,7 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 			$uri .= '/'.$v;
 		}
 		
-		return Inject_URI::getFrontController().(empty($uri) ? '' : '/'.$uri);
+		return $uri;
 	}
 	
 	// ------------------------------------------------------------------------

@@ -50,7 +50,7 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * 
 	 * @var array
 	 */
-	protected $reverse_route_dynamic_tree = array('action' => array(), 'no_action' => array());
+	protected $reverse_route_dynamic_tree = array('action' => array(), 'no_action' => array(), 'dynamic' => array());
 	
 	// ------------------------------------------------------------------------
 
@@ -83,24 +83,29 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * data to determine which parameters to show and which controller and action
 	 * to run.
 	 * 
-	 * The $options array have four special keys which will be used by the
+	 * The $options array have five special keys which will be used by the
 	 * request object, all the others will be sent to the controller as parameters.
 	 * 
 	 * 
 	 * The special keys are:
 	 * 
 	 * - "_controller":  Specifies a controller name to run
-	 *                   (automatically adds "Controller_")
+	 *                   (automatically adds "Controller_").
 	 * 
 	 * - "_action":      Specifies an action name to run
-	 *                   (automatically adds "action")
+	 *                   (automatically adds "action").
 	 * 
 	 * - "_class":       Specifies a class name to run, this takes precedence
 	 *                   over "_controller" and does NOT automatically
-	 *                   add "Controller_", so full class names must be used
+	 *                   add "Controller_", so full class names must be used.
 	 * 
 	 * - "_constraints": Used by the captures to change the rules for the
-	 *                   content to match, see below for more information
+	 *                   content to match, see below for more information.
+	 * 
+	 * - "_uri":         Contains an uri to be parsed into a key => value array,
+	 *                   usually not used in the $options array, it is
+	 *                   instead used as a capture.
+	 *                   Parsed like this: key1/value1/key2/value2 etc.
 	 * 
 	 * 
 	 * The $pattern can contain captures, ie. pieces which will "capture" the
@@ -161,12 +166,22 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * page(/:id(/:lang))    = matches "page", then optionally "/" followed by data
 	 *                         which is put in id, then (if id is populated) an
 	 *                         optional "/" + a segment which will be stored in lang.
+	 * 
+	 * :_controller(/:_action(/):_uri)
+	 *                         is the default (and hardcoded) route used by Inject
+	 *                         Framework, it will match a controller as the first
+	 *                         segment, then an optional action, an optional slash
+	 *                         ("/", greedily matched), and the rest is populated
+	 *                         into the URI, which will parse it into a key => value
+	 *                         array.
 	 * </code>
 	 * 
 	 * 
 	 * Sometimes you want to be able to adjust what a "segment" is,
 	 * by default it is the regular expression for a word (\w) which will
-	 * match about anything except for special characters (including : and /).
+	 * match about anything except for special characters (including : and /)
+	 * (the :_uri capture uses .* instead, as it should usually match the rest
+	 * of the URI).
 	 * 
 	 * To change that, add the key "_constraints" to the $options parameter
 	 * with an array containing capture_name => regular_expression pairs for
@@ -231,6 +246,10 @@ class Inject_Request_HTTP_URI_RouterBuilder
 		{
 			// Dynamic controller
 			$this->reverse_route_dynamic_tree['action'][$r->getAction()][] = $r;
+		}
+		elseif($r->hasDynamicAction())
+		{
+			$this->reverse_route_dynamic_tree['dynamic'][] = $r;
 		}
 		else
 		{
@@ -413,6 +432,11 @@ class Inject_Request_HTTP_URI_RouterBuilder
 		}';
 			
 			$str[] = $s;
+		}
+		
+		foreach($this->reverse_route_dynamic_tree['dynamic'] as $r)
+		{
+			$str[] = $r->getReverseMatchCode();
 		}
 		
 		return implode("\n\n\t\t", $str);

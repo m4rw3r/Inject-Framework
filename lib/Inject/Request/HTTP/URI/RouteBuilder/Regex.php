@@ -7,8 +7,6 @@
 
 /**
  * The route builder for a regex route.
- * 
- * TODO: Implement support for :_uri setting in reverse routing, so the extra parameters will end up at the correct place of the route
  */
 class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
@@ -52,6 +50,13 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 	protected $required_keys = array();
 	
 	/**
+	 * A list of captures which are used by the pattern.
+	 * 
+	 * @var array
+	 */
+	protected $used_captures = array();
+	
+	/**
 	 * The PHP code which will assemble the reverse route from the $options array.
 	 * 
 	 * @var string
@@ -67,7 +72,11 @@ class Inject_Request_HTTP_URI_RouteBuilder_Regex extends Inject_Request_HTTP_URI
 		
 		$this->regex = $this->createRegex($tokens);
 		
-		list($this->required_keys, $this->reverse_code) = $this->createReverseCode($tokens);
+		list($required, $reverse) = $this->createReverseCode($tokens);
+		
+		// The _uri segment is not needed to match as it is dynamic
+		$this->required_keys = array_diff($required, array('_uri'));
+		$this->reverse_code = $reverse;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -108,6 +117,8 @@ EOP;*/
 				{
 					throw new Exception(sprintf('The capture "%s" is not allowed to be used as a capture name, in pattern "%s".', $capture, $this->pattern));
 				}
+				
+				$this->used_captures[] = $capture;
 				
 				$list[] = array(self::CAPTURE, $capture);
 			}
@@ -178,7 +189,17 @@ EOP;*/
 				
 				case self::CAPTURE:
 					// Capture and then also check for regex matching constraints
-					$regex .= '(?<'.addcslashes(preg_quote($data, '#'), '\'\\').'>'.(isset($this->options['_constraints'][$data]) ? addcslashes($this->options['_constraints'][$data], '\'\\') : '\w+').')';
+					
+					// Normal captures: \w+, _uri special capture: .*
+					$rule = $data == '_uri' ? '.*' : '\w+';
+					
+					// Override the capture rule if constraint is present
+					if(isset($this->options['_constraints'][$data]))
+					{
+						$rule = addcslashes($this->options['_constraints'][$data], '\'\\');
+					}
+					
+					$regex .= '(?<'.addcslashes(preg_quote($data, '#'), '\'\\').'>'.$rule.')';
 					break;
 				
 				// Optional section start
@@ -211,6 +232,10 @@ EOP;*/
 		// Keys that are required for this part
 		$required_keys = array();
 		
+		// List of non-special captures that has been used
+		$not_special = array_diff_key($this->used_captures, self::$special_options);
+		$not_special_in_keys = empty($not_special) ? array() : array_combine($not_special, array_pad(array(), count($not_special), true));
+		
 		while( ! empty($token_list))
 		{
 			list($type, $data) = array_shift($token_list);
@@ -218,16 +243,40 @@ EOP;*/
 			switch($type)
 			{
 				case self::LITERAL:
+					
 					$code[] = '\''.addcslashes($data, '\'\\').'\'';
+					
 					break;
 				
 				case self::CAPTURE:
-					$required_keys[] = $data;
-					$code[] = '$options[\''.$data.'\']';
+					
+					if($data == '_uri')
+					{
+						// The "magic" _uri key!
+						
+						if(empty($not_special))
+						{
+							$code[] = 'Inject_Request_HTTP_URI::createParameterList($params)';
+						}
+						else
+						{
+							$code[] = 'Inject_Request_HTTP_URI::createParameterList($params, '.var_export($not_special_in_keys, true).')';
+						}
+						
+						$required_keys[] = $data;
+					}
+					else
+					{
+						// Normal captures print a value
+						$required_keys[] = $data;
+						$code[] = '$options[\''.$data.'\']';
+					}
+					
 					break;
 				
 				// Optional section start
 				case self::OPTBEGIN:
+					
 					// Render subpattern
 					list($keys, $data) = $this->createReverseCode($token_list);
 					
@@ -237,18 +286,51 @@ EOP;*/
 						continue;
 					}
 					
-					// Create conditionals to tell if we should render the optional subpart
-					$condition = array();
-					foreach($keys as $key)
+					// Magic comes here (_uri)!
+					if(in_array('_uri', $keys))
 					{
-						$condition[] = 'isset($options[\''.$key.'\'])';
+						unset($keys[array_search('_uri', $keys)]);
+						
+						// Normal conditions for extra required captures
+						$condition = array();
+						foreach($keys as $key)
+						{
+							$condition[] = 'isset($options[\''.$key.'\'])';
+						}
+						
+						// No extra captures
+						if(empty($condition))
+						{
+							// Let it check if there are some other parameters there
+							if( ! empty($not_special))
+							{
+								$condition = array('array_diff_key($params, '.var_export($not_special_in_keys, true).')');
+							}
+							else
+							{
+								// Faster as we don't need diff
+								$condition = array('( ! empty($params))');
+							}
+						}
+					}
+					// Default:
+					else
+					{
+						// Create conditionals to tell if we should render the optional subpart
+						$condition = array();
+						foreach($keys as $key)
+						{
+							$condition[] = 'isset($options[\''.$key.'\'])';
+						}
 					}
 					
 					$code[] = '('.implode(' && ', $condition).' ? '.$data.' : \'\')';
+					
 					break;
 				
 				// Optional section end
 				case self::OPTEND:
+					
 					// We're done with this part
 					break 2;
 			}
@@ -292,8 +374,11 @@ EOP;*/
 		}
 		else
 		{
+			// Determine which variable to look in, $options also contains _controller etc.
+			$check_var = array_intersect($this->required_keys, self::$special_options) ? '$options' : '$params';
+			
 			// Check if there are any parameters which are missing
-			$param_check = ' ! array_diff_key('.var_export(array_combine($this->required_keys, array_pad(array(), count($this->required_keys), true)), true).', $params)';
+			$param_check = ' ! array_diff_key('.var_export(array_combine($this->required_keys, array_pad(array(), count($this->required_keys), true)), true).', '.$check_var.')';
 			
 			// No action, no action check, no class, action check already done
 			if( ! $this->hasAction() OR ! $this->hasClass())
@@ -314,6 +399,30 @@ EOP;*/
 				}';
 			}
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns true if the class is dynamically determined.
+	 * 
+	 * @return bool
+	 */
+	public function hasDynamicClass()
+	{
+		return in_array('_controller', $this->used_captures);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns true if the action is dynamically determined.
+	 * 
+	 * @return bool
+	 */
+	public function hasDynamicAction()
+	{
+		return in_array('_action', $this->used_captures);
 	}
 }
 

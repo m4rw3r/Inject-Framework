@@ -11,6 +11,21 @@
 abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 {
 	/**
+	 * List of special options used by the Request object.
+	 * 
+	 * @var array
+	 */
+	public static $special_options = array('_class', '_action', '_controller', '_constraints', '_uri');
+	
+	/**
+	 * The same as $special_options, but they are stored in the keys,
+	 * for use with array_diff_key().
+	 * 
+	 * @var array
+	 */
+	public static $special_options_in_keys = array('_class' => true, '_action' => true, '_controller' => true, '_constraints' => true, '_uri' => true);
+	
+	/**
 	 * Contains the controller class if it has one in the options.
 	 * 
 	 * @var string
@@ -57,7 +72,7 @@ abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 		$this->pattern = $pattern;
 		$this->options = $options;
 		
-		$this->parameters = array_diff_key($options, array('_class' => true, '_action' => true, '_controller' => true, '_constraints' => true));
+		$this->parameters = array_diff_key($options, self::$special_options_in_keys);
 		
 		if(isset($options['_controller']))
 		{
@@ -116,6 +131,30 @@ abstract class Inject_Request_HTTP_URI_RouteBuilder_Abstract
 	public function hasAction()
 	{
 		return ! empty($this->controller_action);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns true if the class is dynamically determined.
+	 * 
+	 * @return bool
+	 */
+	public function hasDynamicClass()
+	{
+		return false;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns true if the action is dynamically determined.
+	 * 
+	 * @return bool
+	 */
+	public function hasDynamicAction()
+	{
+		return false;
 	}
 	
 	// ------------------------------------------------------------------------
