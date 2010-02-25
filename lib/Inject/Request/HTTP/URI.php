@@ -246,20 +246,12 @@ class Inject_Request_HTTP_URI extends Inject_Request_HTTP
 	 */
 	protected function loadCache()
 	{
-		$f = current(Inject::getApplicationPaths()).'Cache/URI_Router.php';
+		$f = Inject::getCacheFolder().'URI_Router.php';
 		
 		if( ! file_exists($f) OR ! Inject::getIsProduction())
 		{
 			// No prod, check if we have an old one:
-			
-			$files = array();
-			foreach(Inject::getApplicationPaths() as $p)
-			{
-				if(file_exists($p.'Config/URI_Routes.php'))
-				{
-					$files[] = $p.'Config/URI_Routes.php';
-				}
-			}
+			$files = Inject::app()->getUriRouteFiles();
 			
 			if( ! Inject_Util_Cache::isCurrent('URI_Router.php', $files))
 			{

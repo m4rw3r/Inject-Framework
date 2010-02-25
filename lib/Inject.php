@@ -80,6 +80,13 @@ final class Inject
 	private static $run_level = 0;
 	
 	/**
+	 * The application configuration which is currently run.
+	 * 
+	 * @var Inject_ApplicationInterface
+	 */
+	private static $app = null;
+	
+	/**
 	 * The configuration cache.
 	 * 
 	 * @var array
@@ -101,17 +108,20 @@ final class Inject
 	private static $fw_path;
 	
 	/**
-	 * A "namespacing" feature which enables the user to move a set of classes
-	 * to a directory alongside the Libraries folder.
+	 * The path to the cache directory.
 	 * 
 	 * @var string
 	 */
+	private static $cache_path = './Cache';
+	
+	/**
+	 * A "namespacing" feature which enables the user to move a set of classes
+	 * to a directory alongside the Libraries folder.
+	 * 
+	 * @var array
+	 */
 	private static $namespaces = array(
-	                                  'Cli'         => 'Cli',
-	                                  'Controller'  => 'Controllers',
-	                                  'Inject'      => 'Inject',
-	                                  'Model'       => 'Models',
-	                                  'Partial'     => 'Partials'
+	                                  'Inject'      => 'Inject'
 	                                  );
 	
 	/**
@@ -140,7 +150,7 @@ final class Inject
 	/**
 	 * The dispatcher object used.
 	 * 
-	 * @var Inject_Dispatcher
+	 * @var Inject_Dispatcher|object
 	 */
 	private static $dispatcher = null;
 	
@@ -264,32 +274,43 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Adds application paths for the framework.
+	 * Loads an application configuration object which configures how Inject
+	 * Framework should behave for this request.
 	 * 
-	 * @param  array
+	 * @param  Inject_ApplicationInterface
 	 * @return void
 	 */
-	public static function addPaths(array $paths)
+	public static function loadApplication(Inject_ApplicationInterface $app)
 	{
-		foreach($paths as $p)
+		if( ! is_null(self::$app))
 		{
-			$p = realpath($p).DIRECTORY_SEPARATOR;
-			
-			// do not add twice
-			if(in_array($p, self::$paths))
-			{
-				continue;
-			}
-			
-			self::$paths[] = $p;
-			
-			// does the path have a configuration file
-			if(file_exists($p.'Config/Inject.php'))
-			{
-				self::log('Inject', 'Loading framework configuration from "'.$p.'Config/Inject.php".', self::DEBUG);
-				include $p.'Config/Inject.php';
-			}
+			throw new Exception('An application is only allowed to be loaded once per request.');
 		}
+		
+		self::$app = $app;
+		
+		self::$paths = $app->getPaths();
+		
+		self::$cache_path = $app->getCacheFolder();
+		
+		self::$namespaces = array_merge(self::$namespaces, $app->getNamespaceMappings());
+		
+		// Let the app configure its stuff
+		$app->configure();
+		
+		self::$dispatcher = $app->getDispatcher();
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the application configuration instance.
+	 * 
+	 * @return Inject_ApplicationInterface
+	 */
+	public static function app()
+	{
+		return self::$app;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -411,18 +432,6 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the dispatcher object.
-	 * 
-	 * @param  Inject_Dispatcher|objcet
-	 */
-	public static function setDispatcher($disp)
-	{
-		self::$dispatcher = $disp;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
 	 * Stores a configuration.
 	 * 
 	 * @param  string
@@ -451,11 +460,23 @@ final class Inject
 	/**
 	 * Returns an array of all the application paths.
 	 * 
-	 * @return string
+	 * @return array
 	 */
 	public static function getApplicationPaths()
 	{
 		return self::$paths;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the path to the cache folder, has trailing slash.
+	 * 
+	 * @return string
+	 */
+	public static function getCacheFolder()
+	{
+		return self::$cache_path;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -477,7 +498,7 @@ final class Inject
 	 * 
 	 * @return bool
 	 */
-	public function getIsProduction()
+	public static function getIsProduction()
 	{
 		return self::$production;
 	}
@@ -516,16 +537,8 @@ final class Inject
 			return self::$config[$name];
 		}
 		
-		$c = array();
-		
-		foreach(self::$paths as $p)
-		{
-			if(file_exists($p.'Config/'.$name.'.php'))
-			{
-				// include file and merge it
-				$c = array_merge(include $p.'Config/'.$name.'.php', $c);
-			}
-		}
+		// Let the application load the configuration
+		$c = self::$app->getConfiguration($name);
 		
 		return self::$config[$name] = empty($c) ? $default : $c;
 	}

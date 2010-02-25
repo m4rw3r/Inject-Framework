@@ -22,7 +22,7 @@ class Inject_Util_Cache
 	 */
 	public static function load($file)
 	{
-		$f = self::getFolder();
+		$f = Inject::getCacheFolder();
 		
 		if(file_exists($f.$file))
 		{
@@ -54,13 +54,13 @@ class Inject_Util_Cache
 	 * 
 	 * @param  string  Name of the cache file, relative to self::getFolder()
 	 * @param  array   Files which are to be included in the cache file, full paths
-	 * @return 
+	 * @return bool
 	 */
 	public static function isCurrent($cache_file, array $files)
 	{
 		self::loadMetadata();
 		
-		if(isset(self::$file_metadata[$cache_file]) && file_exists(self::getFolder().$cache_file) && ! array_diff($files, array_keys(self::$file_metadata[$cache_file])))
+		if(isset(self::$file_metadata[$cache_file]) && file_exists(Inject::getCacheFolder().$cache_file) && ! array_diff($files, array_keys(self::$file_metadata[$cache_file])))
 		{
 			foreach(self::$file_metadata[$cache_file] as $file => $time)
 			{
@@ -93,7 +93,7 @@ class Inject_Util_Cache
 	 * Registers that a cache file has been updated and adds the appropriate metadata
 	 * to later be able to tell when to update it.
 	 * 
-	 * @param  string  Cache file, relative to self::getFolder()
+	 * @param  string  Cache file, relative to cache folder
 	 * @param  array   List of files used in creating the cache file, full paths
 	 * @return void
 	 */
@@ -117,9 +117,10 @@ class Inject_Util_Cache
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Removes the metadata about the specified cache file.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string  Filename relative to cache folder
+	 * @return void
 	 */
 	public static function removeCacheFile($cache_file)
 	{
@@ -131,27 +132,15 @@ class Inject_Util_Cache
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the cache folder to use.
-	 * 
-	 * @return string
-	 */
-	public static function getFolder()
-	{
-		return current(Inject::getApplicationPaths()).'Cache/';
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
 	 * Loads the metadata file, containing change dates as well as filenames.
 	 * 
 	 * @return void
 	 */
 	protected static function loadMetadata()
 	{
-		if(self::$file_metadata === false && file_exists(self::getFolder().'cachemeta.php'))
+		if(self::$file_metadata === false && file_exists(Inject::getCacheFolder().'cachemeta.php'))
 		{
-			self::$file_metadata = include self::getFolder().'cachemeta.php';
+			self::$file_metadata = include Inject::getCacheFolder().'cachemeta.php';
 		}
 		else
 		{
@@ -172,7 +161,7 @@ class Inject_Util_Cache
 
 return '.var_export(self::$file_metadata, true).';';
 		
-		file_put_contents(self::getFolder().'cachemeta.php', $str);
+		file_put_contents(Inject::getCacheFolder().'cachemeta.php', $str);
 	}
 }
 

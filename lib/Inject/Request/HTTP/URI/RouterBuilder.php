@@ -268,7 +268,7 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 */
 	public function writeCache($file)
 	{
-		$r = file_put_contents(Inject_Util_Cache::getFolder().$file, '<?php
+		$r = file_put_contents(Inject::getCacheFolder().$file, '<?php
 
 '.$this->getPHP());
 		

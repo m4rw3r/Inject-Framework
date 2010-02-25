@@ -51,15 +51,13 @@ Inject::attachLogger($p);
 
 
 /*
- * Set applicaiton paths.
+ * Create the application instance and load it into Inject.
  * 
- * Here you define the application paths, with the most important one first
- * in the array.
- * 
- * These paths will be searched for configuration for the framework,
- * located in config/inject.php.
+ * The application instance will provide configuration, paths,
+ * namespace mappings and the dispatcher.
  */
-Inject::addPaths(array('app'));
+require './SampleApplication.php';
+Inject::loadApplication(new SampleApplication());
 
 
 /*
