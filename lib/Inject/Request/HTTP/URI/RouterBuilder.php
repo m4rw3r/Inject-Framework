@@ -178,7 +178,7 @@ class Inject_Request_HTTP_URI_RouterBuilder
 	 * 
 	 * 
 	 * Sometimes you want to be able to adjust what a "segment" is,
-	 * by default it is the regular expression for a word (\w) which will
+	 * by default it is the regular expression for a word (\w+) which will
 	 * match about anything except for special characters (including : and /)
 	 * (the :_uri capture uses .* instead, as it should usually match the rest
 	 * of the URI).
