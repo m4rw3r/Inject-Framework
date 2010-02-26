@@ -508,24 +508,6 @@ final class Inject
 	/**
 	 * Returns a configuration for a certain name, loads the configuration if not present.
 	 * 
-	 * Searches all the registered paths for configuration files with the name $name.php.
-	 * 
-	 * Configuration format:
-	 * <code>
-	 * <?php
-	 * // do some stuff here, usually just create an array like this:
-	 * 
-	 * $config = array(
-	 *     'cache_path' => '/some/path',
-	 *     'use_cache' => true
-	 * );
-	 * 
-	 * // then return the resulting config:
-	 * return $config;
-	 * ?>
-	 * </code>
-	 * 
-	 * 
 	 * @param  string
 	 * @param  mixed
 	 * @return array|false

@@ -84,19 +84,19 @@ abstract class Inject_DefaultApplication implements Inject_ApplicationInterface
 	 */
 	public function getConfiguration($name)
 	{
-		$c = array();
+		$conf = array();
 		
 		// Search all the paths
-		foreach($this->getPaths() as $p)
+		foreach($this->getPaths() as $path)
 		{
-			if(file_exists($p.'Config/'.$name.'.php'))
+			if(file_exists($path.'Config/'.$name.'.php'))
 			{
 				// include file and merge it
-				$c = array_merge(include $p.'Config/'.$name.'.php', $c);
+				$conf = array_merge(include $path.'Config/'.$name.'.php', $conf);
 			}
 		}
 		
-		return $c;
+		return $conf;
 	}
 	
 	// ------------------------------------------------------------------------
