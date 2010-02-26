@@ -8,7 +8,7 @@
 /**
  * Default application settings, used as a template for new applications.
  */
-abstract class Inject_DefaultApplication implements Inject_ApplicationInterface
+abstract class Inject_Application_Default implements Inject_ApplicationInterface
 {
 	/**
 	 * Default namespace mappings.

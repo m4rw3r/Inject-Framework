@@ -8,7 +8,7 @@
 /**
  * This is the sample application configuration file.
  */
-class SampleApplication extends Inject_DefaultApplication
+class SampleApplication extends Inject_Application_Default
 {
 	public function isProduction()
 	{
