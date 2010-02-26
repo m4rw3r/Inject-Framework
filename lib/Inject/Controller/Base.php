@@ -8,7 +8,7 @@
 /**
  * 
  */
-class Inject_Controller
+class Inject_Controller_Base
 {
 	/**
 	 * The request instance which is currently run.
