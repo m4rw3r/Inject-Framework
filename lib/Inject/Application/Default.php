@@ -25,6 +25,7 @@ abstract class Inject_Application_Default implements Inject_ApplicationInterface
 		return array(
 			'Cli'         => 'Cli',
 			'Controller'  => 'Controllers',
+			'Helper'      => 'Helpers',
 			'Model'       => 'Models',
 			'Partial'     => 'Partials'
 		);
