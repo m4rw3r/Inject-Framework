@@ -6,7 +6,7 @@
  */
 
 /**
- * 
+ * PHP Template renderer.
  */
 class Inject_Controller_Renderer_PHP implements Inject_Controller_RenderInterface
 {

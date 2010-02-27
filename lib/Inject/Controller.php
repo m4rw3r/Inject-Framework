@@ -6,7 +6,8 @@
  */
 
 /**
- * 
+ * The standard controller class which also contains logic for
+ * rendering templates.
  */
 class Inject_Controller extends Inject_Controller_Base
 {
@@ -14,27 +15,17 @@ class Inject_Controller extends Inject_Controller_Base
 	
 	protected $default_template_prefix;
 	
-	function __construct(Inject_Request $req)
-	{
-		parent::__construct($req);
-		
-		// Assign default template prefix, by default the controller name
-		$this->default_template_prefix = str_replace('<Controller_', '', '<'.get_class($this));
-	}
-	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Initializes the template renderer if it isn't already initialized.
+	 * Initializes the template renderer, default renderer is the
+	 * Inject_Controller_Renderer_PHP.
 	 * 
 	 * @return void
 	 */
 	public function initRenderer()
 	{
-		if(empty($this->renderer))
-		{
-			$this->renderer = new Inject_Controller_Renderer_PHP($this->request);
-		}
+		$this->renderer = new Inject_Controller_Renderer_PHP($this->request);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -53,10 +44,23 @@ class Inject_Controller extends Inject_Controller_Base
 	 */
 	public function render($view_name, $data = false, $return = false, $type = 'php')
 	{
-		$this->initRenderer();
+		if(empty($this->renderer))
+		{
+			$this->initRenderer();
+			
+			// Do we have a default template prefix?
+			if(empty($this->default_template_prefix))
+			{
+				// Fix the controller name prefix used by the templates
+				$class = strtolower(get_class($this));
+				$this->default_template_prefix = strtr(strpos($class, 'controller_') === 0 ? substr($class, 11) : $class, '\\_', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR);
+			}
+		}
 		
+		// Is it relative?
 		if(strpos($view_name, '/') !== 0)
 		{
+			// Yes
 			$view_name = $this->default_template_prefix.'/'.$view_name;
 		}
 		

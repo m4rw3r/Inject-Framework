@@ -6,7 +6,7 @@
  */
 
 /**
- * 
+ * Base controller which is a lightweight controller.
  */
 class Inject_Controller_Base
 {
