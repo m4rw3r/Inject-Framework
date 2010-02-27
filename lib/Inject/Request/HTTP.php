@@ -358,6 +358,9 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	{
 		$_found = false;
 		
+		header('HTTP/1.1 500');
+		header('Content-Type: text/html;charset=UTF8');
+		
 		foreach(array_merge(array(Inject::getFrameworkPath()), Inject::getApplicationPaths()) as $p)
 		{
 			if(file_exists($p.'Errors/http_general.php'))
@@ -379,6 +382,9 @@ abstract class Inject_Request_HTTP extends Inject_Request
 	public function showError500($level, $type, $message, $file, $line, $trace)
 	{
 		$_found = false;
+		
+		header('HTTP/1.1 500');
+		header('Content-Type: text/html;charset=UTF8');
 		
 		foreach(array_merge(array(Inject::getFrameworkPath()), Inject::getApplicationPaths()) as $p)
 		{
