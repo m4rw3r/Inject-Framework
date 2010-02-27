@@ -446,7 +446,7 @@ function hideIFW()
 	-moz-border-radius-topright: 5px;
 	-webkit-border-top-right-radius: 5px;
 }
-#IFW-Profiler li
+#IFW-Profiler .toolbar li
 {
 	display: block;
 	float: left;
@@ -523,19 +523,19 @@ function hideIFW()
 {
 	padding-left: 0;
 }
-#IFW-Profiler .IFW-ERROR, #IFW-Profiler .IFW-ERROR strong
+#IFW-Profiler .IFW-ERROR, #IFW-Profiler .toolbar .IFW-ERROR
 {
 	color: #f00;
 }
-#IFW-Profiler .IFW-WARNING, #IFW-Profiler .IFW-WARNING strong
+#IFW-Profiler .IFW-WARNING, #IFW-Profiler .toolbar .IFW-WARNING
 {
 	color: #ff9;
 }
-#IFW-Profiler .IFW-NOTICE, #IFW-Profiler .IFW-NOTICE strong
+#IFW-Profiler .IFW-NOTICE, #IFW-Profiler .toolbar .IFW-NOTICE
 {
 	color: #99c;
 }
-#IFW-Profiler .IFW-DEBUG, #IFW-Profiler .IFW-DEBUG strong
+#IFW-Profiler .IFW-DEBUG, #IFW-Profiler .toolbar .IFW-DEBUG
 {
 	color: #fff;
 }
