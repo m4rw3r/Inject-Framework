@@ -378,22 +378,8 @@ function removeClassName(objElement, strClass)
 	}
 }
 
-function activateTab(classname)
+function activatePanel(classname)
 {
-	// always show the whole profiler
-	removeClassName(document.getElementById('IFW-Profiler'), 'IFW-Hidden', true);
-	
-	// change the arrow to a down arrow
-	var a = document.getElementById('IFW-HideBtn');
-	if(a.nodeType == 3)
-	{
-		a.data = '\u25BC';
-	}
-	if(a.nodeType == 1)
-	{
-		a.firstChild.data = '\u25BC';
-	}
-	
 	// change tab
 	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
 	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
@@ -410,29 +396,15 @@ function activateTab(classname)
 }
 function hideIFW()
 {
-	var p = document.getElementById('IFW-Profiler');
-	var a = document.getElementById('IFW-HideBtn');
-	var txt = '';
+	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
+	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
+	addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
+	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
 	
-	if(p.className.indexOf('IFW-Hidden') != -1)
-	{
-		removeClassName(p, 'IFW-Hidden');
-		txt = '\u25BC';
-	}
-	else
-	{
-		addClassName(p, 'IFW-Hidden', true);
-		txt = '\u25B2';
-	}
-	
-	if(a.nodeType == 3)
-	{
-		a.data = txt;
-	}
-	if(a.nodeType == 1)
-	{
-		a.firstChild.data = txt;
-	}
+	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
+	removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
 }
 </script>
 <style type="text/css">
@@ -441,6 +413,7 @@ function hideIFW()
 	position: fixed !important;
 	bottom: 0;
 	left: 0;
+	height: 30px;
 	background: transparent;
 	z-index: 0;
 	width: 100%;
@@ -459,131 +432,45 @@ function hideIFW()
 	text-decoration: none;
 	font-weight: normal;
 }
-#IFW-HideBtn
-{
-	display: block;
-	width: 100%;
-	padding: 0 5px 5px;
-	text-align: center;
-	font-weight: bolder;
-}
-#IFW-HideBtn:hover
-{
-	color: #000;
-}
-#IFW-Profiler.IFW-Hidden
-{
-	height: 90px;
-	overflow: hidden;
-}
-#IFW-Profiler .IFW-Container
+#IFW-Profiler .toolbar
 {
 	position: relative;
-	background: #555;
-	color: #ccc;
-	width: 800px;
-	height: 500px;
+	background: #000;
+	width: 780px;
+	height: 22px;
 	margin: auto;
-	float: none;
-	padding: 10px;
-	border: 1px solid #111;
-	border-bottom: 0;
-	-moz-border-radius-topleft: 10px;
-	-webkit-border-top-left-radius: 10px;
-	-moz-border-radius-topright: 10px;
-	-webkit-border-top-right-radius: 10px;
-}
-#IFW-Profiler ul
-{
-	height: 60px;
-}
-#IFW-Profiler ul li
-{
-	display: block;
-	width: 176px;
-	float: left;
-	height: 40px;
-	font-size: 16px;
-	padding: 10px;
-	text-align: center;
-	-moz-border-radius-topleft: 10px;
-	-webkit-border-top-left-radius: 10px;
-	-moz-border-radius-topright: 10px;
-	-webkit-border-top-right-radius: 10px;
-}
-#IFW-Profiler ul li:hover, #IFW-Profiler ul li:hover *
-{
-	color: #000;
-}
-#IFW-Profiler ul li strong, #IFW-Profiler ul li span
-{
-	margin: 0;
-	display: block;
-	width: 100%;
-}
-.IFW-Selected, .IFW-Selected *
-{
-	background: #000;
-}
-#IFW-Console-Tab.IFW-Selected, #IFW-Console-Tab.IFW-Selected *
-{
-	color: #3a3;
-}
-#IFW-Console-Tab:hover, #IFW-Console-Tab:hover *
-{
-	background: #3a3;
-}
-#IFW-Exec-Tab.IFW-Selected, #IFW-Exec-Tab.IFW-Selected *
-{
-	color: #55a;
-}
-#IFW-Exec-Tab:hover, #IFW-Exec-Tab:hover *
-{
-	background: #55a;
-}
-#IFW-Db-Tab.IFW-Selected, #IFW-Db-Tab.IFW-Selected *
-{
-	color: #aa3;
-}
-#IFW-Db-Tab:hover, #IFW-Db-Tab:hover *
-{
-	background: #aa3;
-}
-#IFW-Files-Tab.IFW-Selected, #IFW-Files-Tab.IFW-Selected *
-{
-	color: #ccc;
-}
-#IFW-Files-Tab:hover, #IFW-Files-Tab:hover *
-{
-	background: #ccc;
-}
-#IFW-Profiler .IFW-Panes
-{
-	position: relative;
-	clear: both;
-	top: 0;
-}
-#IFW-Profiler .IFW-Pane
-{
-	height: 399px;
-	background: #000;
-	overflow:auto;
-	padding: 15px;
-	border: 0;
-}
-#IFW-Profiler .IFW-LeftCorner
-{
+	padding: 8px 10px 0;
+	font-weight: bold;
 	-moz-border-radius-topleft: 5px;
 	-webkit-border-top-left-radius: 5px;
-}
-#IFW-Profiler .IFW-RightCorner
-{
 	-moz-border-radius-topright: 5px;
 	-webkit-border-top-right-radius: 5px;
 }
-#IFW-Profiler .IFW-Hidden
+#IFW-Profiler li
 {
-	display: none;
+	display: block;
+	float: left;
+	margin: 0 10px;
+	color: #fff;
+}
+#IFW-Profiler .toolbar .IFW-Selected
+{
+	text-decoration: underline;
+}
+#IFW-Profiler .IFW-Panel
+{
+	position: relative;
+	bottom: 446px;
+	margin: auto;
+	width: 780px;
+	padding: 10px;
+	height: 400px;
+	background: #000;
+	overflow: auto;
+	-moz-border-radius-topleft: 5px;
+	-webkit-border-top-left-radius: 5px;
+	-moz-border-radius-topright: 5px;
+	-webkit-border-top-right-radius: 5px;
 }
 #IFW-Profiler h2
 {
@@ -646,250 +533,256 @@ function hideIFW()
 }
 #IFW-Profiler .IFW-NOTICE, #IFW-Profiler .IFW-NOTICE strong
 {
-	color: #fff;
+	color: #99c;
 }
 #IFW-Profiler .IFW-DEBUG, #IFW-Profiler .IFW-DEBUG strong
 {
-	color: #99c;
+	color: #fff;
 }
 .IFW-Clear
 {
 	clear: both;
+	display: block;
+}
+#IFW-Profiler .IFW-Hidden
+{
+	display: none;
 }
 </style>
-<div id="IFW-Profiler" class="IFW-Hidden">
-	<div class="IFW-Container">
-		<a id="IFW-HideBtn" onClick="hideIFW();">&#x25B2;</a>
+<div id="IFW-Profiler">
+	<div class="toolbar">
 		<ul>
-			<li id="IFW-Console-Tab" onClick="activateTab('IFW-Console');" class="IFW-Selected"><strong><?php echo $this->lang->console ?></strong><?php
+			<li id="IFW-No-Tab" onClick="hideIFW();" style="color: #fff">Inject Framework</li>
+			
+			<?php
 $str = '';
 foreach(array(Inject::DEBUG => $this->lang->dbg_msgs,
-              Inject::NOTICE => $this->lang->notices,
-              Inject::WARNING => $this->lang->warnings,
-              Inject::ERROR => $this->lang->errors) as $c => $s)
+		  Inject::NOTICE => $this->lang->notices,
+		  Inject::WARNING => $this->lang->warnings,
+		  Inject::ERROR => $this->lang->errors) as $c => $s)
 {
-	if( ! empty($this->log_summary[$c]))
-	{
-		$str = '<span class="IFW-'.strtoupper(Inject_Util::errorConstToStr($c)).'">'.$this->log_summary[$c].' '.$s.'</span>';
-	}
+if( ! empty($this->log_summary[$c]))
+{
+	$str = '<li id="IFW-Console-Tab" onClick="activatePanel(\'IFW-Console\');" class="IFW-'.strtoupper(Inject_Util::errorConstToStr($c)).'">'.$this->log_summary[$c].' '.$s.'</li>';
+}
 }
 
 echo $str;
-			?></li>
-			<li id="IFW-Exec-Tab" onClick="activateTab('IFW-Exec');"><strong><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms</strong> <span><?php echo $this->lang->exec_info ?></span></li>
-			<li id="IFW-Db-Tab" onClick="activateTab('IFW-Db');"><strong><?php echo count($this->queries) ?> <?php echo $this->lang->queries ?></strong> <span><?php echo $this->lang->database ?></span></li>
-			<li id="IFW-Files-Tab" onClick="activateTab('IFW-Files');"><strong><?php echo count($this->files) ?> <?php echo $this->lang->files ?></strong> <span><?php echo $this->lang->included ?></span></li>
-		</ul>
+		?>
+		
+		<li id="IFW-Exec-Tab" onClick="activatePanel('IFW-Exec');"><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms <span style="display:inline; margin: 0 0 0 10px; color: #fff"><?php echo number_format($this->memory / 1024, 0) ?> kB</span></li>
+		
+		<li id="IFW-Db-Tab" onClick="activatePanel('IFW-Db');"><?php echo count($this->queries) ?> queries</li>
+		
+		<li id="IFW-Files-Tab" onClick="activatePanel('IFW-Files');"><?php echo count($this->files) ?> <?php echo $this->lang->files ?></li>
+	</div>
 	
-		<div class="IFW-panes">
-			<div id="IFW-Console" class="IFW-Pane IFW-RightCorner">
-				<div class="IFW-THead">
-					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::ERROR]) ? '' : ' IFW-ERROR' ?>" style="width: 120px"><strong><?php echo $this->lang->errors ?>: </strong> <?php echo $this->log_summary[Inject::ERROR] ?></div>
-					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::WARNING]) ? '' : ' IFW-WARNING' ?>" style="width: 120px"><strong><?php echo $this->lang->warnings ?>: </strong> <?php echo $this->log_summary[Inject::WARNING] ?></div>
-					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::NOTICE]) ? '' : ' IFW-NOTICE' ?>" style="width: 120px"><strong><?php echo $this->lang->notices ?>: </strong> <?php echo $this->log_summary[Inject::NOTICE] ?></div>
-					<div class="IFW-Cell<? echo empty($this->log_summary[Inject::DEBUG]) ? '' : ' IFW-DEBUG' ?>" style="width: 120px"><strong><?php echo $this->lang->dbg_msgs ?>: </strong> <?php echo $this->log_summary[Inject::DEBUG] ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				
-				<h3><?php echo $this->lang->log ?></h3>
-				
-				<div class="IFW-THead">
-					<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->level ?></div>
-					<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->time ?></div>
-					<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->source ?></div>
-					<div class="IFW-Cell" style="width: 485px"><?php echo $this->lang->message ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				
-				<?php foreach($this->log as $row): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
-					<div class="IFW-Cell" style="width: 70px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
-					<div class="IFW-Cell" style="width: 70px"><?php echo $row['name'] ?></div>
-					<div class="IFW-Cell" style="width: 485px"><?php echo htmlspecialchars($row['message'], ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-			</div>
-			
-			<div id="IFW-Exec" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
-				<div class="IFW-THead">
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->tot_exec_time ?>: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
-					</div>
-					
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->max_exec_time ?>: </strong> <?php echo $this->allowed_time ?> s
-					</div>
-
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->tot_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
-					</div>
-
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->max_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
-					</div>
-					
-					<span class="IFW-Clear"></span>
-				</div>
-				
-				<h3><?php echo $this->lang->headers ?></h3>
-				
-				<?php foreach($this->headers as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				
-				<h3><?php echo $this->lang->server_vars ?></h3>
-				
-				<?php foreach($_SERVER as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				
-				<h3>GET <?php echo $this->lang->data ?></h3>
-				
-				<?php if( ! empty($_GET)): ?>
-				<?php foreach($_GET as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				<?php else:?>
-				<p>
-					<?php echo $this->lang->no_get ?>
-				</p>
-				<?php endif; ?>
-				
-				<h3>POST <?php echo $this->lang->data ?></h3>
-				
-				<?php if( ! empty($_POST)): ?>
-				<?php foreach($_POST as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				<?php else:?>
-				<p>
-					<?php echo $this->lang->no_post ?>
-				</p>
-				<?php endif; ?>
-				
-				<h3><?php echo $this->lang->env_vars ?></h3>
-				
-				<?php if( ! empty($_ENV)): ?>
-				<?php foreach($_ENV as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				<?php else:?>
-				<p>
-					<?php echo $this->lang->no_env ?>
-				</p>
-				<?php endif; ?>
-				
-				<h3><?php echo $this->lang->cookies ?></h3>
-				
-				<?php if( ! empty($_COOKIE)): ?>
-				<?php foreach($_COOKIE as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				<?php else:?>
-				<p>
-					<?php echo $this->lang->no_cookies ?>
-				</p>
-				<?php endif; ?>
-				
-				<h3><?php echo $this->lang->session ?></h3>
-				
-				<?php if( ! empty($_SESSION)): ?>
-				<?php foreach($_SESSION as $k => $v): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-					<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-				<?php else:?>
-				<p>
-					<?php echo $this->lang->no_session ?>
-				</p>
-				<?php endif; ?>
-			</div>
-			
-			<div id="IFW-Db" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
-				<?php if($this->database_loaded): ?>
-					<div class="IFW-THead">
-						<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->time ?></div>
-						<div class="IFW-Cell" style="width: 665px"><?php echo $this->lang->query ?></div>
-						<span class="IFW-Clear"></span>
-					</div>
-					<?php foreach($this->queries as $q): ?>
-						<div class="IFW-Row">
-							<div class="IFW-Cell" style="width: 60px"><?php echo number_format($q['time'] * 1000, 4) ?> ms</div>
-							<div class="IFW-Cell" style="width: 665px"><?php echo htmlspecialchars($q['query'], ENT_COMPAT, 'UTF-8') ?></div>
-							<span class="IFW-Clear"></span>
-						</div>
-					<?php endforeach; ?>
-				<?php else: ?>
-				<h2>
-					<?php echo $this->lang->db_not_loaded ?>
-				</h2>
-				<?php endif; ?>
-			</div>
-			
-			<div id="IFW-Files" class="IFW-Pane IFW-Hidden IFW-LeftCorner IFW-RightCorner">
-				<div class="IFW-THead">
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->fw_path ?>: </strong> <?php echo $this->fw_path ?>
-					</div>
-					
-					<div class="IFW-Cell">
-						<strong><?php echo $this->lang->app_paths ?>:</strong>
-						
-						<ol>
-							<?php foreach($this->app_paths as $p): ?>
-							<li><?php echo $p ?></li>
-							<?php endforeach; ?>
-						</ol>
-					</div>
-					
-					<span class="IFW-Clear"></span>
-				</div>
-				
-				<h3><?php echo $this->lang->inc_files ?></h3>
-				
-				<?php foreach($this->files as $file): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 655px;"><?php echo $file['file'] ?></div>
-					<div class="IFW-Cell" style="width: 80px; text-align: right;"><?php echo Inject_Util::humanReadableSize($file['size']) ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
-				<?php endforeach; ?>
-			</div>
+	<div id="IFW-Console" class="IFW-Panel IFW-Hidden">
+		<div class="IFW-THead">
+			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::ERROR]) ? '' : ' IFW-ERROR' ?>" style="width: 120px"><strong><?php echo $this->lang->errors ?>: </strong> <?php echo $this->log_summary[Inject::ERROR] ?></div>
+			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::WARNING]) ? '' : ' IFW-WARNING' ?>" style="width: 120px"><strong><?php echo $this->lang->warnings ?>: </strong> <?php echo $this->log_summary[Inject::WARNING] ?></div>
+			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::NOTICE]) ? '' : ' IFW-NOTICE' ?>" style="width: 120px"><strong><?php echo $this->lang->notices ?>: </strong> <?php echo $this->log_summary[Inject::NOTICE] ?></div>
+			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::DEBUG]) ? '' : ' IFW-DEBUG' ?>" style="width: 120px"><strong><?php echo $this->lang->dbg_msgs ?>: </strong> <?php echo $this->log_summary[Inject::DEBUG] ?></div>
+			<span class="IFW-Clear"></span>
 		</div>
+		
+		<h3><?php echo $this->lang->log ?></h3>
+		
+		<div class="IFW-THead">
+			<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->level ?></div>
+			<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->time ?></div>
+			<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->source ?></div>
+			<div class="IFW-Cell" style="width: 485px"><?php echo $this->lang->message ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		
+		<?php foreach($this->log as $row): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
+			<div class="IFW-Cell" style="width: 70px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
+			<div class="IFW-Cell" style="width: 70px"><?php echo $row['name'] ?></div>
+			<div class="IFW-Cell" style="width: 485px"><?php echo htmlspecialchars($row['message'], ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+	</div>
+	
+	<div id="IFW-Exec" class="IFW-Panel IFW-Hidden">
+		<div class="IFW-THead">
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->tot_exec_time ?>: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
+			</div>
+			
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->max_exec_time ?>: </strong> <?php echo $this->allowed_time ?> s
+			</div>
+
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->tot_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
+			</div>
+
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->max_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
+			</div>
+			
+			<span class="IFW-Clear"></span>
+		</div>
+		
+		<h3><?php echo $this->lang->headers ?></h3>
+		
+		<?php foreach($this->headers as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		
+		<h3><?php echo $this->lang->server_vars ?></h3>
+		
+		<?php foreach($_SERVER as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		
+		<h3>GET <?php echo $this->lang->data ?></h3>
+		
+		<?php if( ! empty($_GET)): ?>
+		<?php foreach($_GET as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		<?php else:?>
+		<p>
+			<?php echo $this->lang->no_get ?>
+		</p>
+		<?php endif; ?>
+		
+		<h3>POST <?php echo $this->lang->data ?></h3>
+		
+		<?php if( ! empty($_POST)): ?>
+		<?php foreach($_POST as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		<?php else:?>
+		<p>
+			<?php echo $this->lang->no_post ?>
+		</p>
+		<?php endif; ?>
+		
+		<h3><?php echo $this->lang->env_vars ?></h3>
+		
+		<?php if( ! empty($_ENV)): ?>
+		<?php foreach($_ENV as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		<?php else:?>
+		<p>
+			<?php echo $this->lang->no_env ?>
+		</p>
+		<?php endif; ?>
+		
+		<h3><?php echo $this->lang->cookies ?></h3>
+		
+		<?php if( ! empty($_COOKIE)): ?>
+		<?php foreach($_COOKIE as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		<?php else:?>
+		<p>
+			<?php echo $this->lang->no_cookies ?>
+		</p>
+		<?php endif; ?>
+		
+		<h3><?php echo $this->lang->session ?></h3>
+		
+		<?php if( ! empty($_SESSION)): ?>
+		<?php foreach($_SESSION as $k => $v): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
+			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
+		<?php else:?>
+		<p>
+			<?php echo $this->lang->no_session ?>
+		</p>
+		<?php endif; ?>
+	</div>
+	
+	<div id="IFW-Db" class="IFW-Panel IFW-Hidden">
+		<?php if($this->database_loaded): ?>
+			<div class="IFW-THead">
+				<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->time ?></div>
+				<div class="IFW-Cell" style="width: 665px"><?php echo $this->lang->query ?></div>
+				<span class="IFW-Clear"></span>
+			</div>
+			<?php foreach($this->queries as $q): ?>
+				<div class="IFW-Row">
+					<div class="IFW-Cell" style="width: 60px"><?php echo number_format($q['time'] * 1000, 4) ?> ms</div>
+					<div class="IFW-Cell" style="width: 665px"><?php echo htmlspecialchars($q['query'], ENT_COMPAT, 'UTF-8') ?></div>
+					<span class="IFW-Clear"></span>
+				</div>
+			<?php endforeach; ?>
+		<?php else: ?>
+		<h2>
+			<?php echo $this->lang->db_not_loaded ?>
+		</h2>
+		<?php endif; ?>
+	</div>
+	
+	<div id="IFW-Files" class="IFW-Panel IFW-Hidden">
+		<div class="IFW-THead">
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->fw_path ?>: </strong> <?php echo $this->fw_path ?>
+			</div>
+			
+			<div class="IFW-Cell">
+				<strong><?php echo $this->lang->app_paths ?>:</strong>
+				
+				<ol>
+					<?php foreach($this->app_paths as $p): ?>
+					<li><?php echo $p ?></li>
+					<?php endforeach; ?>
+				</ol>
+			</div>
+			
+			<span class="IFW-Clear"></span>
+		</div>
+		
+		<h3><?php echo $this->lang->inc_files ?></h3>
+		
+		<?php foreach($this->files as $file): ?>
+		<div class="IFW-Row">
+			<div class="IFW-Cell" style="width: 655px;"><?php echo $file['file'] ?></div>
+			<div class="IFW-Cell" style="width: 80px; text-align: right;"><?php echo Inject_Util::humanReadableSize($file['size']) ?></div>
+			<span class="IFW-Clear"></span>
+		</div>
+		<?php endforeach; ?>
 	</div>
 </div><?php
 	}
 }
 
 
-/* End of file  */
+/* End of file	*/
 /* Location: . */
