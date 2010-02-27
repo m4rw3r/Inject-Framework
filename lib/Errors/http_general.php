@@ -18,19 +18,19 @@ echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
 		
 		<p class="error">
 			<strong>Error:</strong><br />
-			<?php echo $type .': ' . htmlentities($message); ?>
+			<?php echo $type .': ' . htmlspecialchars($message); ?>
 		</p>
 		
 		<p class="location">
-			<strong>File: </strong> <?php echo htmlentities($file); ?><br />
-			<strong>Line: </strong> <?php echo htmlentities($line); ?>
+			<strong>File: </strong> <?php echo htmlspecialchars($file); ?><br />
+			<strong>Line: </strong> <?php echo htmlspecialchars($line); ?>
 		</p>
 		
 		<?php if( ! empty($trace)): ?>
 		<h3>Trace</h3>
 		<!-- TODO: Make the trace nicer -->
 		<div class="trace">
-<?php echo str_replace(array("\t", '    '), '&nbsp;&nbsp;&nbsp;&nbsp;', nl2br(htmlentities(print_r($trace, true)))); ?>
+<?php echo str_replace(array("\t", '    '), '&nbsp;&nbsp;&nbsp;&nbsp;', nl2br(htmlspecialchars(print_r($trace, true)))); ?>
 		</div>
 		<?php endif; ?>
 		
