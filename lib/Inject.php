@@ -293,6 +293,8 @@ final class Inject
 		
 		self::$cache_path = $app->getCacheFolder();
 		
+		self::$production = $app->isProduction();
+		
 		self::$namespaces = array_merge(self::$namespaces, $app->getNamespaceMappings());
 		
 		// Let the app configure its stuff
@@ -721,6 +723,8 @@ final class Inject
 			}
 			else
 			{
+				header('HTTP/1.1 500');
+				header('Content-Type: text;charset=UTF8');
 				// Default renderer
 				echo '
 An error has occurred: '.$type.':
@@ -744,8 +748,6 @@ Trace:
 				ob_end_clean();
 			}
 			
-			header('HTTP/1.1 500');
-			
 			// add the output handler again, to add compression and the like
 			ob_start('Inject::parse_output');
 			
@@ -755,6 +757,8 @@ Trace:
 			}
 			else
 			{
+				header('HTTP/1.1 500');
+				header('Content-Type: text;charset=UTF8');
 				// Default renderer
 				echo '
 ! A Fatal Error occurred !
