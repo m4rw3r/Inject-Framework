@@ -109,6 +109,19 @@ class Inject_Library
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns true if a resource with the name $resource exists.
+	 * 
+	 * @param  string
+	 * @return bool
+	 */
+	public function hasResource($resource)
+	{
+		return isset($this->_loaders[$resource]) OR isset(self::$_global_loaders[$resource]);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Tries to fetch the requested class instance (global or not)
 	 * 
 	 * @param  string
@@ -164,7 +177,7 @@ class Inject_Library
 		
 		if( ! isset(self::$_global_loaders[$resource]))
 		{
-			throw new Inject_LibraryException('Missing value for resource "'.$resource.'".');
+			throw new Inject_LibraryException('No registered resource with the name "'.$resource.'" has been registered, cannot load resource.');
 		}
 		
 		if(is_string(self::$_global_loaders[$resource]))
@@ -194,9 +207,12 @@ class Inject_Library
 	 * Registers a resource and a loader.
 	 * 
 	 * @param  string
-	 * @param  string|callback|Closure	Callbacks must be arrays,
-	 * 									both Closures and callbacks will receive the
-	 * 									container instance as the first parameter
+	 * @param  string|callback|Closure Callbacks must be arrays,
+     *                                  both Closures and callbacks will receive the
+     *                                  container instance as the first parameter
+	 * @param  bool If the resource should be registered as a shared resource,
+	 *              ie. a singleton (for this Library instance only)
+	 * @return void
 	 */
 	public function setResource($resource, $loader, $shared = true)
 	{
@@ -222,6 +238,9 @@ class Inject_Library
 	 * 
 	 * @param  string
 	 * @param  string|callback|Closure	Callbacks must be arrays
+	 * @param  bool  If this resource should be registered as a shared resource,
+	 *               ie. a singleton
+	 * @return void
 	 */
 	public static function setGlobalResource($resource, $loader, $shared = true)
 	{
@@ -276,5 +295,5 @@ class Inject_Library
 }
 
 
-/* End of file Container.php */
+/* End of file Library.php */
 /* Location: ./lib/Inject */
