@@ -5,9 +5,6 @@
  * All rights reserved.
  */
 
-// Store the initial start time here for the profiler to use
-$start = microtime(true);
-
 
 /*
  * Remove error viewing, but let all errors be reported.
@@ -46,7 +43,7 @@ Inject::init();
  * 
  * (Comment out or remove the two lines below if you don't want to use it.)
  */
-$p = new Inject_Profiler($start);
+$p = new Inject_Profiler();
 Inject::attachLogger($p);
 
 
@@ -68,6 +65,9 @@ Inject::loadApplication(new SampleApplication());
  * The inject request will determine which controller and action
  * to run and the response will be returned from Inject::run(),
  * which means that we have to echo it to the buffers.
+ * A Inject_Response object is returned by the run() method, which
+ * has the send() method that sends all headers and then echos the
+ * contents.
  */
 Inject::run(new Inject_Request_HTTP_URI(Inject_URI::getCurrentURI()))->send();
 

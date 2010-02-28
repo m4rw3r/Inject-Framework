@@ -6,13 +6,14 @@
  * All rights reserved.
  */
 
+
 /*
  * Remove error viewing, but let all errors be reported.
  * 
  * This is to let all errors go to Inject, making it handle them all.
  * It makes it possible to selectively log everything or nothing by
  * the custom loggers (which will be responsible for all error
- * displays).
+ * displays except for fatal errors).
  */
 error_reporting(E_ALL | E_DEPRECATED);
 ini_set('display_errors', '0');
@@ -34,15 +35,13 @@ Inject::init();
 
 
 /*
- * Set applicaiton paths.
+ * Create the application instance and load it into Inject.
  * 
- * Here you define the application paths, with the most important one first
- * in the array.
- * 
- * These paths will be searched for configuration for the framework,
- * located in config/inject.php.
+ * The application instance will provide configuration, paths,
+ * namespace mappings and the dispatcher.
  */
-Inject::addPaths(array('app'));
+require './SampleApplication.php';
+Inject::loadApplication(new SampleApplication());
 
 
 /*
@@ -53,8 +52,11 @@ Inject::addPaths(array('app'));
  * The inject request will determine which controller and action
  * to run and the response will be returned from Inject::run(),
  * which means that we have to echo it to the buffers.
+ * A Inject_Response object is returned by the run() method, which
+ * has the send() method that sends all headers and then echos the
+ * contents.
  */
-echo Inject::run(new Inject_Request_CLI)->body;
+Inject::run(new Inject_Request_CLI)->send();
 
 
 /*
