@@ -127,31 +127,19 @@ class Inject_Profiler implements Inject_LoggerInterface
 	
 	/**
 	 * Creates a new Inject_Profiler.
-	 * 
-	 * @param  float	microtime(true) when the app was started.
 	 */
-	function __construct($start_time = 0, $use_inject_event = false)
+	function __construct()
 	{
-		if($start_time != 0)
-		{
-			$this->start_time = $start_time;
-			
-			$this->addMessage('Inject', 'Done loading core', Inject::DEBUG);
-		}
-		else
-		{
-			$this->start_time = microtime(true);
-		}
+		$this->start_time = empty($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : microtime(true);
 		
-		if( ! $use_inject_event)
-		{
-			// Add shutdown function for the profiler
-			register_shutdown_function(array(&$this, 'display'));
-		}
-		else
-		{
-			Inject::onEvent('inject.terminate', array(&$this, 'display'));
-		}
+		$this->addMessage('Inject', 'Done loading core', Inject::DEBUG);
+		
+		// Add shutdown function for the profiler, in case of errors
+		register_shutdown_function(array(&$this, 'display'));
+		
+		// This will be triggered before the shutdown function, but only if there
+		// weren't any fatal errors
+		Inject::onEvent('inject.terminate', array(&$this, 'display'));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -298,21 +286,34 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 */
 	public function display()
 	{
+		static $called = false;
+		
 		if( ! self::$enabled)
 		{
 			return;
 		}
 		
+		// Have we been called?
+		if($called)
+		{
+			// Yes, only one call per request
+			return;
+		}
+		else
+		{
+			$called = true;
+		}
+		
 		$this->end_time = microtime(true);
 		$this->allowed_time = ini_get('max_execution_time');
+		
+		$this->lang = new Inject_I18n('Profiler');
 		
 		$this->getConsoleData();
 		$this->getFileData();
 		$this->getMemoryData();
 		$this->getFrameworkData();
 		$this->getQueryData();
-		
-		$this->lang = new Inject_I18n('Profiler');
 		
 		$this->render();
 	}
@@ -552,7 +553,7 @@ function hideIFW()
 <div id="IFW-Profiler">
 	<div class="toolbar">
 		<ul>
-			<li id="IFW-No-Tab" onClick="hideIFW();" style="color: #fff">Inject Framework</li>
+			<li id="IFW-No-Tab" onClick="hideIFW();" style="color: #fff">Inject Framework <?php echo Inject::VERSION ?></li>
 			
 			<?php
 $str = '';
