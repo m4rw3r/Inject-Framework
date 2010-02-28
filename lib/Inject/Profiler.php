@@ -139,7 +139,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 		
 		// This will be triggered before the shutdown function, but only if there
 		// weren't any fatal errors
-		Inject::onEvent('inject.terminate', array(&$this, 'display'));
+		Inject::addFilter('inject.output', array(&$this, 'display'));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -239,12 +239,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 		$this->fw_path = Inject::getFrameworkPath();
 		$this->app_paths = Inject::getApplicationPaths();
 		
-		$r = Inject::getMainRequest();
-		
-		if( ! empty($r->response))
-		{
-			$this->headers = array_merge(array('HTTP/1.1' => $r->response->response_code), $r->response->headers);
-		}
+		$this->headers = array_merge(array('HTTP/1.1' => Inject::$response_code), Inject::$headers);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -284,7 +279,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @return void
 	 */
-	public function display()
+	public function display($output = null)
 	{
 		static $called = false;
 		
@@ -304,6 +299,11 @@ class Inject_Profiler implements Inject_LoggerInterface
 			$called = true;
 		}
 		
+		if( ! is_null($output))
+		{
+			ob_start();
+		}
+		
 		$this->end_time = microtime(true);
 		$this->allowed_time = ini_get('max_execution_time');
 		
@@ -316,6 +316,22 @@ class Inject_Profiler implements Inject_LoggerInterface
 		$this->getQueryData();
 		
 		$this->render();
+		
+		if( ! is_null($output))
+		{
+			if(($p = strripos($output, '</html>')) !== false)
+			{
+				$output = substr($output, 0, $p).ob_get_contents().substr($output, $p);
+			}
+			else
+			{
+				$output .= ob_get_contents();
+			}
+			
+			ob_end_clean();
+			
+			return $output;
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -451,12 +467,16 @@ function hideIFW()
 {
 	display: block;
 	float: left;
-	margin: 0 10px;
 	color: #fff;
+	padding: 0 10px 5px;
 }
 #IFW-Profiler .toolbar .IFW-Selected
 {
-	text-decoration: underline;
+	background: #333;
+	-moz-border-radius-botleft: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-botright: 5px;
+	-webkit-border-bottom-right-radius: 5px;
 }
 #IFW-Profiler .IFW-Panel
 {

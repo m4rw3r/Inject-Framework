@@ -11,13 +11,6 @@
 class Inject_Response
 {
 	/**
-	 * The parent response, the headers will be forwarded to this.
-	 * 
-	 * @var Inject_Response
-	 */
-	protected $parent = null;
-	
-	/**
 	 * Response code.
 	 * 
 	 * @var int
@@ -38,17 +31,6 @@ class Inject_Response
 	 */
 	public $body = '';
 	
-	/**
-	 * Creates a new response object.
-	 * 
-	 * @param  Inject_Response The response object to use when setting response
-	 *                         code and headers, used in nested calls (HMVC)
-	 */
-	function __construct(Inject_Response $parent = null)
-	{
-		$this->parent = $parent;
-	}
-	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -59,7 +41,7 @@ class Inject_Response
 	 */
 	public function setResponseCode($code)
 	{
-		isset($this->parent) ? $this->parent->setResponseCode($code) : $this->response_code = $code;
+		$this->response_code = $code;
 		
 		return $this;
 	}
@@ -75,27 +57,9 @@ class Inject_Response
 	 */
 	public function setHeader($header, $value)
 	{
-		isset($this->parent) ? $this->parent->setHeader($header, $value) : $this->headers[$header] = $value;
+		$this->headers[$header] = $value;
 		
 		return $this;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sends all response headers which has been set.
-	 * 
-	 * @return void
-	 */
-	public function sendHeaders()
-	{
-		foreach($this->headers as $k => $v)
-		{
-			header($k.': '.$v);
-		}
-		
-		// Send response code
-		header('HTTP/1.1 '.$this->response_code);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -107,8 +71,12 @@ class Inject_Response
 	 */
 	public function send()
 	{
-		$this->sendHeaders();
+		// Store the headers until they are sent just at the end, so parent requests
+		// can override them when their send() methods are triggered
+		Inject::addHeaders($this->headers);
+		Inject::setResponseCode($this->response_code);
 		
+		// Echo the content now
 		echo $this->body;
 	}
 }

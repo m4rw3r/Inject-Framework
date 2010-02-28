@@ -164,6 +164,20 @@ final class Inject
 	private static $main_request = null;
 	
 	/**
+	 * The list of headers to send upon request termination.
+	 * 
+	 * @var array
+	 */
+	public static $headers = array('Content-Type' => 'text/html;charset=UTF-8');
+	
+	/**
+	 * The HTTP response code to be sent on exit.
+	 *  
+	 * @var int
+	 */
+	public static $response_code = 200;
+	
+	/**
 	 * A list of registered loggers.
 	 * 
 	 * @var array
@@ -260,6 +274,14 @@ final class Inject
 		}
 		
 		self::event('inject.terminate');
+		
+		// Send the headers
+		foreach(self::$headers as $k => $v)
+		{
+			header($k.': '.$v);
+		}
+		
+		header('HTTP/1.1 '.self::$response_code);
 		
 		// get the contents, so we can add it to the output
 		$output = ob_get_contents();
@@ -574,6 +596,32 @@ final class Inject
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Adds a list of headers to be sent on exit.
+	 * 
+	 * @param  array
+	 * @return void
+	 */
+	public static function addHeaders(array $headers)
+	{
+		self::$headers = array_merge(self::$headers, $headers);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the response code to be sent on exit.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public static function setResponseCode($code)
+	{
+		self::$response_code = $code;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Triggers an event.
 	 * 
 	 * @param  string
@@ -725,6 +773,7 @@ final class Inject
 			{
 				header('HTTP/1.1 500');
 				header('Content-Type: text;charset=UTF8');
+				
 				// Default renderer
 				echo '
 An error has occurred: '.$type.':
@@ -743,13 +792,13 @@ Trace:
 		{
 			// clear the output buffers, to avoid displaying page fragments
 			// before the 500 error
-			while(ob_get_level())
+			while(ob_get_level() >= self::$ob_level)
 			{
 				ob_end_clean();
 			}
 			
 			// add the output handler again, to add compression and the like
-			ob_start('Inject::parse_output');
+			ob_start();
 			
 			if(self::$main_request)
 			{
@@ -759,12 +808,15 @@ Trace:
 			{
 				header('HTTP/1.1 500');
 				header('Content-Type: text;charset=UTF8');
+				
 				// Default renderer
 				echo '
 ! A Fatal Error occurred !
 ==========================
 ';
 			}
+			
+			self::terminate();
 		}
 		else
 		{
