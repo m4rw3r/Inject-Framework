@@ -397,19 +397,30 @@ function removeClassName(objElement, strClass)
 
 function activatePanel(classname)
 {
-	// change tab
-	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
-	removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
+	e = document.getElementById(classname);
 	
-	// change tab selection
-	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
-	addClassName(document.getElementById(classname + '-Tab'), 'IFW-Selected', true);
+	// Check if the class is hidden
+	if( ! e.className || e.className.toUpperCase().indexOf('IFW-HIDDEN') != -1)
+	{
+		// Hidden, change tab
+		addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
+		addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
+		addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
+		addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
+		removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
+		
+		// Change tab selection
+		removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
+		removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
+		removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
+		removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
+		addClassName(document.getElementById(classname + '-Tab'), 'IFW-Selected', true);
+	}
+	else
+	{
+		// Not hidden, hide it
+		hideIFW();
+	}
 }
 function hideIFW()
 {
@@ -596,6 +607,8 @@ echo $str;
 		<li id="IFW-Db-Tab" onClick="activatePanel('IFW-Db');"><?php echo count($this->queries) ?> queries</li>
 		
 		<li id="IFW-Files-Tab" onClick="activatePanel('IFW-Files');"><?php echo count($this->files) ?> <?php echo $this->lang->files ?></li>
+		
+		<li><?php echo Inject::getMainRequest()->getControllerClass().'::'.Inject::getMainRequest()->getActionMethod() ?></li>
 	</div>
 	
 	<div id="IFW-Console" class="IFW-Panel IFW-Hidden">
