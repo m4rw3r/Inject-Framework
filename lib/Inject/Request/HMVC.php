@@ -18,15 +18,14 @@ class Inject_Request_HMVC extends Inject_Request
 	
 	protected $parameters = array();
 	
-	protected $file_format = 'html';
-	
-	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET', $format = 'html')
+	function __construct($class_name, $action_name = false, $parameters = array(), $method = 'GET')
 	{
+		parent::__construct();
+		
 		$this->class_name = $class_name;
 		$this->action_name = $action_name;
 		$this->parameters = $parameters;
 		$this->method = $method;
-		$this->file_format = $format;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -73,9 +72,14 @@ class Inject_Request_HMVC extends Inject_Request
 	
 	// ------------------------------------------------------------------------
 	
-	public function getFormat()
+	/**
+	 * Dispatches this to the main request.
+	 * 
+	 * @todo: Maybe dispatch it to a "parent request" instead?
+	 */
+	public function createCall($controller, $action = null, $parameters = array())
 	{
-		return $this->file_format;
+		return Inject::getMainRequest()->createCall($controller, $action, $parameters);
 	}
 }
 
