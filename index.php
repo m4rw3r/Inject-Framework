@@ -43,8 +43,7 @@ Inject::init();
  * 
  * (Comment out or remove the two lines below if you don't want to use it.)
  */
-$p = new Inject_Profiler();
-Inject::attachLogger($p);
+Inject_Profiler::start();
 
 
 /*
