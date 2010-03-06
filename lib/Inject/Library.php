@@ -12,48 +12,48 @@
  * 
  * PHP 5.3 usage:
  * <code>
- * // Register a global resource loader:
- * Inject_Library::setGlobalResource('database', function()
+ * // Register a global service loader:
+ * Inject_Library::setGlobalService('database', function()
  * {
  *     return new Db(Inject::getConfiguration('database'));
  * });
  * 
  * // Register a global class, which is not a singleton (the false parameter)
- * Inject_Library::SetGlobalResource('view', 'Some_View_Lib', false);
+ * Inject_Library::getGlobalService('view', 'Some_View_Lib', false);
  * 
  * 
  * // Create a container instance which can override global values locally
  * $c = new Inject_Library();
  * 
  * // Get the database object
- * $db = $c->getResource('database');
+ * $db = $c->getService('database');
  * 
  * // Instantiate a view object
- * $v = $c->getResource('view');
- * $v2 = $c->getResource('view');
+ * $v = $c->getService('view');
+ * $v2 = $c->getService('view');
  * var_dump($v === $v2);
  * 
  * // Override the view class locally
- * $c->setResource('view', 'Another_View', false);
+ * $c->setService('view', 'Another_View', false);
  * 
  * // Get an instance of the new view class
- * $v = $c->getResource('view');
+ * $v = $c->getService('view');
  * 
  * 
  * // Use the global container to get the database object
- * $db = Inject_Library::getGlobalResource('database');
+ * $db = Inject_Library::getGlobalService('database');
  * 
  * 
- * // Create a global resource loader which uses dependencies
- * Inject_Library::setGlobalResource('session', function()
+ * // Create a global service loader which uses dependencies
+ * Inject_Library::setGlobalService('session', function()
  * {
- *     return new Session(Inject_Library::getGlobalResource('database'));
+ *     return new Session(Inject_Library::getGlobalService('database'));
  * });
  * 
- * // Create a local resource loader which uses dependencies
- * $c->setResource('access', function($container)
+ * // Create a local service loader which uses dependencies
+ * $c->setService('access', function($container)
  * {
- *     return new Access($container->getResource('session'));
+ *     return new Access($container->getService('session'));
  * });
  * </code>
  * 
@@ -86,7 +86,7 @@ class Inject_Library
 	protected $_singletons = array();
 	
 	/**
-	 * Global container for the resource loaders.
+	 * Global container for the service loaders.
 	 * 
 	 * @var array
 	 */
@@ -109,14 +109,14 @@ class Inject_Library
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns true if a resource with the name $resource exists.
+	 * Returns true if a service with the name $service exists.
 	 * 
 	 * @param  string
 	 * @return bool
 	 */
-	public function hasResource($resource)
+	public function hasService($service)
 	{
-		return isset($this->_loaders[$resource]) OR isset(self::$_global_loaders[$resource]);
+		return isset($this->_loaders[$service]) OR isset(self::$_global_loaders[$service]);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -127,34 +127,34 @@ class Inject_Library
 	 * @param  string
 	 * @return object
 	 */
-	public function getResource($resource)
+	public function getService($service)
 	{
-		if(isset($this->_instances[$resource]))
+		if(isset($this->_instances[$service]))
 		{
-			return $this->_instances[$resource];
+			return $this->_instances[$service];
 		}
 		
-		if( ! isset($this->_loaders[$resource]))
+		if( ! isset($this->_loaders[$service]))
 		{
-			return self::getGlobalResource($resource);
+			return self::getGlobalService($service);
 		}
 		
-		if(is_string($this->_loaders[$resource]))
+		if(is_string($this->_loaders[$service]))
 		{
-			$i = new $this->_loaders[$resource];
+			$i = new $this->_loaders[$service];
 		}
-		elseif(is_callable($this->_loaders[$resource]))
+		elseif(is_callable($this->_loaders[$service]))
 		{
-			$i = call_user_func($this->_loaders[$resource], $this);
+			$i = call_user_func($this->_loaders[$service], $this);
 		}
 		else
 		{
-			throw new Inject_LibraryException('Faulty resource loader for the resource "'.$resource.'".');
+			throw new Inject_LibraryException('Faulty service loader for the service "'.$service.'".');
 		}
 		
-		if(isset(self::$_global_singletons[$resource]))
+		if(isset(self::$_global_singletons[$service]))
 		{
-			$this->_instances[$resource] = $i;
+			$this->_instances[$service] = $i;
 		}
 		
 		return $i;
@@ -163,39 +163,39 @@ class Inject_Library
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns a global resource instance.
+	 * Returns a global service instance.
 	 * 
 	 * @param  string
 	 * @return object
 	 */
-	public static function getGlobalResource($resource)
+	public static function getGlobalService($service)
 	{
-		if(isset(self::$_global_instances[$resource]))
+		if(isset(self::$_global_instances[$service]))
 		{
-			return self::$_global_instances[$resource];
+			return self::$_global_instances[$service];
 		}
 		
-		if( ! isset(self::$_global_loaders[$resource]))
+		if( ! isset(self::$_global_loaders[$service]))
 		{
-			throw new Inject_LibraryException('No registered resource with the name "'.$resource.'" has been registered, cannot load resource.');
+			throw new Inject_LibraryException('No registered service with the name "'.$service.'" has been registered, cannot load service.');
 		}
 		
-		if(is_string(self::$_global_loaders[$resource]))
+		if(is_string(self::$_global_loaders[$service]))
 		{
-			$i = new self::$_global_loaders[$resource];
+			$i = new self::$_global_loaders[$service];
 		}
-		elseif(is_callable(self::$_global_loaders[$resource]))
+		elseif(is_callable(self::$_global_loaders[$service]))
 		{
-			$i = call_user_func(self::$_global_loaders[$resource]);
+			$i = call_user_func(self::$_global_loaders[$service]);
 		}
 		else
 		{
-			throw new Inject_LibraryException('Faulty resource loader for the resource "'.$resource.'".');
+			throw new Inject_LibraryException('Faulty service loader for the service "'.$service.'".');
 		}
 		
-		if(isset(self::$_global_singletons[$resource]))
+		if(isset(self::$_global_singletons[$service]))
 		{
-			self::$_global_instances[$resource] = $i;
+			self::$_global_instances[$service] = $i;
 		}
 		
 		return $i;
@@ -204,55 +204,55 @@ class Inject_Library
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Registers a resource and a loader.
+	 * Registers a service and a loader.
 	 * 
 	 * @param  string
 	 * @param  string|callback|Closure Callbacks must be arrays,
      *                                  both Closures and callbacks will receive the
      *                                  container instance as the first parameter
-	 * @param  bool If the resource should be registered as a shared resource,
+	 * @param  bool If the service should be registered as a shared service,
 	 *              ie. a singleton (for this Library instance only)
 	 * @return void
 	 */
-	public function setResource($resource, $loader, $shared = true)
+	public function setService($service, $loader, $shared = true)
 	{
 		if($shared)
 		{
-			$this->_loaders[$resource] = $loader;
-			$this->_singletons[$resource] = true;
+			$this->_loaders[$service] = $loader;
+			$this->_singletons[$service] = true;
 		}
 		else
 		{
-			$this->_loaders[$resource] = $loader;
-			unset($this->_singletons[$resource]);
+			$this->_loaders[$service] = $loader;
+			unset($this->_singletons[$service]);
 		}
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Registers a resource's loader, globally.
+	 * Registers a service's loader, globally.
 	 * 
-	 * To make a closure/callback load another required resource, let it use
-	 * Inject_Library::getGlobalResource().
+	 * To make a closure/callback load another required service, let it use
+	 * Inject_Library::getGlobalService().
 	 * 
 	 * @param  string
 	 * @param  string|callback|Closure	Callbacks must be arrays
-	 * @param  bool  If this resource should be registered as a shared resource,
+	 * @param  bool  If this service should be registered as a shared service,
 	 *               ie. a singleton
 	 * @return void
 	 */
-	public static function setGlobalResource($resource, $loader, $shared = true)
+	public static function setGlobalService($service, $loader, $shared = true)
 	{
 		if($shared)
 		{
-			self::$_global_loaders[$resource] = $loader;
-			self::$_global_singletons[$resource] = true;
+			self::$_global_loaders[$service] = $loader;
+			self::$_global_singletons[$service] = true;
 		}
 		else
 		{
-			self::$_global_loaders[$resource] = $loader;
-			unset(self::$_global_singletons[$resource]);
+			self::$_global_loaders[$service] = $loader;
+			unset(self::$_global_singletons[$service]);
 		}
 	}
 	
@@ -263,7 +263,7 @@ class Inject_Library
 	 * 
 	 * NOTE
 	 * Overwrites the current container data.
-	 * Does not affect the global resources.
+	 * Does not affect the global services.
 	 * 
 	 * @param  Inject_Library
 	 * @return void

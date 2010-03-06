@@ -81,12 +81,12 @@ class SampleApplication extends Inject_Application_Default
 		 */
 		/*
 		// Register a closure which creates the session object
-		Inject_Library::setGlobalResource('session', function()
+		Inject_Library::setGlobalService('session', function()
 		{
-			return new Inject_Session(Inject_Library::getGlobalResource('database'));
+			return new Inject_Session(Inject_Library::getGlobalService('database'));
 		});
 		// Mapping the view resource name to a class, creating new instances all the time
-		Inject_Library::setGlobalResource('view', 'Inject_View', false);
+		Inject_Library::setGlobalService('view', 'Inject_View', false);
 		*/
 	}
 	
