@@ -46,7 +46,7 @@ class Inject_Controller_Base
 	 */
 	public function __get($prop)
 	{
-		return $this->request->getService($prop);
+		return $this->$prop = $this->request->getService($prop);
 	}
 }
 
