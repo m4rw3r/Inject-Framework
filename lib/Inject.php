@@ -772,7 +772,7 @@ final class Inject
 			else
 			{
 				header('HTTP/1.1 500');
-				header('Content-Type: text;charset=UTF8');
+				header('Content-Type: text/html;charset=UTF8');
 				
 				// Default renderer
 				echo '
@@ -807,7 +807,7 @@ Trace:
 			else
 			{
 				header('HTTP/1.1 500');
-				header('Content-Type: text;charset=UTF8');
+				header('Content-Type: text/html;charset=UTF8');
 				
 				// Default renderer
 				echo '
