@@ -8,7 +8,7 @@
 /**
  * 
  */
-class Inject_Profiler implements Inject_LoggerInterface
+abstract class Inject_Profiler
 {
 	/**
 	 * If to enable the profiler, set to false to prevent it from displaying.
@@ -18,257 +18,80 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @var bool
 	 */
-	static public $enabled = true;
+	public static $enabled = true;
 	
 	/**
-	 * The microtime this script was started.
-	 * 
-	 * @var float
-	 */
-	protected $start_time; 
-	
-	/**
-	 * The microtime this script was ended, ie. when display() is called.
-	 * 
-	 * @var float
-	 */
-	protected $end_time;
-	
-	/**
-	 * The maximum time a script is allowed to execute.
-	 * 
-	 * @var int
-	 */
-	protected $allowed_time = 0;
-	
-	/**
-	 * The maximum amount of memory used by this run, bytes.
-	 * 
-	 * @var int
-	 */
-	protected $memory = 0;
-	
-	/**
-	 * Maximum size of the memory which is allowed for the PHP binary, bytes.
-	 * 
-	 * @var int
-	 */
-	protected $allowed_memory = 0;
-	
-	/**
-	 * Log messages.
+	 * The profile parts which will be shown in the profiler.
 	 * 
 	 * @var array
 	 */
-	protected $log = array();
+	protected static $parts = array();
 	
 	/**
-	 * Summary of the logs.
+	 * This class is not meant to be instantiated.
+	 */
+	private final function __construct(){}
+	
+	/**
+	 * Activates the profiler.
 	 * 
-	 * @var array
+	 * @param  array  A list of additional classnames to instantiate as profiler parts
+	 * @param  array  A list of instances which will be added as profiler parts
 	 */
-	protected $log_summary;
-	
-	/**
-	 * A list of included files and their sizes.
-	 * 
-	 * @var array
-	 */
-	protected $files = array();
-	
-	/**
-	 * The total size of the files in bytes.
-	 * 
-	 * @var int
-	 */
-	protected $files_total_size = 0;
-	
-	/**
-	 * The path in which the framework is stored.
-	 * 
-	 * @var string
-	 */
-	protected $fw_path;
-	
-	/**
-	 * A list of the application paths.
-	 * 
-	 * @var array
-	 */
-	protected $app_paths = array();
-	
-	/**
-	 * A list of the headers sent to the client.
-	 * 
-	 * @var array
-	 */
-	protected $headers = array();
-	
-	/**
-	 * Flag telling if the database is loaded.
-	 * 
-	 * @var bool
-	 */
-	protected $database_loaded = false;
-	
-	/**
-	 * A list of queries to print and their times.
-	 * 
-	 * @var array
-	 */
-	protected $queries = array();
-	
-	/**
-	 * Language translation object.
-	 * 
-	 * @var Inject_I18n
-	 */
-	protected $lang;
-	
-	/**
-	 * Creates a new Inject_Profiler.
-	 */
-	function __construct()
+	public static function start(array $classes = array(), array $instances = array())
 	{
-		$this->start_time = empty($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : microtime(true);
+		static $run = false;
 		
-		$this->addMessage('Inject', 'Done loading core', Inject::DEBUG);
+		if($run)
+		{
+			throw new Exception("The Inject_Profiler::start() method has already been called.");
+		}
+		
+		$classes = array_merge($classes, array(
+			'Inject_Profiler_Console',
+			// 'Inject_Profiler_Request',
+			'Inject_Profiler_Server',
+			'Inject_Profiler_RapidDataMapper',
+			'Inject_Profiler_Files',
+			)
+		);
+		
+		foreach($classes as $cls)
+		{
+			self::$parts[] = new $cls();
+		}
+		
+		self::$parts = array_merge(self::$parts, $instances);
+		
+		Inject::log('Inject', 'Done loading core', Inject::DEBUG);
 		
 		// Add shutdown function for the profiler, in case of errors
-		register_shutdown_function(array(&$this, 'display'));
+		register_shutdown_function(array('Inject_Profiler', 'display'));
 		
 		// This will be triggered before the shutdown function, but only if there
 		// weren't any fatal errors
-		Inject::addFilter('inject.output', array(&$this, 'display'));
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Adds a log message, with the time it was issued.
-	 * 
-	 * @param  string
-	 * @param  string
-	 * @param  int
-	 * @return void
-	 */
-	public function addMessage($namespace, $message, $level)
-	{
-		$this->log[] = array(
-			'time' => microtime(true) - $this->start_time,
-			'name' => $namespace,
-			'message' => $message,
-			'level' => $level
-		);
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Makes a summary of the different levels of console messages.
-	 * 
-	 * @return void
-	 */
-	protected function getConsoleData()
-	{
-		$this->log_summary = array(
-				Inject::ERROR => 0,
-				Inject::WARNING => 0,
-				Inject::NOTICE => 0,
-				Inject::DEBUG => 0
-			);
+		Inject::addFilter('inject.output', array('Inject_Profiler', 'display'));
 		
-		foreach($this->log as $msg)
+		$run = true;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Adds a part to be rendered by the profiler.
+	 * 
+	 * @param  string|Inject_ProfilerInterface
+	 * @return void
+	 */
+	public static function addPart($class)
+	{
+		if(is_object($class))
 		{
-			$this->log_summary[$msg['level']]++;
+			self::$parts[] = $class;
 		}
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Fetches data about included files.
-	 * 
-	 * @return void
-	 */
-	protected function getFileData()
-	{
-		foreach(get_included_files() as $file)
+		else
 		{
-			$size = filesize($file);
-			
-			$this->files_total_size += $size;
-			
-			$this->files[] = array(
-				'file' => $file,
-				'size' => $size
-			);
-		}
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Fetches data about memory usage.
-	 * 
-	 * @return void
-	 */
-	protected function getMemoryData()
-	{
-		$prefixes = array('k' => 1024, 'm' => 1048576, 'g' => 1073741824);
-		
-		$this->memory = memory_get_peak_usage();
-		$ml = ini_get('memory_limit');
-		
-		preg_match('/(\d*)\s*([TGMK]*)/i', $ml, $m);
-		
-		$prefix = isset($prefixes[strtolower($m[2])]) ? $prefixes[strtolower($m[2])] : 1;
-		
-		$this->memory_limit = $m[1] * $prefix;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Fetches data about framework settings.
-	 * 
-	 * @return void
-	 */
-	protected function getFrameworkData()
-	{
-		$this->fw_path = Inject::getFrameworkPath();
-		$this->app_paths = Inject::getApplicationPaths();
-		
-		$this->headers = array_merge(array('HTTP/1.1' => Inject::$response_code), Inject::$headers);
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Gathers information about the queries which were issued during the run.
-	 * 
-	 * @return void
-	 */
-	protected function getQueryData()
-	{
-		// Assume RapidDataMapper
-		
-		// Check if it is loaded, both the Db class and Db_Connection classes are
-		// needed to connect to the db
-		if(class_exists('Db', false) && class_exists('Db_Connection', false))
-		{
-			$this->database_loaded = true;
-			
-			foreach(Db::getLoadedConnections() as $conn)
-			{
-				foreach($conn->queries as $k => $q)
-				{
-					$this->queries[] = array(
-						'time' => $conn->query_times[$k],
-						'query' => $q
-					);
-				}
-			}
+			self::$parts[] = new $class();
 		}
 	}
 	
@@ -277,14 +100,16 @@ class Inject_Profiler implements Inject_LoggerInterface
 	/**
 	 * Displays the profiler and gathers data.
 	 * 
+	 * @param  string
 	 * @return void
 	 */
-	public function display($output = null)
+	public static function display($output = null)
 	{
 		static $called = false;
 		
 		if( ! self::$enabled)
 		{
+			// Not enabled, do not render
 			return;
 		}
 		
@@ -304,21 +129,18 @@ class Inject_Profiler implements Inject_LoggerInterface
 			ob_start();
 		}
 		
-		$this->end_time = microtime(true);
-		$this->allowed_time = ini_get('max_execution_time');
+		$end_time = microtime(true);
 		
-		$this->lang = new Inject_I18n('Profiler');
+		foreach(self::$parts as $p)
+		{
+			$p->prepareData($end_time);
+		}
 		
-		$this->getConsoleData();
-		$this->getFileData();
-		$this->getMemoryData();
-		$this->getFrameworkData();
-		$this->getQueryData();
-		
-		$this->render();
+		self::render();
 		
 		if( ! is_null($output))
 		{
+			// We're called by the filter, we have to remove the trailing </html> tag
 			if(($p = strripos($output, '</html>')) !== false)
 			{
 				$output = substr($output, 0, $p).ob_get_contents().substr($output, $p);
@@ -341,7 +163,7 @@ class Inject_Profiler implements Inject_LoggerInterface
 	 * 
 	 * @return 
 	 */
-	protected function render()
+	protected static function render()
 	{
 		?>
 <script type="text/javascript" charset="utf-8">
@@ -395,7 +217,7 @@ function removeClassName(objElement, strClass)
 	}
 }
 
-function activatePanel(classname)
+function IFWshowTab(classname)
 {
 	e = document.getElementById(classname);
 	
@@ -403,36 +225,28 @@ function activatePanel(classname)
 	if( ! e.className || e.className.toUpperCase().indexOf('IFW-HIDDEN') != -1)
 	{
 		// Hidden, change tab
-		addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
-		addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
-		addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
-		addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
+		<?php foreach(self::$parts as $i => $p): ?>
+		addClassName(document.getElementById('IFW-part<?php echo $i ?>'), 'IFW-Hidden', true);
+		removeClassName(document.getElementById('IFW-part<?php echo $i ?>-Tab'), 'IFW-Selected', true);
+		<?php endforeach; ?>
+		
 		removeClassName(document.getElementById(classname), 'IFW-Hidden', true);
 		
 		// Change tab selection
-		removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
-		removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
-		removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
-		removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
 		addClassName(document.getElementById(classname + '-Tab'), 'IFW-Selected', true);
 	}
 	else
 	{
 		// Not hidden, hide it
-		hideIFW();
+		IFWhide();
 	}
 }
-function hideIFW()
+function IFWhide()
 {
-	addClassName(document.getElementById('IFW-Console'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Exec'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Db'), 'IFW-Hidden', true);
-	addClassName(document.getElementById('IFW-Files'), 'IFW-Hidden', true);
-	
-	removeClassName(document.getElementById('IFW-Console-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Exec-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Db-Tab'), 'IFW-Selected', true);
-	removeClassName(document.getElementById('IFW-Files-Tab'), 'IFW-Selected', true);
+	<?php foreach(self::$parts as $i => $p): ?>
+	addClassName(document.getElementById('IFW-part<?php echo $i ?>'), 'IFW-Hidden', true);
+	removeClassName(document.getElementById('IFW-part<?php echo $i ?>-Tab'), 'IFW-Selected', true);
+	<?php endforeach; ?>
 }
 </script>
 <style type="text/css">
@@ -584,235 +398,19 @@ function hideIFW()
 <div id="IFW-Profiler">
 	<div class="toolbar">
 		<ul>
-			<li id="IFW-No-Tab" onClick="hideIFW();" style="color: #fff">Inject Framework <?php echo Inject::VERSION ?></li>
+			<li id="IFW-No-Tab" onClick="IFWhide();" style="color: #fff">Inject Framework <?php echo Inject::VERSION ?></li>
 			
-			<?php
-$str = '';
-foreach(array(Inject::DEBUG => $this->lang->dbg_msgs,
-		  Inject::NOTICE => $this->lang->notices,
-		  Inject::WARNING => $this->lang->warnings,
-		  Inject::ERROR => $this->lang->errors) as $c => $s)
-{
-if( ! empty($this->log_summary[$c]))
-{
-	$str = '<li id="IFW-Console-Tab" onClick="activatePanel(\'IFW-Console\');" class="IFW-'.strtoupper(Inject_Util::errorConstToStr($c)).'">'.$this->log_summary[$c].' '.$s.'</li>';
-}
-}
-
-echo $str;
-		?>
-		
-		<li id="IFW-Exec-Tab" onClick="activatePanel('IFW-Exec');"><?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms <span style="display:inline; margin: 0 0 0 10px; color: #fff"><?php echo number_format($this->memory / 1024, 0) ?> kB</span></li>
-		
-		<li id="IFW-Db-Tab" onClick="activatePanel('IFW-Db');"><?php echo count($this->queries) ?> queries</li>
-		
-		<li id="IFW-Files-Tab" onClick="activatePanel('IFW-Files');"><?php echo count($this->files) ?> <?php echo $this->lang->files ?></li>
-		
-		<li><?php echo Inject::getMainRequest()->getControllerClass().'::'.Inject::getMainRequest()->getActionMethod() ?></li>
-	</div>
-	
-	<div id="IFW-Console" class="IFW-Panel IFW-Hidden">
-		<div class="IFW-THead">
-			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::ERROR]) ? '' : ' IFW-ERROR' ?>" style="width: 120px"><strong><?php echo $this->lang->errors ?>: </strong> <?php echo $this->log_summary[Inject::ERROR] ?></div>
-			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::WARNING]) ? '' : ' IFW-WARNING' ?>" style="width: 120px"><strong><?php echo $this->lang->warnings ?>: </strong> <?php echo $this->log_summary[Inject::WARNING] ?></div>
-			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::NOTICE]) ? '' : ' IFW-NOTICE' ?>" style="width: 120px"><strong><?php echo $this->lang->notices ?>: </strong> <?php echo $this->log_summary[Inject::NOTICE] ?></div>
-			<div class="IFW-Cell<? echo empty($this->log_summary[Inject::DEBUG]) ? '' : ' IFW-DEBUG' ?>" style="width: 120px"><strong><?php echo $this->lang->dbg_msgs ?>: </strong> <?php echo $this->log_summary[Inject::DEBUG] ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		
-		<h3><?php echo $this->lang->log ?></h3>
-		
-		<div class="IFW-THead">
-			<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->level ?></div>
-			<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->time ?></div>
-			<div class="IFW-Cell" style="width: 70px"><?php echo $this->lang->source ?></div>
-			<div class="IFW-Cell" style="width: 485px"><?php echo $this->lang->message ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		
-		<?php foreach($this->log as $row): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell IFW-<?php echo $s = Inject_Util::errorConstToStr($row['level']) ?>" style="width: 60px"><?php echo $s ?></div>
-			<div class="IFW-Cell" style="width: 70px"><?php echo number_format($row['time'] * 1000, 4) ?> ms</div>
-			<div class="IFW-Cell" style="width: 70px"><?php echo $row['name'] ?></div>
-			<div class="IFW-Cell" style="width: 485px"><?php echo htmlspecialchars($row['message'], ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-	</div>
-	
-	<div id="IFW-Exec" class="IFW-Panel IFW-Hidden">
-		<div class="IFW-THead">
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->tot_exec_time ?>: </strong> <?php echo number_format(($this->end_time - $this->start_time) * 1000, 4) ?> ms
-			</div>
-			
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->max_exec_time ?>: </strong> <?php echo $this->allowed_time ?> s
-			</div>
-
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->tot_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory) ?>
-			</div>
-
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->max_mem_used ?>: </strong> <?php echo Inject_Util::humanReadableSize($this->memory_limit) ?>
-			</div>
-			
-			<span class="IFW-Clear"></span>
-		</div>
-		
-		<h3><?php echo $this->lang->headers ?></h3>
-		
-		<?php foreach($this->headers as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		
-		<h3><?php echo $this->lang->server_vars ?></h3>
-		
-		<?php foreach($_SERVER as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		
-		<h3>GET <?php echo $this->lang->data ?></h3>
-		
-		<?php if( ! empty($_GET)): ?>
-		<?php foreach($_GET as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		<?php else:?>
-		<p>
-			<?php echo $this->lang->no_get ?>
-		</p>
-		<?php endif; ?>
-		
-		<h3>POST <?php echo $this->lang->data ?></h3>
-		
-		<?php if( ! empty($_POST)): ?>
-		<?php foreach($_POST as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		<?php else:?>
-		<p>
-			<?php echo $this->lang->no_post ?>
-		</p>
-		<?php endif; ?>
-		
-		<h3><?php echo $this->lang->env_vars ?></h3>
-		
-		<?php if( ! empty($_ENV)): ?>
-		<?php foreach($_ENV as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		<?php else:?>
-		<p>
-			<?php echo $this->lang->no_env ?>
-		</p>
-		<?php endif; ?>
-		
-		<h3><?php echo $this->lang->cookies ?></h3>
-		
-		<?php if( ! empty($_COOKIE)): ?>
-		<?php foreach($_COOKIE as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		<?php else:?>
-		<p>
-			<?php echo $this->lang->no_cookies ?>
-		</p>
-		<?php endif; ?>
-		
-		<h3><?php echo $this->lang->session ?></h3>
-		
-		<?php if( ! empty($_SESSION)): ?>
-		<?php foreach($_SESSION as $k => $v): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 160px"><?php echo htmlspecialchars($k, ENT_COMPAT, 'UTF-8') ?></div>
-			<div class="IFW-Cell" style="width: 565px"><?php echo htmlspecialchars($v, ENT_COMPAT, 'UTF-8') ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
-		<?php else:?>
-		<p>
-			<?php echo $this->lang->no_session ?>
-		</p>
-		<?php endif; ?>
-	</div>
-	
-	<div id="IFW-Db" class="IFW-Panel IFW-Hidden">
-		<?php if($this->database_loaded): ?>
-			<div class="IFW-THead">
-				<div class="IFW-Cell" style="width: 60px"><?php echo $this->lang->time ?></div>
-				<div class="IFW-Cell" style="width: 665px"><?php echo $this->lang->query ?></div>
-				<span class="IFW-Clear"></span>
-			</div>
-			<?php foreach($this->queries as $q): ?>
-				<div class="IFW-Row">
-					<div class="IFW-Cell" style="width: 60px"><?php echo number_format($q['time'] * 1000, 4) ?> ms</div>
-					<div class="IFW-Cell" style="width: 665px"><?php echo htmlspecialchars($q['query'], ENT_COMPAT, 'UTF-8') ?></div>
-					<span class="IFW-Clear"></span>
-				</div>
+			<?php foreach(self::$parts as $i => $p): ?>
+				<?php echo $p->renderTabContents("IFW-part$i-Tab", 'onClick="IFWshowTab(\'IFW-part'.$i.'\');"'); ?>
 			<?php endforeach; ?>
-		<?php else: ?>
-		<h2>
-			<?php echo $this->lang->db_not_loaded ?>
-		</h2>
-		<?php endif; ?>
+		</ul>
 	</div>
 	
-	<div id="IFW-Files" class="IFW-Panel IFW-Hidden">
-		<div class="IFW-THead">
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->fw_path ?>: </strong> <?php echo $this->fw_path ?>
-			</div>
-			
-			<div class="IFW-Cell">
-				<strong><?php echo $this->lang->app_paths ?>:</strong>
-				
-				<ol>
-					<?php foreach($this->app_paths as $p): ?>
-					<li><?php echo $p ?></li>
-					<?php endforeach; ?>
-				</ol>
-			</div>
-			
-			<span class="IFW-Clear"></span>
-		</div>
-		
-		<h3><?php echo $this->lang->inc_files ?></h3>
-		
-		<?php foreach($this->files as $file): ?>
-		<div class="IFW-Row">
-			<div class="IFW-Cell" style="width: 655px;"><?php echo $file['file'] ?></div>
-			<div class="IFW-Cell" style="width: 80px; text-align: right;"><?php echo Inject_Util::humanReadableSize($file['size']) ?></div>
-			<span class="IFW-Clear"></span>
-		</div>
-		<?php endforeach; ?>
+	<?php foreach(self::$parts as $i => $p): ?>
+	<div id="<?php echo "IFW-part$i" ?>" class="IFW-Panel IFW-Hidden">
+		<?php echo $p->renderBoxContents(); ?>
 	</div>
+	<?php endforeach; ?>
 </div><?php
 	}
 }
