@@ -8,12 +8,13 @@
 namespace Inject\Web;
 
 use \Inject\Core\Application\Engine;
+use \Inject\Core\CascadeEndpoint;
 
 /**
  * Endpoint trying to match the request to a specific controller action through
  * rules specified in the Routes.php config file.
  */
-class RouterEndpoint
+class RouterEndpoint extends CascadeEndpoint
 {
 	/**
 	 * The application which this objects routes for.
@@ -21,13 +22,6 @@ class RouterEndpoint
 	 * @var \Inject\Application\Engine
 	 */
 	protected $app_engine;
-	
-	/**
-	 * Compiled matchers.
-	 * 
-	 * @var array(\Inject\Web\Router\Route\AbstractRoute)
-	 */
-	protected $matchers = array();
 	
 	// ------------------------------------------------------------------------
 
@@ -46,14 +40,14 @@ class RouterEndpoint
 		if( ! $debug && file_exists($route_cache))
 		{
 			// Load cache
-			$this->matchers = include $route_cache;
+			$this->apps = include $route_cache;
 		}
 		elseif(file_exists($route_config))
 		{
 			$g = new Router\Generator\Generator($this->app_engine);
 			$g->loadFile($route_config);
 			
-			$this->matchers = $g->getCompiledRoutes();
+			$this->apps = $g->getCompiledRoutes();
 			
 			if( ! $debug)
 			{
@@ -64,21 +58,16 @@ class RouterEndpoint
 	
 	// ------------------------------------------------------------------------
 	
-	/**
-	 * Routes the supplied request to the proper controller.
-	 * 
-	 * @param  \Inject\Request\RequestInterface
-	 * @return callback
-	 */
 	public function __invoke($env)
 	{
 		$ret = array(404, array('X-Cascade' => 'pass'), '');
 		
-		foreach($this->matchers as $m)
+		foreach($this->apps as $app)
 		{
-			$ret = $m($env, $this->app_engine);
+			// TODO: How to make this identical with CascadeEndpoint, so there won't have to be two different methods?
+			$ret = $app($env, $this->app_engine);
 			
-			if( ! (isset($ret[1]['X-Cascade']) && $ret[1]['X-Cascade'] === 'pass'))
+			if( ! isset($ret[1]['X-Cascade']) OR $ret[1]['X-Cascade'] != 'pass')
 			{
 				return $ret;
 			}
@@ -92,7 +81,7 @@ class RouterEndpoint
 	/**
 	 * Constructs a URL froma set of options.
 	 * 
-	 * TODO: Move?
+	 * TODO: Move
 	 * 
 	 * @param  array
 	 * @return string
