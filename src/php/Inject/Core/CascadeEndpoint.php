@@ -53,7 +53,7 @@ class CascadeEndpoint
 		{
 			$ret = $app($env);
 			
-			if( ! isset($r[1]['X-Cascade']) OR $r[1]['X-Cascade'] != 'pass')
+			if( ! isset($ret[1]['X-Cascade']) OR $ret[1]['X-Cascade'] != 'pass')
 			{
 				return $ret;
 			}
