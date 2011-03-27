@@ -20,7 +20,7 @@ abstract class Engine
 	/**
 	 * List of loaded engines.
 	 * 
-	 * @var array(\Inject\Application\Engine)
+	 * @var array(\Inject\Core\Application\Engine)
 	 */
 	private static $engines = array();
 	
@@ -29,7 +29,7 @@ abstract class Engine
 	/**
 	 * Instantiates the engine, or returns an instance if already instantiated.
 	 * 
-	 * @return \Inject\Application\Engine
+	 * @return \Inject\Core\Application\Engine
 	 */
 	public static function instance()
 	{
@@ -43,7 +43,7 @@ abstract class Engine
 	/**
 	 * Returns an array containing the loaded engines.
 	 * 
-	 * @return array(\Inject\Application\Engine)
+	 * @return array(\Inject\Core\Application\Engine)
 	 */
 	public static function getLoadedEngines()
 	{
@@ -77,7 +77,7 @@ abstract class Engine
 	/**
 	 * The dependency injection container for the application.
 	 * 
-	 * @var \Inject\Dependency\ContainerInterface
+	 * @var \Inject\Core\Dependency\ContainerInterface
 	 */
 	public $container;
 	
@@ -155,7 +155,7 @@ abstract class Engine
 	 * Initializes the dependency injection container, override in child class
 	 * to provide a more application specific implementation.
 	 * 
-	 * @return \Inject\DependencyInjection\ContainerInterface
+	 * @return \Inject\Core\DependencyInjection\ContainerInterface
 	 */
 	protected function initContainer()
 	{
@@ -172,9 +172,9 @@ abstract class Engine
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Initializes the middleware for this engine.
 	 * 
-	 * 
-	 * @return 
+	 * @return array(\Inject\Core\Middleware\MiddlewareInterface)
 	 */
 	protected function initMiddleware()
 	{
@@ -184,47 +184,13 @@ abstract class Engine
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Initializes the endpoint callback for this engine.
 	 * 
-	 * 
-	 * @return 
+	 * @return callback
 	 */
 	protected function initEndpoint()
 	{
 		return null;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function getMiddleware()
-	{
-		if(empty($this->middleware))
-		{
-			return $this->middleware = $this->initMiddleware();
-		}
-		
-		return $this->middleware;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function getEndpoint()
-	{
-		if(empty($this->endpoint))
-		{
-			return $this->endpoint = $this->initEndpoint();
-		}
-		
-		return $this->endpoint;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -236,7 +202,10 @@ abstract class Engine
 	 */
 	public function stack()
 	{
-		return new MiddlewareStack($this->getMiddleware(), $this->getEndpoint());
+		return new MiddlewareStack(
+				empty($this->middleware) ? $this->middleware = $this->initMiddleware() : $this->middleware,
+				empty($this->endpoint)   ? $this->endpoint   = $this->initEndpoint()   : $this->endpoint
+			);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -278,20 +247,6 @@ abstract class Engine
 		}
 		
 		return $controllers;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Instantiates a controller with the given name (not necessarily the class
-	 * name) override in child classes to create controllers in different namespaces.
-	 * 
-	 * @param  string
-	 * @return Object
-	 */
-	public function createController($name)
-	{
-		return new $name($this);
 	}
 }
 
