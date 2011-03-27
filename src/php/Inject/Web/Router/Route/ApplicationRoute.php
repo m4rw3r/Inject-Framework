@@ -52,7 +52,7 @@ class ApplicationRoute extends AbstractRoute
 		$env['web.uri']              = $uri;
 		$env['REQUEST_URI']          = $uri;
 		$env['PATH_INFO']            = $uri;
-		$env['web.path_params_old']  = $env['web.path_params_old'];
+		$env['web.path_params_old']  = $env['web.path_parameters'];
 		
 		return $app_class::instance()->stack()->run($env);
 	}
