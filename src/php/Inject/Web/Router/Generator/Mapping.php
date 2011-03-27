@@ -7,7 +7,6 @@
 
 namespace Inject\Web\Router\Generator;
 
-use \Inject\Core\Engine;
 use \Inject\Web\Router\CompiledRoute;
 use \Inject\Web\Router\CompiledApplicationRoute;
 use \Inject\Web\Router\CompiledCallbackRoute;
@@ -22,32 +21,20 @@ class Mapping
 {
 	// TODO: Named Routes
 	// TODO: Implement another compiled class for routes without matches, ie. static routes
-	// TODO: Implement support for calling condition methods on the request object
-	// TODO: Implement support for assigning a specified Response object to return, eg. for redirects
-	
-	const CONTROLLER_ACTION = 1;
-	const ONLY_ACTION = 2;
-	const ONLY_CONTROLLER = 3;
-	const CALLBACK = 4;
-	const APPLICATION = 5;
-	const REDIRECT = 6;
-	
-	/**
-	 * A list of default values for controller requests.
-	 * 
-	 * @var array(string => string)
-	 */
-	protected $defaults_controller = array(
-			'action' => 'index',
-			'format' => 'html'
-		);
 	
 	/**
 	 * The input pattern.
 	 * 
 	 * @var string
 	 */
-	protected $raw_pattern;
+	protected $raw_pattern = '*url';
+	
+	/**
+	 * Regular expression pattern fragments for the pattern.
+	 * 
+	 * @var string
+	 */
+	protected $regex_fragments = array();
 	
 	/**
 	 * Options to merge with matches from the pattern and return to the router.
@@ -64,13 +51,6 @@ class Mapping
 	protected $to;
 	
 	/**
-	 * A list of accepted request methods, accepts all if empty.
-	 * 
-	 * @var array(string)
-	 */
-	protected $accepted_request_methods = array();
-	
-	/**
 	 * The special regex constraints for certain captures, used for compilation.
 	 * 
 	 * @var array(string => string)
@@ -81,15 +61,18 @@ class Mapping
 
 	/**
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
-	public function __construct($pattern)
+	public function path($pattern, array $regex_patterns = array())
 	{
 		// Normalize the pattern
 		strpos($pattern, '/') === 0 OR $pattern = '/'.$pattern;
 		
-		$this->raw_pattern = $pattern;
+		$this->raw_pattern     = $pattern;
+		$this->regex_fragments = $regex_patterns;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -105,8 +88,8 @@ class Mapping
 	 * 
 	 * The controller and action can also be set using captures in the pattern.
 	 * 
-	 * @param  array   List of option_name => data
-	 * @return \Inject\Web\Router\Connection  self
+	 * @param  string|Redirect
+	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
 	public function to($to)
 	{
@@ -118,10 +101,10 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the regular expression constraints for the captures.
+	 * Sets the regular expression constraints for a specified $env parameter.
 	 * 
-	 * @param  array   List of capture_name => regular_expression_fragment
-	 * @return \Inject\Web\Router\Connection  self
+	 * @param  array(string => regular_expression_fragment)
+	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
 	public function constraints(array $options)
 	{
@@ -136,11 +119,12 @@ class Mapping
 	 * Sets the accepted request methods for this route, defaults to all.
 	 * 
 	 * @param  string|array  a request method or list of request methods this route accepts
-	 * @return \Inject\Web\Router\Connection  self
+	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
 	public function via($request_method)
 	{
-		$this->accepted_request_methods = array_map('strtoupper', (array) $request_method);
+		// Creates a regex:
+		$this->constraints['web.method'] = '/'.implode('|'.array_map('strtoupper', (array) $request_method)).'/';
 		
 		return $this;
 	}
@@ -155,18 +139,6 @@ class Mapping
 	public function getTo()
 	{
 		return $this->to;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the raw pattern of this route.
-	 * 
-	 * @return string
-	 */
-	public function getRawPattern()
-	{
-		return $this->raw_pattern;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -196,14 +168,25 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns a list of accepted HTTP methods for this route, always uppercase,
-	 * empty if to allow all.
 	 * 
-	 * @return array(string)
+	 * 
+	 * @return 
 	 */
-	public function getAcceptedRequestMethods()
+	public function getRawPattern()
 	{
-		return $this->accepted_request_methods;
+		return $this->raw_pattern;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getRegexFragments()
+	{
+		return $this->regex_fragments;
 	}
 }
 

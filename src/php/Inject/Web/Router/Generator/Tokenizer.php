@@ -59,11 +59,11 @@ class Tokenizer
 	protected $required_captures = array();
 	
 	/**
-	 * The special regex constraints for certain captures, used for compilation.
+	 * The special regex patterns for certain captures, used for compilation.
 	 * 
 	 * @var array(string => string)
 	 */
-	protected $constraints = array();
+	protected $regex_patterns = array();
 	
 	// ------------------------------------------------------------------------
 
@@ -130,14 +130,14 @@ class Tokenizer
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the constraints which are dictated by the pattern (currently only
+	 * Returns the regex patterns which are dictated by the pattern (currently only
 	 * the "*" capture).
 	 * 
 	 * @return array(string => string)   Key = capture name, value = regex part
 	 */
-	public function getPatternConstraints()
+	public function getRegexFragments()
 	{
-		return $this->constraints;
+		return $this->regex_patterns;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -176,7 +176,7 @@ EOP;
 				if($capture_type == '*')
 				{
 					// Wildcard capture, set different constraint on that:
-					$this->constraints[$capture] = '.*?';
+					$this->regex_patterns[$capture] = '.*?';
 				}
 				
 				$this->used_captures[] = $capture;

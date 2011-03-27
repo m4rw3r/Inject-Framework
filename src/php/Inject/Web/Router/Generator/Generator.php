@@ -47,9 +47,10 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Attempts to load a route configuration file and parse its contents.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function loadFile($route_config)
 	{
@@ -68,13 +69,18 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Creates a matcher which will attempt to match the specified path pattern,
+	 * see the Mapping class for more settings for the matchers.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function match($path)
+	public function match($path = '', array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
+		$m->path($path, $segment_constraints);
 		
 		return $m;
 	}
@@ -82,13 +88,16 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Creates a matcher which will attempt to match the root ("/"), see the
+	 * Mapping class for more settings for the matchers.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
 	public function root()
 	{
-		$this->definitions[] = $m = new Mapping('/', $this->engine);
+		$this->definitions[] = $m = new Mapping();
+		$m->path('/');
 		
 		return $m;
 	}
@@ -96,13 +105,17 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Shorthand for match($path)->via('GET').
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function get($path)
+	public function get($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
+		$m->path($path, $segment_constraints);
 		$m->via('GET');
 		
 		return $m;
@@ -111,13 +124,17 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Shorthand for match($path)->via('POST').
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function post($path)
+	public function post($path, array $segment_constraints = array())
 	{
 		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$m->path($path, $segment_constraints);
 		$m->via('POST');
 		
 		return $m;
@@ -126,13 +143,17 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Shorthand for match($path)->via('PUT').
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function put($path)
+	public function put($path, array $segment_constraints = array())
 	{
 		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$m->path($path, $segment_constraints);
 		$m->via('PUT');
 		
 		return $m;
@@ -141,13 +162,17 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Shorthand for match($path)->via('DELETE').
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
+	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function delete($path)
+	public function delete($path, array $segment_constraints = array())
 	{
 		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$m->path($path, $segment_constraints);
 		$m->via('DELETE');
 		
 		return $m;
@@ -160,9 +185,10 @@ class Generator
 	 * 
 	 * @return 
 	 */
-	public function mount($path, $app_name)
+	public function mount($path, $app_name, array $segment_constraints = array())
 	{
 		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$m->path($path, $segment_constraints);
 		$m->to($app_name);
 		
 		return $m;
@@ -245,8 +271,6 @@ class Generator
 		{
 			$arr = array_merge($arr, $d->getCompiled());
 		}
-		
-		var_dump($arr);
 		
 		return $arr;
 	}

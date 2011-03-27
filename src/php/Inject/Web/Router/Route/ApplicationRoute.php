@@ -17,16 +17,15 @@ class ApplicationRoute extends AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * @param  string  The regular expression pattern
+	 * @param  array(string => string)  The regular expression patterns
 	 * @param  array(string => string)  List of options to return if this route matches
-	 * @param  array(string => int)  List of keys to intersect to get the options from
-	 *                               the regex captures
-	 * @param  array(string)  List of accepted HTTP request methods
+	 * @param  array(string => int)     List of keys to intersect to get the options from
+	 *                                  the regex captures
 	 * @param  string    Fully qualified Application/Engine class name
 	 */
-	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, $app_name)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $app_name)
 	{
-		parent::__construct($pattern, $options, $capture_intersect, $accepted_request_methods);
+		parent::__construct($constraints, $options, $capture_intersect);
 		
 		$this->app_name = $app_name;
 	}
@@ -44,7 +43,7 @@ class ApplicationRoute extends AbstractRoute
 	{
 		$app_class = $this->app_name;
 		
-		$uri  = isset($this->parsed_options['uri']) ? $this->parsed_options['uri'] : '';
+		$uri  = isset($env['web.path_parameters']['uri']) ? $env['web.path_parameters']['uri'] : '';
 		$path = substr($env['web.uri'], - strlen($uri));
 		
 		$env['web.front_controller'] = $env['web.front_controller'].$path;

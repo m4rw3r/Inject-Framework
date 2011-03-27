@@ -21,16 +21,15 @@ class PolymorphicRoute extends AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * @param  string  The regular expression pattern
+	 * @param  array(string => string)  The regular expression patterns
 	 * @param  array(string => string)  List of options to return if this route matches
-	 * @param  array(string => int)  List of keys to intersect to get the options from
-	 *                               the regex captures
-	 * @param  array(string)  List of accepted HTTP request methods
+	 * @param  array(string => int)     List of keys to intersect to get the options from
+	 *                                  the regex captures
 	 * @param  array(string => classname)  List of available controllers and their classnames
 	 */
-	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, Engine $engine, array $available_controllers)
+	public function __construct(array $constraints, array $options, array $capture_intersect, Engine $engine, array $available_controllers)
 	{
-		parent::__construct($pattern, $options, $capture_intersect, $accepted_request_methods);
+		parent::__construct($constraints, $options, $capture_intersect);
 		
 		$this->engine                = $engine;
 		$this->available_controllers = $available_controllers;

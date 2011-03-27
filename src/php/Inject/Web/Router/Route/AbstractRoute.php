@@ -16,11 +16,11 @@ abstract class AbstractRoute
 	// TODO: Store result for a matched route to be able to reuse those matches in creating the new url
 	
 	/**
-	 * The regular expression pattern to use.
+	 * The list of constraints to use.
 	 * 
-	 * @var string
+	 * @var array(string => regex)
 	 */
-	protected $pattern;
+	protected $constraints;
 	
 	/**
 	 * Options to merge with matches from the pattern and return to the router.
@@ -33,41 +33,25 @@ abstract class AbstractRoute
 	 * Array used to compute the key intersection of the regular expression
 	 * matching results, this to remove the integer keys from the regex result.
 	 * 
-	 * @var array(string => string)
+	 * @var array(string => int)
 	 */
 	protected $capture_intersect;
-	
-	/**
-	 * A list of accepted request methods, accepts all if empty.
-	 * 
-	 * @var array(string)
-	 */
-	protected $accepted_request_methods = array();
-	
-	/**
-	 * Options after matching.
-	 * 
-	 * @var array(string => string)
-	 */
-	protected $parsed_options = array();
 	
 	// ------------------------------------------------------------------------
 
 	/**
 	 * 
 	 * 
-	 * @param  string  The regular expression pattern
+	 * @param  array(string => string)  The regular expression patterns
 	 * @param  array(string => string)  List of options to return if this route matches
-	 * @param  array(string => int)  List of keys to intersect to get the options from
-	 *                               the regex captures
-	 * @param  array(string)  List of accepted HTTP request methods
+	 * @param  array(string => int)     List of keys to intersect to get the options from
+	 *                                  the regex captures
 	 */
-	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods)
+	public function __construct(array $constraints, array $options, array $capture_intersect)
 	{
-		$this->pattern = $pattern;
-		$this->options = $options;
+		$this->constraints       = $constraints;
+		$this->options           = $options;
 		$this->capture_intersect = $capture_intersect;
-		$this->accepted_request_methods = $accepted_request_methods;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -79,18 +63,24 @@ abstract class AbstractRoute
 	 */
 	public function __invoke($env)
 	{
-		// TODO: Do other constrains checking
-		if(empty($this->accepted_request_methods) OR in_array($env['web.request'], $this->accepted_request_methods))
+		$capture_data = array();
+		
+		foreach($this->constraints as $key => $pattern)
 		{
-			if(preg_match($this->pattern, $env['web.uri'], $result))
+			if(preg_match($pattern, $env[$key], $result))
 			{
-				$env['web.path_parameters'] = array_merge($this->options, $this->filterRegexResult($result));
-				
-				return $this->dispatch($env);
+				$capture_data = array_merge($capture_data, $result);
+			}
+			else
+			{
+				// Failure
+				return array(404, array('X-Cascade' => 'pass'), '');
 			}
 		}
 		
-		return array(404, array('X-Cascade' => 'pass'), '');
+		$env['web.path_parameters'] = array_merge($this->options, $this->filterRegexResult($capture_data));
+		
+		return $this->dispatch($env);
 	}
 	
 	// ------------------------------------------------------------------------

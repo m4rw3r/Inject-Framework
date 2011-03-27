@@ -54,6 +54,13 @@ abstract class AbstractDestination
 	 */
 	protected $engine;
 	
+	/**
+	 * Custom regular expression patterns, passed to createRegex().
+	 * 
+	 * @var array(string => regex_fragment)
+	 */
+	protected $regex_fragments = array();
+	
 	public function __construct(Mapping $route, Engine $engine)
 	{
 		$this->route  = $route;
@@ -69,12 +76,32 @@ abstract class AbstractDestination
 		
 		$tokenizer = new Tokenizer($this->route->getRawPattern());
 		
-		$this->constraints = array_merge($tokenizer->getPatternConstraints(), $this->route->getConstraints());
+		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
 		
 		$this->doValidation($tokenizer);
 		
-		$this->pattern = '#^'.$this->createRegex($tokenizer->getTokens()).'$#u';
+		$this->constraints = array_merge(
+				$this->route->getConstraints(), 
+				array('web.uri' => '#^'.$this->createRegex($tokenizer->getTokens(), $this->regex_fragments).'$#u')
+			);
 		
+		// TODO: Prefix constraints with "web." ?
+		uasort($this->constraints, function($a, $b)
+		{
+			return strlen($b) - strlen($a);
+		});
+		
+		// Check if the regular expressions parse:
+		foreach($this->constraints as $key => $val)
+		{
+			if(@preg_match($val, '') === false)
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('The route %s has a faulty regex for the constraint %s: "%s".', $this->route->getRawPattern(), $key, $val));
+			}
+		}
+		
+		// TODO: Allow captures from constraints too:
 		$this->capture_intersect = array_flip($tokenizer->getCaptures());
 		
 		$this->compiled = true;
@@ -88,7 +115,7 @@ abstract class AbstractDestination
 	 * @param  array
 	 * @return string
 	 */
-	protected function createRegex($token_list)
+	protected function createRegex($token_list, $regex_fragments)
 	{
 		// Start to create the regex
 		$regex = '';
@@ -111,9 +138,9 @@ abstract class AbstractDestination
 					$rule = '\w+';
 					
 					// Override the capture rule if constraint is present
-					if(isset($this->constraints[$data]))
+					if(isset($regex_fragments[$data]))
 					{
-						$rule = $this->constraints[$data];
+						$rule = $regex_fragments[$data];
 					}
 					
 					$regex .= '(?<'.preg_quote($data, '#').'>'.$rule.')';

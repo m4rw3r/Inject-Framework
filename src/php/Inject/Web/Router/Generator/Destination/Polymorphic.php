@@ -36,20 +36,23 @@ class Polymorphic extends AbstractDestination
 			// TODO: Exception
 			throw new \Exception(sprintf('The route %s does not have an associated controller option, or the :controller capture is optional.', $this->route->getRawPattern()));
 		}
+		
+		// Build a regex so the path fails faster:
+		empty($this->regex_fragments['controller']) && $this->regex_fragments['controller'] = implode('|', array_map('preg_quote', array_keys($this->engine->getAvailableControllers())));
 	}
 	
 	public function getCompiled()
 	{
 		$this->compile();
 		
-		return array(new Route\PolymorphicRoute($this->pattern, $this->options, $this->capture_intersect, $this->route->getAcceptedRequestMethods(), $this->engine, $this->engine->getAvailableControllers()));
+		return array(new Route\PolymorphicRoute($this->constraints, $this->options, $this->capture_intersect, $this->engine, $this->engine->getAvailableControllers()));
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\PolymorphicRoute('.var_export($this->pattern, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.var_export($this->route->getAcceptedRequestMethods(), true).', '.$engine_var.', '.$controller_var.');';
+		return $var_name.' = new Route\PolymorphicRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$engine_var.', '.$controller_var.');';
 	}
 }
 
