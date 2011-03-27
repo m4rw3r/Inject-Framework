@@ -49,7 +49,7 @@ class Application extends AbstractDestination
 		return array(new Route\ApplicationRoute($this->pattern, $this->route->getOptions(), $this->capture_intersect, $this->route->getAcceptedRequestMethods(), $this->route->getTo()));
 	}
 	
-	public function getCacheCode($var_name, $controller_var)
+	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		

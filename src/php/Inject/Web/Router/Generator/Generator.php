@@ -280,7 +280,7 @@ $definitions = new \SplFixedArray('.count($this->definitions).');
 		$i = 0;
 		foreach($this->getDestinations() as $m)
 		{
-			$arr[] = $m->getCacheCode('$definitions['.$i++.']', '$available_controllers');
+			$arr[] = $m->getCacheCode('$definitions['.$i++.']', '$available_controllers', '$engine');
 		}
 		
 		$code = $code.implode("\n\n", $arr);

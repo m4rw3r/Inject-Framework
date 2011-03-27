@@ -52,14 +52,14 @@ class Controller extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\ControllerRoute($this->pattern, $this->options, $this->capture_intersect, $this->route->getAcceptedRequestMethods(), $this->controller));
+		return array(new Route\ControllerRoute($this->pattern, $this->options, $this->capture_intersect, $this->route->getAcceptedRequestMethods(), $this->engine, $this->controller));
 	}
 	
-	public function getCacheCode($var_name, $controller_var)
+	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\ControllerRoute('.var_export($this->pattern, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.var_export($this->route->getAcceptedRequestMethods(), true).', '.var_export($this->controller, true).');';
+		return $var_name.' = new Route\ControllerRoute('.var_export($this->pattern, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.var_export($this->route->getAcceptedRequestMethods(), true).', '.$engine_var.', '.var_export($this->controller, true).');';
 	}
 }
 

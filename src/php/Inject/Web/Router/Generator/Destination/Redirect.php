@@ -32,7 +32,7 @@ class Redirect extends AbstractDestination
 		return array(new Route\CallbackRoute($this->pattern, $this->route->getOptions(), $this->capture_intersect, $this->route->getAcceptedRequestMethods(), $this->route->getTo()->getCallback()));
 	}
 	
-	public function getCacheCode($var_name, $controller_var)
+	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		

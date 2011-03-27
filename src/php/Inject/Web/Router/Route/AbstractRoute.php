@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\Route;
 
-use \Inject\Core\Application\Engine;
-
 /**
  * A compiled route.
  */
@@ -79,7 +77,7 @@ abstract class AbstractRoute
 	 * 
 	 * @return 
 	 */
-	public function __invoke($env, Engine $engine)
+	public function __invoke($env)
 	{
 		// TODO: Do other constrains checking
 		if(empty($this->accepted_request_methods) OR in_array($env['web.request'], $this->accepted_request_methods))
@@ -88,7 +86,7 @@ abstract class AbstractRoute
 			{
 				$env['web.path_parameters'] = array_merge($this->options, $this->filterRegexResult($result));
 				
-				return $this->dispatch($env, $engine);
+				return $this->dispatch($env);
 			}
 		}
 		
@@ -104,7 +102,7 @@ abstract class AbstractRoute
 	 * @param  \Inject\Core\Application\Engine
 	 * @return callback
 	 */
-	abstract public function dispatch($env, Engine $engine);
+	abstract public function dispatch($env);
 	
 	// ------------------------------------------------------------------------
 	

@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\Route;
 
-use \Inject\Core\Application\Engine;
-
 /**
  * A compiled route pointing to a callback.
  */
@@ -39,14 +37,12 @@ class CallbackRoute extends AbstractRoute
 	 * Returns a callback which is to be run by the application, this
 	 * method is called after matches() has returned true.
 	 * 
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env, Engine $engine)
+	public function dispatch($env)
 	{
-		$c = $this->callback;
-		
-		return $c($env);
+		return call_user_func($this->callback, $env);
 	}
 }
 

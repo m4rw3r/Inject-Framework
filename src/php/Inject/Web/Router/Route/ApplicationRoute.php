@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\Route;
 
-use \Inject\Core\Application\Engine;
-
 /**
  * A compiled route pointing to an Application or Engine.
  */
@@ -39,10 +37,10 @@ class ApplicationRoute extends AbstractRoute
 	 * Returns a callback which is to be run by the application, this
 	 * method is called after matches() has returned true.
 	 * 
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env, Engine $engine)
+	public function dispatch($env)
 	{
 		$app_class = $this->app_name;
 		

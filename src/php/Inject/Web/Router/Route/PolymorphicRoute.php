@@ -14,6 +14,8 @@ use \Inject\Core\Application\Engine;
  */
 class PolymorphicRoute extends AbstractRoute
 {
+	protected $engine;
+	
 	protected $available_controllers = array();
 	
 	// ------------------------------------------------------------------------
@@ -26,10 +28,11 @@ class PolymorphicRoute extends AbstractRoute
 	 * @param  array(string)  List of accepted HTTP request methods
 	 * @param  array(string => classname)  List of available controllers and their classnames
 	 */
-	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, array $available_controllers)
+	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, Engine $engine, array $available_controllers)
 	{
 		parent::__construct($pattern, $options, $capture_intersect, $accepted_request_methods);
 		
+		$this->engine                = $engine;
 		$this->available_controllers = $available_controllers;
 	}
 	
@@ -39,10 +42,10 @@ class PolymorphicRoute extends AbstractRoute
 	 * Returns a callback which is to be run by the application, this
 	 * method is called after matches() has returned true.
 	 * 
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env, Engine $engine)
+	public function dispatch($env)
 	{
 		$short_name = strtolower($env['web.path_parameters']['controller']);
 		
@@ -53,7 +56,7 @@ class PolymorphicRoute extends AbstractRoute
 		
 		$class_name = $this->available_controllers[$short_name];
 		
-		$c = $class_name::stack($engine, $env['web.path_parameters']['action']);
+		$c = $class_name::stack($this->engine, $env['web.path_parameters']['action']);
 		
 		return $c->run($env);
 	}

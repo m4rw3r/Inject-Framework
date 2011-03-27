@@ -16,13 +16,6 @@ use \Inject\Core\CascadeEndpoint;
  */
 class RouterEndpoint extends CascadeEndpoint
 {
-	/**
-	 * The application which this objects routes for.
-	 * 
-	 * @var \Inject\Application\Engine
-	 */
-	protected $app_engine;
-	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -30,12 +23,10 @@ class RouterEndpoint extends CascadeEndpoint
 	 * 
 	 * @return 
 	 */
-	public function __construct(Engine $app_engine, $debug = false)
+	public function __construct(Engine $engine, $debug = false)
 	{
-		$this->app_engine = $app_engine;
-		
-		$route_config = $this->app_engine->paths['config'].'Routes.php';
-		$route_cache  = $this->app_engine->paths['cache'] .'Routes.php';
+		$route_config = $engine->paths['config'].'Routes.php';
+		$route_cache  = $engine->paths['cache'] .'Routes.php';
 		
 		if( ! $debug && file_exists($route_cache))
 		{
@@ -44,7 +35,7 @@ class RouterEndpoint extends CascadeEndpoint
 		}
 		elseif(file_exists($route_config))
 		{
-			$g = new Router\Generator\Generator($this->app_engine);
+			$g = new Router\Generator\Generator($engine);
 			$g->loadFile($route_config);
 			
 			$this->apps = $g->getCompiledRoutes();
@@ -54,26 +45,6 @@ class RouterEndpoint extends CascadeEndpoint
 				$g->writeCache($route_cache);
 			}
 		}
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	public function __invoke($env)
-	{
-		$ret = array(404, array('X-Cascade' => 'pass'), '');
-		
-		foreach($this->apps as $app)
-		{
-			// TODO: How to make this identical with CascadeEndpoint, so there won't have to be two different methods?
-			$ret = $app($env, $this->app_engine);
-			
-			if( ! isset($ret[1]['X-Cascade']) OR $ret[1]['X-Cascade'] != 'pass')
-			{
-				return $ret;
-			}
-		}
-		
-		return $ret;
 	}
 	
 	// ------------------------------------------------------------------------

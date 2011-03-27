@@ -198,9 +198,10 @@ abstract class AbstractDestination
 	 * @param  string   The variable to assign the compiled routes to, must end with a []
 	 * @param  string   The variable name of the variable containing the array
 	 *                  of available controllers array(short_name => class)
+	 * @param  string   The variable name of the variable containing the current engine
 	 * @return string   PHP code
 	 */
-	abstract public function getCacheCode($var_name, $controller_var);
+	abstract public function getCacheCode($var_name, $controller_var, $engine_var);
 }
 
 

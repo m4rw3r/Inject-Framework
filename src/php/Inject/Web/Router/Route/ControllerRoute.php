@@ -14,6 +14,8 @@ use \Inject\Core\Application\Engine;
  */
 class ControllerRoute extends AbstractRoute
 {
+	protected $engine;
+	
 	protected $controller;
 	
 	// ------------------------------------------------------------------------
@@ -26,10 +28,11 @@ class ControllerRoute extends AbstractRoute
 	 * @param  array(string)  List of accepted HTTP request methods
 	 * @param  string    Fully qualified controller class name
 	 */
-	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, $controller)
+	public function __construct($pattern, array $options, array $capture_intersect, array $accepted_request_methods, Engine $engine, $controller)
 	{
 		parent::__construct($pattern, $options, $capture_intersect, $accepted_request_methods);
 		
+		$this->engine     = $engine;
 		$this->controller = $controller;
 	}
 	
@@ -39,13 +42,13 @@ class ControllerRoute extends AbstractRoute
 	 * Returns a callback which is to be run by the application, this
 	 * method is called after matches() has returned true.
 	 * 
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env, Engine $engine)
+	public function dispatch($env)
 	{
 		$controller_name = $this->controller;
-		$c = $controller_name::stack($engine, $env['web.path_parameters']['action']);
+		$c = $controller_name::stack($this->engine, $env['web.path_parameters']['action']);
 		
 		return $c->run($env);
 	}
