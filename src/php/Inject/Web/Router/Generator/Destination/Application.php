@@ -20,10 +20,10 @@ class Application extends AbstractDestination
 		$options = $this->route->getOptions();
 		$ref = new \ReflectionClass($this->route->getTo());
 		
-		if( ! $ref->isSubclassOf('\\Inject\\Core\\Application\\Engine') OR $ref->isAbstract())
+		if( ! $ref->isSubclassOf('\\Inject\\Core\\Engine') OR $ref->isAbstract())
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The class %s does not inherit \\Inject\\Core\\Application\\Engine and can therefore not be used as a route destination.', $ref->getName()));
+			throw new \Exception(sprintf('The class %s does not inherit \\Inject\\Core\\Engine and can therefore not be used as a route destination.', $ref->getName()));
 		}
 		
 		if( ! isset($options['uri']) && ! in_array('uri', $tokenizer->getCaptures()))
