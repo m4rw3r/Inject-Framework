@@ -1,0 +1,29 @@
+#!/usr/bin/php
+<?php
+/*
+ * Created by Martin Wernståhl on 2011-03-06.
+ * Copyright (c) 2011 Martin Wernståhl.
+ * All rights reserved.
+ */
+
+
+/*
+ * Turn on full error reporting while in console.
+ */
+error_reporting(E_ALL | E_STRICT | E_DEPRECATED);
+ini_set('display_errors', '1');
+
+/*
+ * Include the Inject base classes:
+ */
+require __DIR__.'/../php/Inject/Autoloader.php';
+
+$loader = new \Inject\Autoloader(getcwd());
+$loader->register();
+
+$r = \Inject\Console\Application::instance()->stack()->run($_SERVER);
+
+echo $r[2];
+
+/* End of file index.php */
+/* Location: index.php */

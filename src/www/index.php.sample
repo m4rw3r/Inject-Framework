@@ -1,0 +1,33 @@
+<?php
+/*
+ * Created by Martin Wernståhl on 2011-03-06.
+ * Copyright (c) 2011 Martin Wernståhl.
+ * All rights reserved.
+ */
+
+/*
+ * Turn off error display, while enabling full error
+ * reporting to the framework:
+ */
+error_reporting(E_ALL | E_STRICT | E_DEPRECATED);
+ini_set('display_errors', '0');
+
+/*
+ * Fix locale, so strtolower() and such only treat ASCII chars.
+ */
+setlocale(LC_CTYPE, 'C');
+
+/*
+ * Include the Inject base classes:
+ */
+require '/Inject/Autoloader.php';
+
+$loader = new \Inject\Autoloader(__DIR__.'/../app/');
+$loader->register();
+
+$r = \Sample\Application::instance()->stack()->run($_SERVER);
+
+\Inject\Web\Responder::respondWith($r);
+
+/* End of file index.php */
+/* Location: www */
