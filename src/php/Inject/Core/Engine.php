@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Core\Application;
+namespace Inject\Core;
 
 /**
  * Base class for the application
