@@ -8,14 +8,14 @@
 namespace Inject\Core\Controller;
 
 use \Inject\Core\MiddlewareStack;
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 
 /**
  * The bare bones Controller class.
  * 
  * To call $action on the SampleController controller, use this syntax:
  * <code>
- * $app instanceof \Inject\Core\Application\Engine
+ * $app instanceof \Inject\Core\Engine
  * $action is string
  * 
  * $stack = SampleController::stack($app, $action);
@@ -28,7 +28,7 @@ abstract class AbstractController
 	/**
 	 * Default MiddlewareStack creator for calling actions on this Controller.
 	 * 
-	 * @param  \Inject\Application\Engine    Application engine
+	 * @param  \Inject\Engine                Application engine
 	 * @param  string                        Controller action to call
 	 * @return \Inject\Core\MiddlewareStack  The middleware stack to run
 	 */
@@ -49,7 +49,7 @@ abstract class AbstractController
 	/**
 	 * The main application object associated with this controller.
 	 * 
-	 * @var \Inject\Core\Application\Engine
+	 * @var \Inject\Core\Engine
 	 */
 	protected $app;
 	

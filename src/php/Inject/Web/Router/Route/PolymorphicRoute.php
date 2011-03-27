@@ -7,7 +7,7 @@
 
 namespace Inject\Web\Router\Route;
 
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 
 /**
  * A compiled route leading to a dynamically specified controller.

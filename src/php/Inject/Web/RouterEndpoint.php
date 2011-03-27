@@ -7,7 +7,7 @@
 
 namespace Inject\Web;
 
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 use \Inject\Core\CascadeEndpoint;
 
 /**

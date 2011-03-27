@@ -7,7 +7,7 @@
 
 namespace Inject\Web\Router\Generator\Destination;
 
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Tokenizer;
 
@@ -50,7 +50,7 @@ abstract class AbstractDestination
 	/**
 	 * The engine instance this Mapping is generating routes for.
 	 * 
-	 * @var \Inject\Core\Application\Engine
+	 * @var \Inject\Core\Engine
 	 */
 	protected $engine;
 	

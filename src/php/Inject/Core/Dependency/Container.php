@@ -7,6 +7,8 @@
 
 namespace Inject\Core\Dependency;
 
+use \Inject\Core\Engine;
+
 /**
  * 
  */
@@ -17,7 +19,7 @@ class Container implements ContainerInterface
 	/**
 	 * The application engine, reachable through getEngine().
 	 * 
-	 * @var \Inject\Core\Application\Engine
+	 * @var \Inject\Core\Engine
 	 */
 	protected $engine;
 	
@@ -35,7 +37,7 @@ class Container implements ContainerInterface
 	 * 
 	 * @return 
 	 */
-	public function __construct(\Inject\Core\Application\Engine $engine, $config_filename = 'Container.php')
+	public function __construct(Engine $engine, $config_filename = 'Container.php')
 	{
 		$this->engine = $engine;
 		

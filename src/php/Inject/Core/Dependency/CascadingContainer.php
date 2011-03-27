@@ -7,7 +7,7 @@
 
 namespace Inject\Core\Dependency;
 
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 
 /**
  * Dynamic dependency injection container, cascades calls for

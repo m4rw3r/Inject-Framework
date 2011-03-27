@@ -7,11 +7,6 @@
 
 namespace Inject\Core\Application;
 
-use \Inject\Core\Application;
-use \Inject\Core\MiddlewareStack;
-use \Inject\Core\Dependency\Container as DIContainer;
-use \Inject\Core\Dependency\CascadingContainer as CascadingDIContainer;
-
 /**
  * Base class for the application
  */
@@ -20,7 +15,7 @@ abstract class Engine
 	/**
 	 * List of loaded engines.
 	 * 
-	 * @var array(\Inject\Core\Application\Engine)
+	 * @var array(\Inject\Core\Engine)
 	 */
 	private static $engines = array();
 	
@@ -29,7 +24,7 @@ abstract class Engine
 	/**
 	 * Instantiates the engine, or returns an instance if already instantiated.
 	 * 
-	 * @return \Inject\Core\Application\Engine
+	 * @return \Inject\Core\Engine
 	 */
 	public static function instance()
 	{
@@ -43,7 +38,7 @@ abstract class Engine
 	/**
 	 * Returns an array containing the loaded engines.
 	 * 
-	 * @return array(\Inject\Core\Application\Engine)
+	 * @return array(\Inject\Core\Engine)
 	 */
 	public static function getLoadedEngines()
 	{
@@ -161,11 +156,11 @@ abstract class Engine
 	{
 		if($this->isolated)
 		{
-			return new DIContainer($this);
+			return new Dependency\Container($this);
 		}
 		else
 		{
-			return new CascadingDIContainer($this, Application::getApplication()->container);
+			return new Dependency\CascadingContainer($this, Application::getApplication()->container);
 		}
 	}
 	
@@ -252,4 +247,4 @@ abstract class Engine
 
 
 /* End of file Engine.php */
-/* Location: src/php/Inject/Core/Application */
+/* Location: src/php/Inject/Core */

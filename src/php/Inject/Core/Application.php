@@ -10,7 +10,7 @@ namespace Inject\Core;
 /**
  * 
  */
-abstract class Application extends Application\Engine
+abstract class Application extends Engine
 {
 	/**
 	 * The main application instance.

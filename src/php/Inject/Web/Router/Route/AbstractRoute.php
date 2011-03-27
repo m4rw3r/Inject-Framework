@@ -99,7 +99,7 @@ abstract class AbstractRoute
 	 * Returns a callback which is to be run by the application, this
 	 * method is called after matches() has returned true.
 	 * 
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  mixed
 	 * @return callback
 	 */
 	abstract public function dispatch($env);

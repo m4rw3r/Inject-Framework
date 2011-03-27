@@ -7,7 +7,7 @@
 
 namespace Inject\Web\Middleware;
 
-use \Inject\Core\Application\Engine;
+use \Inject\Core\Engine;
 use \Inject\Core\Middleware\MiddlewareInterface;
 
 /**
@@ -19,7 +19,7 @@ class ExceptionCatcher implements MiddlewareInterface
 	/**
 	 * The associated application.
 	 * 
-	 * @var \Inject\Core\Application\Engine
+	 * @var \Inject\Core\Engine
 	 */
 	protected $app;
 	
@@ -33,7 +33,7 @@ class ExceptionCatcher implements MiddlewareInterface
 	// ------------------------------------------------------------------------
 
 	/**
-	 * @param  \Inject\Core\Application\Engine
+	 * @param  \Inject\Core\Engine
 	 */
 	public function __construct(Engine $app)
 	{
@@ -86,6 +86,7 @@ class ExceptionCatcher implements MiddlewareInterface
 			
 			ob_start();
 			
+			// TODO: Use the engine to load the file if possible
 			include __DIR__.'/ExceptionCatcher/exception_'.$status.'.'.$format.'.php';
 			
 			return array(500, array(), ob_get_clean());

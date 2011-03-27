@@ -6,7 +6,8 @@
  */
 
 namespace Inject\Web\Router\Generator;
-use \Inject\Core\Application\Engine;
+
+use \Inject\Core\Engine;
 use \Inject\Web\Router\CompiledRoute;
 use \Inject\Web\Router\CompiledApplicationRoute;
 use \Inject\Web\Router\CompiledCallbackRoute;
