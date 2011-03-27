@@ -87,8 +87,7 @@ class MiddlewareStack
 	{
 		if(empty($this->endpoint))
 		{
-			// TODO: Exception
-			throw new \Exception('Endpoint missing.');
+			throw new Middleware\NoEndpointException();
 		}
 		
 		$callback = array_reduce(array_reverse($this->middleware), function($callback, $middleware)
