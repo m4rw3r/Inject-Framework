@@ -53,7 +53,7 @@ class PolymorphicRoute extends AbstractRoute
 		
 		$class_name = $this->available_controllers[$short_name];
 		
-		$c = $class_name::stack($engine, $action_name);
+		$c = $class_name::stack($engine, $env['web.path_parameters']['action']);
 		
 		return $c->run($env);
 	}

@@ -45,9 +45,7 @@ class ControllerRoute extends AbstractRoute
 	public function dispatch($env, Engine $engine)
 	{
 		$controller_name = $this->controller;
-		$action_name     = $env['web.path_parameters']['action'];
-		
-		$c = $controller_name::stack($engine, $action_name);
+		$c = $controller_name::stack($engine, $env['web.path_parameters']['action']);
 		
 		return $c->run($env);
 	}
