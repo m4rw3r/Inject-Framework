@@ -11,7 +11,12 @@ use \Inject\Core\Middleware\MiddlewareInterface;
 
 /**
  * A stack which creates a chain for dealing with requests, middleware can modify the
- * request, return a response or do other actions before the request reaches the endpoint.
+ * request or response, return a response or do other actions before the request reaches the endpoint.
+ * 
+ * A middleware is a component which performs actions before or after the request
+ * is passed on to the following component in the chain. A middleware can also
+ * return a response directly instead of calling the next component, this can
+ * for example be used by a validation component.
  */
 class MiddlewareStack
 {
