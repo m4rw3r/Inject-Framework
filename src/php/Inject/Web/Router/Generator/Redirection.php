@@ -103,6 +103,7 @@ class Redirection
 				}
 			}
 			
+			// TODO: Change, Router is no longer used on the container, find anotehr way to get it
 			$router = \Inject\Core\Application::getApplication()->container->getRouter();
 			$url = $router->toUrl(array_merge($req->getDefaultUrlOptions(), array('path' => $path)));
 			
@@ -134,7 +135,8 @@ class Redirection
 		}
 		
 		return 'function($req)
-{
+{			
+	// TODO: Change, Router is no longer used on the container, find anotehr way to get it
 	$router = \Inject\Core\Application::getApplication()->container->getRouter();
 	$url = $router->toUrl(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
 	
