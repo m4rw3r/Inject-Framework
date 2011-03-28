@@ -85,6 +85,8 @@ abstract class AbstractDestination
 				array('web.uri' => '#^'.$this->createRegex($tokenizer->getTokens(), $this->regex_fragments).'$#u')
 			);
 		
+		$this->constraints = $this->cleanConstraints($this->constraints);
+		
 		// TODO: Prefix constraints with "web." ?
 		uasort($this->constraints, function($a, $b)
 		{
@@ -105,6 +107,46 @@ abstract class AbstractDestination
 		$this->capture_intersect = array_flip($tokenizer->getCaptures());
 		
 		$this->compiled = true;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Converts the constraints which aren't strings into regexes, so it is
+	 * possible to write 'authenticated' => true.
+	 * 
+	 * @param  array(string => mixed)
+	 * @return array(string => string)
+	 */
+	public function cleanConstraints(array $constraints)
+	{
+		$arr = array();
+		
+		foreach($constraints as $k => $v)
+		{
+			switch(gettype($v))
+			{
+				case 'boolean':
+					// ((String) true) === '1', ((String) false) === ''
+					$v = $v ? '/^1$/' : '/^$/';
+					break;
+				case 'integer':
+					$v = "/^$v\$/";
+					break;
+				case 'float':
+				case 'double':
+					$v = preg_quote($v);
+					$v = "/^$v$/";
+					break;
+				case 'NULL':
+					$v = '/^$/';
+					break;
+			}
+			
+			$arr[$k] = $v;
+		}
+		
+		return $arr;
 	}
 	
 	// ------------------------------------------------------------------------

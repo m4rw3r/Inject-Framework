@@ -103,7 +103,9 @@ class Mapping
 	/**
 	 * Sets the regular expression constraints for a specified $env parameter.
 	 * 
-	 * @param  array(string => regular_expression_fragment)
+	 * @param  array(string => mixed)  List of environment keys and their
+	 *         conditions, will usually be a regular expression, but can also
+	 *         be an integer, double, boolean or null value.
 	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
 	public function constraints(array $options)
