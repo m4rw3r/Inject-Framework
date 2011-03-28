@@ -11,7 +11,7 @@ use \Inject\Core\Middleware\MiddlewareInterface;
 
 class MiddlewareStackTest extends \PHPUnit_Framework_TestCase
 {
-	public function testIntantiate()
+	public function testInstantiate()
 	{
 		$m = new MiddlewareStack();
 		
