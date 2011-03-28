@@ -11,7 +11,8 @@ use \Inject\Core\Middleware\MiddlewareInterface;
 use \Inject\Core\Middleware\Utf8Filter;
 
 /**
- * Filters the $_SERVER variable passed as $env to a proper format for web requests.
+ * Filters the $_SERVER variable passed as $env to a proper format for web requests,
+ * also filters for invalid UTF-8 chars.
  * 
  * NOTE:
  * You don't have to use the \Inject\Core\Middleware\Utf8Filter combined with
@@ -24,6 +25,7 @@ class ServerVarFilter extends Utf8Filter implements MiddlewareInterface
 {
 	protected $next;
 	
+	protected $filter_utf8 = true;
 	
 	// ------------------------------------------------------------------------
 
