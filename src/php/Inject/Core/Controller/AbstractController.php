@@ -90,17 +90,14 @@ abstract class AbstractController
 	 * it to the proper action method.
 	 * 
 	 * @param  string  Action name
-	 * @param  \Inject\Request\RequestInterface  The request to run
-	 * @return \Inject\Request\Response|mixed  Return value from the controller
+	 * @param  mixed   The request to run
+	 * @return array   Return value from the controller
 	 */
-	public function __invoke($action, $req)
+	public function __invoke($action, $env)
 	{
-		// TODO: Create request object?
-		$this->request = $req;
-		
 		if(method_exists($this, $action) OR method_exists($this, '__call'))
 		{
-			return $this->$action();
+			return $this->$action($env);
 		}
 		else
 		{
