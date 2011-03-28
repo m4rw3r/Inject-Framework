@@ -17,6 +17,8 @@ Requirements
 * Reflection Extension
 * PCRE Extension
 * Tokenizer Extension
+* PCRE with UTF-8 support (``--enable-utf8``)
+* Iconv Extension (for ``\Inject\Core\Middleware\Utf8Filter``)
 
 Basic principles
 ================
