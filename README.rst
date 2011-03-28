@@ -25,9 +25,9 @@ The basic principle of the framework is a chain of layers — so called middlewa
 perform specific actions and then passes the request on to the next layer, ultimately
 reaching the controller's action method.
 
-In more general terms, the execution is done using the MiddlewareStack which contains
+In more general terms, the execution is done using the ``MiddlewareStack`` which contains
 a series of middlewares which will process the request before it is handed to the
-endpoint callback (which is a plain PHP callback).
+endpoint callback (which is either a closure or an object with ``__invoke()``).
 
 What is middleware?
 -------------------
@@ -41,6 +41,10 @@ methods: ``setNext(callback $next)`` (sets the callback pointing to the next lay
 and ``__invoke($env)`` which performs the middleware logic and then (if the
 middleware logic allows) forwards the request to the next middleware or endpoint.
 
+The main reason for the usage of an interface is that it is not feasible to inject the
+next middleware using the constructor of a middleware, mainly because it will not be
+as fast or flexible in PHP as it is in ruby.
+
 Here is an example middleware which´checks for the $_GET parameter "go" and returns
 a 404 if it cannot find it::
 
@@ -48,9 +52,9 @@ a 404 if it cannot find it::
   
   use \Inject\Core\Middleware\MiddlewareInterface;
   
-  class HasGo implements MiddlewareInterface
+  class BlockIfNotGo implements MiddlewareInterface
   {
-      proteted $next;
+      protected $next;
       
       public function setNext($callback)
       {
@@ -64,7 +68,7 @@ a 404 if it cannot find it::
               return array(404, array(), 'Page not found');
           }
           
-          $callback = $next;
+          $callback = $this->next;
           return $callback($env);
       }
   }
@@ -76,6 +80,29 @@ An endpoint is either a PHP object with an ``__invoke($env)`` method or a closur
 a single parameter. Usually the main endpoint of your application will be the router
 which in turn will initialize the controller specific middleware stack leading to the
 action.
+
+For a simple endpoint, see the ``\Inject\Core\CascadeEndpoint``.
+This endpoint attempts several callbacks until one does not return a response with the
+header ``X-Cascade`` set to ``pass``. So the associated callbacks will return a response
+along the lines of ``array(404, array('X-Cascade' => 'pass'), '')`` if they do not process
+the request.
+
+This is also how the ``\Inject\Web\RouterEndpoint`` works, only that instead of generic
+callbacks it attempts to call routes.
+
+Response format
+---------------
+
+The format of the response is very simple; just a plain PHP array containing response code,
+headers and content, in that order.
+
+Example response array::
+
+  array(200,
+      array('Content-Type' => 'text/html; charset=utf-8'),
+      '<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE html PUBLIC ...')
+
 
 
 
