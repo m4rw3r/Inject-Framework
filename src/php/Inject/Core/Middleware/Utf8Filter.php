@@ -10,9 +10,6 @@ namespace Inject\Core\Middleware;
 /**
  * Filters $env and strips all non-UTF-8 characters from its strings, prevents
  * injection attacks and similar by confusing the escaping functions with bad UTF-8.
- * 
- * TODO: Currently only filters $env, how should we do with $_GET, $_POST etc.?
- * TODO: cont. maybe add those into $env, either here or in another middleware.
  */
 class Utf8Filter implements MiddlewareInterface
 {
@@ -29,7 +26,7 @@ class Utf8Filter implements MiddlewareInterface
 
 	public function __invoke($env)
 	{
-		$env = $this->clean($env);
+		$env = $this->cleanUtf8($env);
 		
 		$callback = $this->next;
 		return $callback($env);
@@ -44,7 +41,7 @@ class Utf8Filter implements MiddlewareInterface
 	 * @param  mixed
 	 * @return mixed
 	 */
-	public function clean($value)
+	public function cleanUtf8($value)
 	{
 		if(is_array($value))
 		{
@@ -53,14 +50,14 @@ class Utf8Filter implements MiddlewareInterface
 			
 			foreach($value as $k => $v)
 			{
-				$arr[$this->clean($k)] = $this->clean($v);
+				$arr[$this->cleanUtf8($k)] = $this->cleanUtf8($v);
 			}
 			
 			return $arr;
 		}
 		elseif(is_string($value))
 		{
-			if( ! $this->compliant($value))
+			if( ! $this->utf8compliant($value))
 			{
 				$value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
 			}
@@ -77,7 +74,7 @@ class Utf8Filter implements MiddlewareInterface
 	 * @param  string
 	 * @return boolean
 	 */
-	public static function compliant($str)
+	public static function utf8compliant($str)
 	{
 		if(strlen($str) == 0)
 		{
