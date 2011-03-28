@@ -55,14 +55,6 @@ abstract class Engine
 	protected $engine_root = '';
 	
 	/**
-	 * If this engine should act as its own entity, or reuse components from
-	 * the main request Application.
-	 * 
-	 * @var boolean
-	 */
-	protected $isolated = false;
-	
-	/**
 	 * A list of paths to different resources associated with this Engine instance.
 	 * 
 	 * @var array(string => string)
@@ -70,11 +62,11 @@ abstract class Engine
 	public $paths = array();
 	
 	/**
-	 * The dependency injection container for the application.
+	 * The configuration for this Engine.
 	 * 
-	 * @var \Inject\Core\Dependency\ContainerInterface
+	 * @var array(string => mixed)
 	 */
-	public $container;
+	public $config = array();
 	
 	/**
 	 * The list of initialized middleware, cached result from initMiddleware().
@@ -97,11 +89,11 @@ abstract class Engine
 	 */
 	protected function __construct()
 	{
-		self::$engines[]       = $this;
+		self::$engines[]   = $this;
 		
-		$this->engine_root     = $this->registerRootDir();
-		$this->paths           = $this->initPaths();
-		$this->container       = $this->initContainer();
+		$this->engine_root = $this->registerRootDir();
+		$this->paths       = $this->initPaths();
+		$this->config      = $this->initConfig();
 	}
 	
 	// ------------------------------------------------------------------------
@@ -147,20 +139,23 @@ abstract class Engine
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Initializes the dependency injection container, override in child class
-	 * to provide a more application specific implementation.
+	 * Initializes the engine configuration, default configuration is loaded
+	 * from the return value of $this->paths['config'].'Config.php'.
 	 * 
-	 * @return \Inject\Core\DependencyInjection\ContainerInterface
+	 * @return array(string => mixed)
 	 */
-	protected function initContainer()
+	public function initConfig()
 	{
-		if($this->isolated)
+		if(file_exists($this->paths['config'].'Config.php'))
 		{
-			return new Dependency\Container($this);
+			 return include $this->paths['config'].'Config.php';
 		}
 		else
 		{
-			return new Dependency\CascadingContainer($this, Application::getApplication()->container);
+			// TODO: Are these sane defaults?
+			return array(
+					'debug' => true
+				);
 		}
 	}
 	

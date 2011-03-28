@@ -22,7 +22,7 @@ abstract class Application extends Engine
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the Application, that is, the first Engine to be instantiated.
+	 * Returns the Application object used for this PHP instance.
 	 * 
 	 * @return \Inject\Core\Application
 	 */
@@ -53,8 +53,6 @@ abstract class Application extends Engine
 		}
 		
 		self::$application = $this;
-		
-		$this->isolated = true;
 		
 		parent::__construct();
 	}
