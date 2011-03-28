@@ -28,7 +28,7 @@ abstract class AbstractController
 	/**
 	 * Default MiddlewareStack creator for calling actions on this Controller.
 	 * 
-	 * @param  \Inject\Engine                Application engine
+	 * @param  \Inject\Core\Engine           Application engine
 	 * @param  string                        Controller action to call
 	 * @return \Inject\Core\MiddlewareStack  The middleware stack to run
 	 */
@@ -36,12 +36,25 @@ abstract class AbstractController
 	{
 		$class = get_called_class();
 		
-		return new MiddlewareStack(array(), function($env) use($app, $class, $action)
+		return new MiddlewareStack(static::initMiddleware(), function($env) use($app, $class, $action)
 		{
 			$callback = new $class($app);
 			
 			return $callback($action.'Action', $env);
 		});
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns an array of middleware to be used by this controller's stack()
+	 * method.
+	 * 
+	 * @return array(\Inject\Core\Middleware\MiddlewareInterface)
+	 */
+	public static function initMiddleware()
+	{
+		return array();
 	}
 	
 	// ------------------------------------------------------------------------
