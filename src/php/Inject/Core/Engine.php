@@ -144,7 +144,7 @@ abstract class Engine
 	 * 
 	 * @return array(string => mixed)
 	 */
-	public function initConfig()
+	protected function initConfig()
 	{
 		if(file_exists($this->paths['config'].'Config.php'))
 		{
@@ -186,7 +186,8 @@ abstract class Engine
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Creates the application stack and returns it.
+	 * Creates the application stack and returns it, used to call this Engine
+	 * by calling the stack instance's run($env) method.
 	 * 
 	 * @return \Inject\Core\MiddlewareStack
 	 */
