@@ -26,10 +26,12 @@ use \Inject\Core\Engine;
 abstract class AbstractController
 {
 	/**
-	 * Default MiddlewareStack creator for calling actions on this Controller.
+	 * Creates a MiddlewareStack instance with middleware supplied from initMiddleware()
+	 * and a closure instantiating the controller and calling its action as the endpoint.
 	 * 
 	 * @param  \Inject\Core\Engine           Application engine
-	 * @param  string                        Controller action to call
+	 * @param  string                        Controller action to call,
+	 *                                       will be suffixd by "Action"
 	 * @return \Inject\Core\MiddlewareStack  The middleware stack to run
 	 */
 	public static function stack(Engine $app, $action)
@@ -68,13 +70,6 @@ abstract class AbstractController
 	 */
 	protected $app;
 	
-	/**
-	 * The current request.
-	 * 
-	 * @var \Inject\Core\Request\RequestInterface
-	 */
-	protected $request;
-	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -88,7 +83,7 @@ abstract class AbstractController
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Internal: Prepares the controller for handling a request and then dispatches
+	 * Prepares the controller for handling a request and then dispatches
 	 * it to the proper action method.
 	 * 
 	 * @param  string  Action name
