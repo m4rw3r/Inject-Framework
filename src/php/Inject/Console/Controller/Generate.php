@@ -50,9 +50,9 @@ class Generate extends AbstractController
 	 * 
 	 * @return 
 	 */
-	public function indexAction()
+	public function indexAction($env)
 	{
-		$this->helpAction();
+		$this->helpAction($env);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -62,14 +62,14 @@ class Generate extends AbstractController
 	 * 
 	 * @return 
 	 */
-	public function helpAction()
+	public function helpAction($env)
 	{
 		echo "
 Inject CLI Generate Controller
 
 ";
 		
-		$params = $this->request['cli.parameters'];
+		$params = $env['cli.parameters'];
 		
 		if( ! empty($params))
 		{
@@ -127,23 +127,18 @@ Inject CLI Generate Controller
 	public function __call($method, $params = array())
 	{
 		$method = str_replace('Action', '', $method);
+		$env    = current($params);
 		
 		foreach($this->generators as $g)
 		{
 			if($method === $g->getConsoleCommand())
 			{
-				return $g->generate($this->request);
+				return $g->generate($env);
 			}
 		}
 		
-		$f = fopen('php://stderr', 'w');
-		
-		fwrite($f, "
-Inject CLI Generate Controller
-
-ERROR: Command with name $method not found\n\n");
-		
-		fclose($f);
+		// TODO: Exception
+		throw new \Exception("Generate Controller ERROR: Command with name $method not found\n\n");
 	}
 }
 

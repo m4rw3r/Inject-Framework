@@ -19,7 +19,8 @@ class Application extends \Inject\Core\Application
 	protected function initMiddleware()
 	{
 		return array(
-			new \Inject\CLI\Middleware\BlockNonCLIAccess()
+			new \Inject\CLI\Middleware\BlockNonCLIAccess(),
+			new \Inject\CLI\Middleware\ExceptionCatcher()
 		);
 	}
 	protected function initEndpoint()
