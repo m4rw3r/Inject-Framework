@@ -38,15 +38,15 @@ class PolymorphicRoute extends AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Returns a callback which is to be run by the application, this
-	 * method is called after matches() has returned true.
+	 * Dispatches the request to the route destination, called by __invoke if
+	 * all the route conditions matches.
 	 * 
 	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env)
+	protected function dispatch($env)
 	{
-		$short_name = strtolower($env['web.path_parameters']['controller']);
+		$short_name = strtolower($env['web.route']->param('controller'));
 		
 		if( ! isset($this->available_controllers[$short_name]))
 		{
@@ -55,7 +55,7 @@ class PolymorphicRoute extends AbstractRoute
 		
 		$class_name = $this->available_controllers[$short_name];
 		
-		$c = $class_name::stack($this->engine, $env['web.path_parameters']['action']);
+		$c = $class_name::stack($this->engine, $env['web.route']->param('action', 'index'));
 		
 		return $c->run($env);
 	}

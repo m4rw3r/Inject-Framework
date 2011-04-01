@@ -38,16 +38,16 @@ class ControllerRoute extends AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Returns a callback which is to be run by the application, this
-	 * method is called after matches() has returned true.
+	 * Dispatches the request to the route destination, called by __invoke if
+	 * all the route conditions matches.
 	 * 
 	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env)
+	protected function dispatch($env)
 	{
 		$controller_name = $this->controller;
-		$c = $controller_name::stack($this->engine, $env['web.path_parameters']['action']);
+		$c = $controller_name::stack($this->engine, $env['web.route']->param('action', 'index'));
 		
 		return $c->run($env);
 	}

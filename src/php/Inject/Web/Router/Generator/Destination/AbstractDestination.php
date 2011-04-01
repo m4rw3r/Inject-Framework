@@ -82,7 +82,7 @@ abstract class AbstractDestination
 		
 		$this->constraints = array_merge(
 				$this->route->getConstraints(), 
-				array('web.uri' => $this->createRegex($tokenizer->getTokens(), $this->regex_fragments))
+				array('PATH_INFO' => $this->createRegex($tokenizer->getTokens(), $this->regex_fragments))
 			);
 		
 		$this->constraints = $this->cleanConstraints($this->constraints);
@@ -200,7 +200,7 @@ abstract class AbstractDestination
 			}
 		}
 		
-		return '#^'.$regex.'$#u';
+		return '#^'.$regex.'$#ui';
 	}
 	
 	// ------------------------------------------------------------------------

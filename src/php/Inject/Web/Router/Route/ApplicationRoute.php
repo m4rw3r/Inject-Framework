@@ -33,17 +33,17 @@ class ApplicationRoute extends AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Returns a callback which is to be run by the application, this
-	 * method is called after matches() has returned true.
+	 * Dispatches the request to the route destination, called by __invoke if
+	 * all the route conditions matches.
 	 * 
 	 * @param  mixed
 	 * @return callback
 	 */
-	public function dispatch($env)
+	protected function dispatch($env)
 	{
 		$app_class = $this->app_name;
 		
-		$uri  = isset($env['web.path_parameters']['uri']) ? $env['web.path_parameters']['uri'] : '';
+		$uri  = $env['web.route']->param('uri', '/');
 		$path = substr($env['web.uri'], - strlen($uri));
 		
 		$env['web.front_controller'] = $env['web.front_controller'].$path;

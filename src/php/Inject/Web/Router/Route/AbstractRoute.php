@@ -37,6 +37,13 @@ abstract class AbstractRoute
 	 */
 	protected $capture_intersect;
 	
+	/**
+	 * The list of parameters matched by this route when it has matched a route
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $params = array();
+	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -67,7 +74,7 @@ abstract class AbstractRoute
 		
 		foreach($this->constraints as $key => $pattern)
 		{
-			if(preg_match($pattern, $env[$key], $result))
+			if(isset($env[$key]) && preg_match($pattern, $env[$key], $result))
 			{
 				$capture_data = array_merge($capture_data, $result);
 			}
@@ -78,21 +85,62 @@ abstract class AbstractRoute
 			}
 		}
 		
-		$env['web.path_parameters'] = array_merge($this->options, $this->filterRegexResult($capture_data));
+		$env['web.route'] = clone $this;
+		$env['web.route']->setMatchedParameters(array_merge($this->options, $this->filterRegexResult($capture_data)));
 		
 		return $this->dispatch($env);
 	}
 	
 	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the parameters which this route matched, used internally to store
+	 * a copy of the matched route so it will be possible to get matched parameters.
+	 * 
+	 * @param  array(string => string)
+	 * @return void
+	 */
+	public function setMatchedParameters(array $params)
+	{
+		$this->params = $params;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the parameter for this matched route, falls back to the $default
+	 * parameter if the specified parameter does not exist.
+	 * 
+	 * @param  string
+	 * @return string|null
+	 */
+	public function param($name, $default = null)
+	{
+		return isset($this->params[$name]) ? $this->params[$name] : $default;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the parameters for this matched route.
+	 * 
+	 * @return array(string => string)
+	 */
+	public function params()
+	{
+		return $this->params;
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
-	 * Returns a callback which is to be run by the application, this
-	 * method is called after matches() has returned true.
+	 * Dispatches the request to the route destination, called by __invoke if
+	 * all the route conditions matches.
 	 * 
 	 * @param  mixed
 	 * @return callback
 	 */
-	abstract public function dispatch($env);
+	abstract protected function dispatch($env);
 	
 	// ------------------------------------------------------------------------
 	
@@ -111,7 +159,8 @@ abstract class AbstractRoute
 		{
 			if( ! empty($v))
 			{
-				// TODO: urlclean?
+				// No need to clean them, if $env has been cleaned they are
+				// clean as RFC 3875 specifies PATH_INFO as not-URL-encoded
 				$r[$k] = $v;
 			}
 		}
