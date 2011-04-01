@@ -50,14 +50,32 @@ class Utf8Filter implements MiddlewareInterface
 			
 			foreach($value as $k => $v)
 			{
-				$arr[$this->cleanUtf8($k)] = $this->cleanUtf8($v);
+				// Inlined utf8compliant($k) for speed
+				if( ! preg_match('/^.{1}/us', $k))
+				{
+					$k = iconv('UTF-8', 'UTF-8//IGNORE', $k);
+				}
+				
+				// Inlined parts of cleanUtf8($v) for speed
+				if(is_string($v) && ! preg_match('/^.{1}/us', $v))
+				{
+					$v = iconv('UTF-8', 'UTF-8//IGNORE', $v);
+				}
+				elseif(is_array($v))
+				{
+					// Last resort, have to recurse
+					$v = $this->cleanUtf8($v);
+				}
+				
+				$arr[$k] = $v;
 			}
 			
 			return $arr;
 		}
 		elseif(is_string($value))
 		{
-			if( ! $this->utf8compliant($value))
+			// Inline of utf8compliant($value)
+			if( ! preg_match('/^.{1}/us', $value))
 			{
 				$value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
 			}
