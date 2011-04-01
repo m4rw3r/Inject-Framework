@@ -37,8 +37,8 @@ Usage:
 
 bin/inject generate preload_file (--path [additional_classpaths]) (--classes [classnames]) (--no_default=true) (--file [file])
 
---paths parameter takes paths separated by \";\" and parses them for classes.
---classes parameter takes a list of specific classes separated by \";\" to include from the paths.
+--paths parameter takes paths separated by ";" and parses them for classes.
+--classes parameter takes a list of specific classes separated by ";" to include from the paths.
 --no_default tells preload_file to not add the default paths and classes.
 --file specifies a file to write to, default is STDOUT
 EOF;
