@@ -14,17 +14,54 @@ use \Inject\Core\Middleware\Utf8Filter;
  * Filters the $_SERVER variable passed as $env to a proper format for web requests,
  * also filters for invalid UTF-8 chars.
  * 
- * NOTE:
- * You don't have to use the \Inject\Core\Middleware\Utf8Filter combined with
- * this middleware.
+ * Filters for:
+ * - PATH_INFO:      Corrects PATH_INFO so it always starts with a "/" and it also
+ *                   trims trailing slashes.
+ * - SCRIPT_NAME:    Fixes so URL rewriting will result in SCRIPT_NAME without the
+ *                   script filename (or should do at least, needs testing).
+ * - BASE_URI:       Determines the URI to the script (front controller) without
+ *                   the filename, to be used when referring to assets.
+ * - REQUEST_METHOD: Validates the method used and uppercases it,
+ *                   If it is a POST request and the "_method" parameter is set,
+ *                   then that will be assumed as the REQUEST_METHOD (also validated).
+ * - POST:           Puts the POST data into the "POST" key.
+ * - GET:            Puts the GET data into the "GET" key.
  * 
- * TODO: Rename?
- * TODO: More validation
+ * NOTE:
+ * You don not have to use the \Inject\Core\Middleware\Utf8Filter combined with
+ * this middleware, it is just a waste of processing power as it will be filtered
+ * twice.
  */
 class ServerVarFilter extends Utf8Filter implements MiddlewareInterface
 {
+	/**
+	 * List of valid HTTP/1.1 request methods.
+	 * 
+	 * @var array(string)
+	 */
+	static protected $request_methods = array(
+			'CONNECT',
+			'DELETE',
+			'GET',
+			'HEAD',
+			'OPTIONS',
+			'POST',
+			'PUT',
+			'TRACE'
+		);
+	
+	/**
+	 * Next callback.
+	 * 
+	 * @var callback
+	 */
 	protected $next;
 	
+	/**
+	 * If to filter for invalid Utf8.
+	 * 
+	 * @var boolean
+	 */
 	protected $filter_utf8 = true;
 	
 	// ------------------------------------------------------------------------
@@ -52,22 +89,24 @@ class ServerVarFilter extends Utf8Filter implements MiddlewareInterface
 		// encoded in the URI and therefore we have to unpack it here
 		if(empty($env['QUERY_STRING']))
 		{
-			$env['web.get_data'] = array();
+			$env['GET'] = array();
 		}
 		else
 		{
 			// _GET not trusted
-			parse_str($env['QUERY_STRING'], $env['web.get_data']);
+			parse_str($env['QUERY_STRING'], $env['GET']);
 		}
 		
 		// _POST might not be accurate, depends on request type, read from php://input
-		parse_str(file_get_contents('php://input'), $env['web.post_data']);
+		parse_str(file_get_contents('php://input'), $env['POST']);
 		
+		// UTF8 Filtering
 		if($this->filter_ut8)
 		{
 			$env = $this->cleanUtf8($env);
 		}
 		
+		// PATH_INFO, SCRIPT_NAME and BASE_URI
 		$uri = '';
 		
 		// Do we have path info?
@@ -83,32 +122,22 @@ class ServerVarFilter extends Utf8Filter implements MiddlewareInterface
 		$front_controller = strpos($env['REQUEST_URI'], $env['SCRIPT_NAME']) !== 0 ? 
 		                    dirname($env['SCRIPT_NAME']) : $env['SCRIPT_NAME'];
 		
-		
 		// SCRIPT_NAME + PATH_INFO = URI - QUERY_STRING
 		
-		$env['web.uri']              = '/'.trim($uri, '/');
-		$env['web.base_uri']         = dirname($env['SCRIPT_NAME']);
-		$env['web.front_controller'] = $front_controller;
 		// TODO: Check if accurrate:
-		$env['PATH_INFO']            = $env['web.uri'];
+		$env['PATH_INFO']            = '/'.trim($uri, '/');
+		$env['BASE_URI']             = dirname($env['SCRIPT_NAME']);
 		$env['SCRIPT_NAME']          = $front_controller;
 		
-		$env['web.protocol'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
-		$env['web.host']     = $env['SERVER_NAME'];
-		$env['web.port']     = $env['SERVER_PORT'] == '80' ? '' : $env['SERVER_PORT'];
-		$env['web.method']   = isset($env['REQUEST_METHOD']) ? strtoupper($env['REQUEST_METHOD']) : 'GET';
-		$env['web.xhr']      = isset($env['HTTP_X_REQUESTED_WITH']) && strtolower($env['HTTP_X_REQUESTED_WITH'])  == 'xmlhttprequest';
-		
-		$env['web.remote_ip'] = $this->getRemoteIp($env);
+		$env['REQUEST_PROTOCOL']     = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
+		$env['REQUEST_METHOD']       = $this->checkMethod($env['REQUEST_METHOD']);
 		
 		// Check if we have got a redirect type for the post method,
 		// this is to be able to send PUT and DELETE from browser forms
 		// (which does not support them, as only XHTML 2.0 does)
-		if($env['web.method'] === 'POST' && isset($env['web.post_data']['_method']))
+		if($env['REQUEST_METHOD'] === 'POST' && ! empty($env['POST']['_method']))
 		{
-		    $method = strtoupper($env['web.post_data']['_method']);
-		    
-		    in_array($method, array('PUT', 'DELETE'), true) && $env['web.method'] = $method;
+		    $env['REQUEST_METHOD'] = $this->checkMethod($env['POST']['_method'], true);
 		}
 		
 		$callback = $this->next;
@@ -118,26 +147,35 @@ class ServerVarFilter extends Utf8Filter implements MiddlewareInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Validates the HTTP request method, so it contains a valid method, throws
+	 * exception if it is not valid.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @param  boolean Set to true if this is from a post override, then the
+	 *                 exception will reflect that if it is casted
+	 * @return string
 	 */
-	public function getRemoteIp($env)
+	protected function checkMethod($request_method, $post_override = false)
 	{
-		if(isset($env['REMOTE_ADDR']))
+		$request_method = strtoupper($request_method);
+		
+		if( ! in_array($request_method, self::$request_methods))
 		{
-			return trim($env['REMOTE_ADDR']);
+			$allowed_methods = implode(', ', array_slice(self::$request_methods, 0, -1)).(($m = end(self::$request_methods)) ? ' and '.$m : '');
+			
+			if($post_override)
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('Unknown HTTP request method %s specified by "_method" in POST data, accepted HTTP methods are: %s.', $request_method, $allowed_methods));
+			}
+			else
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('Unknown HTTP request method %s, accepted HTTP methods are: %s.', $request_method, $allowed_methods));
+			}
 		}
 		
-		if(isset($env['HTTP_CLIENT_IP']))
-		{
-			return trim(array_shift(explode(',', $env['REMOTE_ADDR'])));
-		}
-		
-		if(isset($env['HTTP_X_FORWARDED_FOR']))
-		{
-			return trim(array_shift(explode(',', $env['REMOTE_ADDR'])));
-		}
+		return $request_method;
 	}
 }
 
