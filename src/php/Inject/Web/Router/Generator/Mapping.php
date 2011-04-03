@@ -27,14 +27,28 @@ class Mapping
 	 * 
 	 * @var string
 	 */
-	protected $raw_pattern = '*url';
+	protected $raw_pattern = '';
 	
 	/**
 	 * Regular expression pattern fragments for the pattern.
 	 * 
-	 * @var string
+	 * @var array(string => string)
 	 */
 	protected $regex_fragments = array();
+	
+	/**
+	 * The path prefix pattern.
+	 * 
+	 * @var string
+	 */
+	protected $prefix_raw_pattern = '';
+	
+	/**
+	 * The regular expression fragments for the prefix pattern.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $prefix_regex_fragments = array();
 	
 	/**
 	 * Options to merge with matches from the pattern and return to the router.
@@ -48,7 +62,14 @@ class Mapping
 	 * 
 	 * @var mixed
 	 */
-	protected $to;
+	protected $to = array();
+	
+	/**
+	 * A list of accepted HTTP request methods, empty equals all.
+	 * 
+	 * @var array
+	 */
+	protected $via = array();
 	
 	/**
 	 * The special regex constraints for certain captures, used for compilation.
@@ -56,6 +77,19 @@ class Mapping
 	 * @var array(string => string)
 	 */
 	protected $constraints = array();
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setPrefixedPath($path, array $regex_patterns = array())
+	{
+		$this->prefix_raw_pattern     = $path === '/' ? '' : $path;
+		$this->prefix_regex_fragments = $regex_patterns;
+	}
 	
 	// ------------------------------------------------------------------------
 
@@ -72,8 +106,8 @@ class Mapping
 		// Normalize the pattern
 		strpos($pattern, '/') === 0 OR $pattern = '/'.$pattern;
 		
-		$this->raw_pattern     = $pattern;
-		$this->regex_fragments = $regex_patterns;
+		$this->raw_pattern     = $this->prefix_raw_pattern.$pattern;
+		$this->regex_fragments = array_merge($this->prefix_regex_fragments, $regex_patterns);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -138,7 +172,38 @@ class Mapping
 	 */
 	public function to($to)
 	{
-		$this->to = $to;
+		if(is_object($to) && $to instanceof Redirection)
+		{
+			$this->to = array('redirect' => $to);
+		}
+		elseif(is_callable($to))
+		{
+			$this->to = array('callback' => $to);
+		}
+		elseif(class_exists($to))
+		{
+			$this->to = array('engine'   => $to);
+		}
+		elseif(preg_match('/^((?:\\\\)?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)?#([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)?$/', $to, $matches))
+		{
+			$data = array();
+			
+			empty($matches[1]) OR $data['controller'] = $matches[1];
+			empty($matches[2]) OR $data['action']     = $matches[2];
+			
+			if(empty($data))
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getRawPattern()));
+			}
+			
+			$this->to = array_merge(array_intersect_key($this->to, array('controller' => 1, 'action' => 1)), $data);
+		}
+		else
+		{
+			// TODO: Exception
+			throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getRawPattern()));
+		}
 		
 		return $this;
 	}
@@ -170,8 +235,7 @@ class Mapping
 	 */
 	public function via($request_method)
 	{
-		// Creates a regex:
-		$this->constraints['REQUEST_METHOD'] = '/^(?:'.implode('|'.array_map('strtoupper', (array) $request_method)).')$/';
+		$this->via = array_merge($this->via, (Array)$request_method);
 		
 		return $this;
 	}
@@ -231,6 +295,18 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getVia()
+	{
+		return $this->via;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns the raw pattern for this route.
 	 * 
 	 * @return string
@@ -251,6 +327,30 @@ class Mapping
 	public function getRegexFragments()
 	{
 		return $this->regex_fragments;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getPrefixRawPattern()
+	{
+		return $this->prefix_raw_pattern;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getPrefixRegexFragments()
+	{
+		return $this->prefix_regex_fragments;
 	}
 }
 

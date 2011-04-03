@@ -17,19 +17,29 @@ class Callback extends AbstractDestination
 {
 	protected function doValidation(Tokenizer $tokenizer)
 	{
-		if(strpos($this->route->getTo(), '::'))
+		$this->callback = current($this->route->getTo());
+		
+		try
 		{
-			$ref = new \ReflectionMethod($this->route->getTo());
-			
-			if( ! $ref->isStatic())
+			if(strpos($this->callback, '::'))
 			{
-				// TODO: Exception
-				throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method must be static.', $this->route->getRawPattern(), $this->route->getTo()));
+				$ref = new \ReflectionMethod($this->callback);
+				
+				if( ! $ref->isStatic())
+				{
+					// TODO: Exception
+					throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method must be static.', $this->route->getRawPattern(), $this->callback));
+				}
+			}
+			else
+			{
+				$ref = new \ReflectionFunction($this->route->getTo());
 			}
 		}
-		else
+		catch(\ReflectionException $e)
 		{
-			$ref = new \ReflectionFunction($this->route->getTo());
+			// TODO: Exception
+			throw new \Exception(sprintf('The callback "%s" cannot be found for the route "%s".', $this->callback, $this->route->getRawPattern()));
 		}
 		
 		if($ref->getNumberOfRequiredParameters() > 1)
@@ -44,14 +54,14 @@ class Callback extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->route->getTo()));
+		return array(new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->callback));
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->route->getTo(), true).');';
+		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->callback, true).');';
 	}
 }
 

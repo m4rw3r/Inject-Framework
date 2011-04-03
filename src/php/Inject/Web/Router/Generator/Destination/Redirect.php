@@ -15,9 +15,13 @@ use \Inject\Web\Router\Generator\Tokenizer;
  */
 class Redirect extends AbstractDestination
 {
+	protected $redirect;
+	
 	protected function doValidation(Tokenizer $tokenizer)
 	{
-		$diff = array_diff($this->route->getTo()->getRequiredCaptures(), $tokenizer->getRequiredCaptures());
+		$this->redirect = current($this->route->getTo());
+		
+		$diff = array_diff($this->redirect->getRequiredCaptures(), $tokenizer->getRequiredCaptures());
 		
 		if( ! empty($diff))
 		{
@@ -29,14 +33,14 @@ class Redirect extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->route->getTo()->getCallback()));
+		return array(new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->redirect->getCallback()));
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->route->getTo()->getCallbackCode().');';
+		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->redirect->getCallbackCode().');';
 	}
 }
 

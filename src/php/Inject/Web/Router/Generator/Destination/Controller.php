@@ -30,21 +30,11 @@ class Controller extends AbstractDestination
 	{
 		$this->options = array_merge($this->defaults, $this->route->getOptions());
 		
-		if(preg_match('/^((?:\\\\)?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)#([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $this->route->getTo(), $matches))
-		{
-			// controller#action
-			$this->controller        = $this->translateShortControllerName($matches[1]);
-			$this->options['action'] = $matches[2];
-		}
-		elseif(preg_match('/^((?:\\\\)?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)#$/', $this->route->getTo(), $matches))
-		{
-			// controller#
-			$this->controller = $this->translateShortControllerName($matches[1]);
-		}
-		else
-		{
-			throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->route->getRawPattern()));
-		}
+		$to = $this->route->getTo();
+		
+		$this->controller = $this->translateShortControllerName($to['controller']);
+		
+		empty($to['action']) OR $this->options['action'] = $to['action'];
 	}
 	
 	public function getCompiled()

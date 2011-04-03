@@ -77,13 +77,23 @@ abstract class AbstractDestination
 		$tokenizer = new Tokenizer($this->route->getRawPattern());
 		
 		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
+		$via = $this->route->getVia();
 		
 		$this->doValidation($tokenizer);
 		
 		$this->constraints = array_merge(
 				$this->route->getConstraints(), 
-				array('PATH_INFO' => $this->createRegex($tokenizer->getTokens(), $this->regex_fragments))
+				array('PATH_INFO'      => $this->createRegex($tokenizer->getTokens(), $this->regex_fragments))
 			);
+		
+		if( ! empty($via))
+		{
+			// Creates a regex matching the appropriate REQUEST_METHOD
+			$this->constraints = array_merge(
+					$this->constriaints,
+					array('REQUEST_METHOD' => '/^(?:'.implode('|'.array_map('strtoupper', $via)).')$/')
+				);
+		}
 		
 		$this->constraints = $this->cleanConstraints($this->constraints);
 		

@@ -91,6 +91,9 @@ class Generator
 	 * Creates a matcher which will attempt to match the root ("/"), see the
 	 * Mapping class for more settings for the matchers.
 	 * 
+	 * This should preferably be placed first in the Routes.php file as this
+	 * is the most popular route of the site.
+	 * 
 	 * @param  string
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
@@ -228,31 +231,26 @@ class Generator
 		{
 			$to = $d->getTo();
 			
-			if(is_object($to) && $to instanceof Redirection)
+			if(isset($to['redirect']))
 			{
 				$arr[] = new Destination\Redirect($d, $this->engine);
-				continue;
 			}
-			
-			if(is_callable($to))
+			elseif(isset($to['callback']))
 			{
 				$arr[] = new Destination\Callback($d, $this->engine);
-				continue;
 			}
-			
-			if(class_exists($to))
+			elseif(isset($to['engine']))
 			{
 				$arr[] = new Destination\Application($d, $this->engine);
-				continue;
 			}
-			
-			if( ! empty($to))
+			elseif(isset($to['controller']))
 			{
 				$arr[] = new Destination\Controller($d, $this->engine);
-				continue;
 			}
-			
-			$arr[] = new Destination\Polymorphic($d, $this->engine);
+			else
+			{
+				$arr[] = new Destination\Polymorphic($d, $this->engine);
+			}
 		}
 		
 		return $arr;

@@ -18,7 +18,17 @@ class Application extends AbstractDestination
 	protected function doValidation(Tokenizer $tokenizer)
 	{
 		$options = $this->route->getOptions();
-		$ref = new \ReflectionClass($this->route->getTo());
+		$this->app_class = current($this->route->getTo());
+		
+		try
+		{
+			$ref = new \ReflectionClass($this->app_class);
+		}
+		catch(\Exception $e)
+		{
+			// TODO: Exception
+			throw new \Exception(sprintf('The class %s does not exist and can therefore not be used as a route destination.', $ref->getName()));
+		}
 		
 		if( ! $ref->isSubclassOf('\\Inject\\Core\\Engine') OR $ref->isAbstract())
 		{
@@ -46,14 +56,14 @@ class Application extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\ApplicationRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->route->getTo()));
+		return array(new Route\ApplicationRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->app_class));
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\ApplicationRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->route->getTo(), true).');';
+		return $var_name.' = new Route\ApplicationRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->app_class, true).');';
 	}
 }
 
