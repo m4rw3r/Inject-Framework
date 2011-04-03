@@ -60,6 +60,7 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * TODO: Documentation
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -78,15 +79,59 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the resulting data array for this connection, will be used to both
-	 * determine action and controller, and also to set the options passed to the
-	 * controller.
+	 * Sets the destination for this route.
 	 * 
-	 * The controller and action keys are the names of the controller and
-	 * action passed to the router instance. The controller name will be passed
-	 * to the application which then will chose which controller to instantiate.
+	 * Possible destinations:
 	 * 
-	 * The controller and action can also be set using captures in the pattern.
+	 * - Controller and action:
+	 *     'controller_name#action'
+	 *     '\Controller\Class\Name#action'
+	 *     
+	 *     Routes to a specific controller and action, if the specified
+	 *     controller is not an existing class, the controller class
+	 *     is decided by the associated Engine's getAvailableControllers()
+	 *     method, which is usually just the lowercase class+namespace name
+	 *     of the controller which is following the "Controller\" namespace.
+	 *     
+	 *     Example:
+	 *     'foo#lol' => \MyApp\Controller\Foo->lolAction()
+	 *     '\AnotherPackage\SomeController#test' => \AnotherPackage\SomeController->testAction()
+	 * 
+	 * - Controller (action decided by pattern):
+	 *     'controller_name#'
+	 *     '\Controller\Class\Name#'
+	 *     
+	 *     Routes to a specific controller, if the specified
+	 *     controller is not an existing class, the controller class
+	 *     is decided by the associated Engine's getAvailableControllers()
+	 *     method, which is usually just the lowercase class+namespace name
+	 *     of the controller which is following the "Controller\" namespace.
+	 * 
+	 * - Callback:
+	 *     'callback::string'  (can only be a string because of compiling)
+	 *     
+	 *     The callback string must point to either a static method or a 
+	 *     function which has at most one required parameter.
+	 *     This method/function will receive the $env var as its sole parameter.
+	 * 
+	 * - Application engine:
+	 *     '\Engine\Class\Name'
+	 *     
+	 *     This class must extend the \Inject\Core\Engine class.
+	 *     If the route matches then its MiddlewareStack will be run with a slightly modified
+	 *     $env hash:
+	 *     PATH_INFO   = *uri capture (or uri option)
+	 *     SCRIPT_NAME = SCRIPT_NAME + (PATH_INFO - *uri capture)
+	 *     BASE_URI    = BASE_URI    + (PATH_INFO - *uri capture)
+	 *     
+	 *     The old route will be stored in $env['web.old_route'].
+	 * 
+	 * - Redirect:
+	 *     $this->redirect('some_destination', 301)
+	 *     
+	 *     Will perform a redirect with a HTTP header, see
+	 *     \Inject\Web\Router\Generator\Generator->redirect()
+	 *     for more information on usage.
 	 * 
 	 * @param  string|Redirect
 	 * @return \Inject\Web\Router\Generator\Mapping  self
@@ -101,7 +146,7 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the regular expression constraints for a specified $env parameter.
+	 * Sets the regular expression constraints for specified $env parameters.
 	 * 
 	 * @param  array(string => mixed)  List of environment keys and their
 	 *         conditions, will usually be a regular expression, but can also
@@ -126,7 +171,23 @@ class Mapping
 	public function via($request_method)
 	{
 		// Creates a regex:
-		$this->constraints['web.method'] = '/'.implode('|'.array_map('strtoupper', (array) $request_method)).'/';
+		$this->constraints['REQUEST_METHOD'] = '/^(?:'.implode('|'.array_map('strtoupper', (array) $request_method)).')$/';
+		
+		return $this;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Specifies the default values for the optional captures, these will also be
+	 * passed on even if there are no captures with that name.
+	 * 
+	 * @param  array(string => string)
+	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 */
+	public function defaults(array $defaults)
+	{
+		$this->options = array_merge($this->options, $defaults);
 		
 		return $this;
 	}
@@ -170,9 +231,9 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns the raw pattern for this route.
 	 * 
-	 * 
-	 * @return 
+	 * @return string
 	 */
 	public function getRawPattern()
 	{
@@ -182,9 +243,10 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns regular expression fragments specified to be used for the captures
+	 * in the specified pattern.
 	 * 
-	 * 
-	 * @return 
+	 * @return array(string => string)  capture_name => regex_fragment
 	 */
 	public function getRegexFragments()
 	{

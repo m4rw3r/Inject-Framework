@@ -6,7 +6,8 @@
  */
 
 namespace Inject\Web\Router\Generator;
-use \Inject\Web\Router\CompiledRoute;
+
+use \Inject\Web\Request;
 
 /**
  * Object representing a route destination which results in a redirect.
@@ -30,9 +31,9 @@ class Redirection
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * @param  Destination pattern, same format as the one used by
+	 *         Generator->match() but may not contain optional segments
+	 * @param  Code to send the browser when redirecting
 	 */
 	public function __construct($destination, $code = 301)
 	{
@@ -45,9 +46,10 @@ class Redirection
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Tokenizes the destination string and throws an exception if it contains
+	 * an optional part.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	public function compile()
 	{
@@ -88,7 +90,7 @@ class Redirection
 		$tokens = $this->tokenizer->getTokens();
 		$code   = $this->redirect_code;
 		
-		return function($req) use($tokens, $code)
+		return function($env) use($tokens, $code)
 		{
 			$path = '';
 			foreach($tokens as $tok)
@@ -96,16 +98,17 @@ class Redirection
 				switch($tok[0])
 				{
 					case Tokenizer::CAPTURE:
-						$path .= $req->getParameter($tok[1]);
+						// PATH_INFO is not urlencoded, so no need to encode
+						$path .= $env['web.route']->getParameter($tok[1]);
 						break;
 					case Tokenizer::LITERAL:
 						$path .= $tok[1];
 				}
 			}
 			
-			// TODO: Change, Router is no longer used on the container, find anotehr way to get it
-			$router = \Inject\Core\Application::getApplication()->container->getRouter();
-			$url = $router->toUrl(array_merge($req->getDefaultUrlOptions(), array('path' => $path)));
+			// TODO: How to inject class
+			$req = new Request($env);
+			$url = Request::toUrl(array_merge($req->getDefaultUrlOptions(), array('path' => $path)));
 			
 			return array($code, array('Location' => $url), '');
 		};
@@ -127,18 +130,19 @@ class Redirection
 			switch($tok[0])
 			{
 				case Tokenizer::CAPTURE:
-					$path[] = '$req->getParameter(\''.addcslashes($tok[1], '\'').'\')';
+					// PATH_INFO is not urlencoded, so no need to encode
+					$path[] = '$env[\'web.route\']->param(\''.addcslashes($tok[1], '\'').'\')';
 					break;
 				case Tokenizer::LITERAL:
 					$path[] = '\''.addcslashes($tok[1], '\'').'\'';
 			}
 		}
 		
-		return 'function($req)
-{			
-	// TODO: Change, Router is no longer used on the container, find anotehr way to get it
-	$router = \Inject\Core\Application::getApplication()->container->getRouter();
-	$url = $router->toUrl(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
+		return 'function($env)
+{
+	// TODO: How to inject class used for Request->getDefaultUrlOptions()?
+	$req = new \Inject\Web\Request($env);
+	$url = \Inject\Web\Request::urlFor(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
 	
 	return array('.$this->redirect_code.', array(\'Location\' => $url), \'\');
 }';

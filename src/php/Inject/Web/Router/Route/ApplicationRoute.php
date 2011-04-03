@@ -41,18 +41,17 @@ class ApplicationRoute extends AbstractRoute
 	 */
 	protected function dispatch($env)
 	{
-		$app_class = $this->app_name;
-		
 		$uri  = $env['web.route']->param('uri', '/');
-		$path = substr($env['web.uri'], - strlen($uri));
+		$path = $uri == '/' ? substr($env['PATH_INFO'], - strlen($uri)) : $env['PATH_INFO'];
 		
-		$env['web.front_controller'] = $env['web.front_controller'].$path;
-		$env['web.base_uri']         = $env['web.base_uri'].$path;
-		$env['web.uri']              = $uri;
-		$env['REQUEST_URI']          = $uri;
-		$env['PATH_INFO']            = $uri;
-		$env['web.path_params_old']  = $env['web.path_parameters'];
+		// Move one step deeper in the directory structure
+		$env['SCRIPT_NAME']   = $env['SCRIPT_NAME'].$path;
+		$env['BASE_URI']      = $env['BASE_URI'].$path;
+		$env['REQUEST_URI']   = $uri; // TODO: Check REQUEST_URI and how it is used??
+		$env['PATH_INFO']     = $uri;
+		$env['web.old_route'] = $env['web.route'];
 		
+		$app_class = $this->app_name;
 		return $app_class::instance()->stack()->run($env);
 	}
 }

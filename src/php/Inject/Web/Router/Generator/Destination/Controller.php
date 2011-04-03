@@ -21,8 +21,7 @@ class Controller extends AbstractDestination
 	 * @var array(string => string)
 	 */
 	protected $defaults = array(
-			'action' => 'index',
-			'format' => 'html'
+			'action' => 'index'
 		);
 	
 	protected $options;

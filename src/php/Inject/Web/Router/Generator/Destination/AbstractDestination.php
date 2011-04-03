@@ -87,7 +87,8 @@ abstract class AbstractDestination
 		
 		$this->constraints = $this->cleanConstraints($this->constraints);
 		
-		// TODO: Prefix constraints with "web." ?
+		// Make the longest match the first one, then it will usually be faster as
+		// the longer the match, the more likely it is to fail
 		uasort($this->constraints, function($a, $b)
 		{
 			return strlen($b) - strlen($a);
@@ -162,7 +163,7 @@ abstract class AbstractDestination
 		// Start to create the regex
 		$regex = '';
 		
-		// TODO: UTF-8ize the generated regex, \w does not match all of the proper characters in UTF-8
+		// TODO: UTF-8ize the generated regex?, \w does not match all of the proper characters in UTF-8
 		
 		foreach($token_list as $t)
 		{

@@ -133,7 +133,7 @@ class Generator
 	 */
 	public function post($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
 		$m->path($path, $segment_constraints);
 		$m->via('POST');
 		
@@ -152,7 +152,7 @@ class Generator
 	 */
 	public function put($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
 		$m->path($path, $segment_constraints);
 		$m->via('PUT');
 		
@@ -171,7 +171,7 @@ class Generator
 	 */
 	public function delete($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
 		$m->path($path, $segment_constraints);
 		$m->via('DELETE');
 		
@@ -187,7 +187,7 @@ class Generator
 	 */
 	public function mount($path, $app_name, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = new Mapping($path, $this->engine);
+		$this->definitions[] = $m = new Mapping();
 		$m->path($path, $segment_constraints);
 		$m->to($app_name);
 		
@@ -202,9 +202,10 @@ class Generator
 	 * 
 	 * You can use the same syntax as mach() does, but optional parts are not
 	 * allowed. The captures will take the parameter read by match() and inject
-	 * that into the specified part of the URI/URL.
+	 * that into the specified part of the URI/URL given to redirect().
 	 * 
 	 * @param  string  A uri, url and/or pattern
+	 * @param  int     The redirect code
 	 * @return \Inject\Web\Router\Generator\Redirect
 	 */
 	public function redirect($uri_pattern, $redirect_code = 301)
@@ -260,9 +261,10 @@ class Generator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns a list of instances of \Inject\Web\Router\Route\AbstractRoute
+	 * which route according to the loaded config files.
 	 * 
-	 * 
-	 * @return 
+	 * @return array(\Inject\Web\Router\Route\AbstractRoute)
 	 */
 	public function getCompiledRoutes()
 	{
@@ -286,7 +288,8 @@ class Generator
 	{
 		$file = tempnam(dirname($path), basename($path));
 		
-		// TODO: Replace count($this->definitions) with something which asks the Mappings
+		// TODO: Replace count($this->definitions) with something which asks the Mappings,
+		// TODO: cont. to allow for multiple routes per destination (for eg. resources)
 		$code = '<?php
 /**
  * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router.

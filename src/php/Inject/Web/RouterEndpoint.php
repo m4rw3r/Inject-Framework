@@ -13,20 +13,25 @@ use \Inject\Core\CascadeEndpoint;
 /**
  * Endpoint trying to match the request to a specific controller action through
  * rules specified in the Routes.php config file.
+ * 
+ * Default file paths:
+ * - Config:  $engine->paths['config'].'Routes.php'
+ * - Cache:   $engine->paths['cache'] .'Routes.php'
  */
 class RouterEndpoint extends CascadeEndpoint
 {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * @param  \Inject\Core\Engine  The engine used to create controller instances
+	 * @param  boolean              If to generate a cache file or not
+	 * @param  string|false         Override for the default route config file
+	 * @param  string|false         Override for the default route cache file
 	 */
-	public function __construct(Engine $engine, $debug = false)
+	public function __construct(Engine $engine, $debug = false, $route_config = false, $route_cache = false)
 	{
-		$route_config = $engine->paths['config'].'Routes.php';
-		$route_cache  = $engine->paths['cache'] .'Routes.php';
+		$route_config = empty($route_config) ? $engine->paths['config'].'Routes.php' : $route_config;
+		$route_cache  = empty($route_cache)  ? $engine->paths['cache'] .'Routes.php' : $route_cache;
 		
 		if( ! $debug && file_exists($route_cache))
 		{
@@ -45,55 +50,6 @@ class RouterEndpoint extends CascadeEndpoint
 				$g->writeCache($route_cache);
 			}
 		}
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Constructs a URL froma set of options.
-	 * 
-	 * TODO: Move
-	 * 
-	 * @param  array
-	 * @return string
-	 */
-	public function toUrl(array $options)
-	{
-		if( ! (isset($options['host']) OR isset($options['only_path']) && $options['only_path']))
-		{
-			// TODO: Exception
-			throw new \Exception('No host to link to, please set $default_url_options[\'host\'], $options[\'host\'] or $options[\'only_path\'].');
-		}
-		
-		if(preg_match('#^\w+://#u', $options['path']))
-		{
-			return $options['path'];
-		}
-		
-		$rewritten_url = '';
-		
-		if( ! (isset($options['only_path']) && $options['only_path']))
-		{
-			$rewritten_url .= isset($options['protocol']) ? $options['protocol'] : 'http';
-			// TODO: Add authentication?
-			$rewritten_url = trim($rewritten_url, '://').'://'.$options['host'];
-			
-			if(isset($options['port']) && ! empty($options['port']))
-			{
-				$rewritten_url .= ':'.$options['port'];
-			}
-		}
-		
-		$rewritten_url .= (isset($options['front_controller']) ? $options['front_controller'] : '').'/'.ltrim($options['path'], '/');
-		
-		// TODO: GET options?
-		
-		if(isset($options['anchor']))
-		{
-			$rewritten_url .= '#'.urlencode($options['anchor']);
-		}
-		
-		return $rewritten_url;
 	}
 }
 
