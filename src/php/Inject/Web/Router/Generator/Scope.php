@@ -35,6 +35,13 @@ class Scope
 	protected $base;
 	
 	/**
+	 * Route definitions.
+	 * 
+	 * @var array(Mapping)
+	 */
+	protected $definitions = array();
+	
+	/**
 	 * @param  \Inject\Core\Engine  The engine instance which is responsible for
 	 *                              the controllers in the routes
 	 * @param  \Inject\Web\Router\Generator\Mapping  Initial template

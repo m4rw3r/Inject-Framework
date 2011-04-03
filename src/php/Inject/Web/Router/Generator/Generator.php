@@ -17,28 +17,6 @@ class Generator extends Scope
 	// TODO: Add route dumper
 	
 	/**
-	 * Route definitions.
-	 * 
-	 * @var array(Mapping)
-	 */
-	protected $definitions = array();
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function __construct(Engine $engine)
-	{
-		$this->engine = $engine;
-		$this->base   = new Mapping();
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
 	 * Attempts to load a route configuration file and parse its contents.
 	 * 
 	 * @param  string
