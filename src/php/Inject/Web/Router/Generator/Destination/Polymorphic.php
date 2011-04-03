@@ -31,6 +31,13 @@ class Polymorphic extends AbstractDestination
 	{
 		$this->options = array_merge($this->defaults, $this->route->getOptions());
 		
+		$to = $this->route->getTo();
+		
+		if( ! empty($to['action']))
+		{
+			$this->options['action'] = $to['action'];
+		}
+		
 		if( ! in_array('controller', $tokenizer->getRequiredCaptures()))
 		{
 			// TODO: Exception

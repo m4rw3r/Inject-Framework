@@ -74,10 +74,12 @@ abstract class AbstractDestination
 			return;
 		}
 		
-		$tokenizer = new Tokenizer($this->route->getRawPattern());
+		$via         = $this->route->getVia();
+		// Clean regex from trailing slashes and duplicated ones
+		$raw_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->route->getRawPattern());
+		$tokenizer   = new Tokenizer($raw_pattern);
 		
 		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
-		$via = $this->route->getVia();
 		
 		$this->doValidation($tokenizer);
 		
@@ -90,8 +92,8 @@ abstract class AbstractDestination
 		{
 			// Creates a regex matching the appropriate REQUEST_METHOD
 			$this->constraints = array_merge(
-					$this->constriaints,
-					array('REQUEST_METHOD' => '/^(?:'.implode('|'.array_map('strtoupper', $via)).')$/')
+					$this->constraints,
+					array('REQUEST_METHOD' => '/^(?:'.implode('|', array_map('strtoupper', $via)).')$/')
 				);
 		}
 		

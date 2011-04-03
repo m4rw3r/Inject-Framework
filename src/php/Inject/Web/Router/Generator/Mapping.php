@@ -37,20 +37,6 @@ class Mapping
 	protected $regex_fragments = array();
 	
 	/**
-	 * The path prefix pattern.
-	 * 
-	 * @var string
-	 */
-	protected $prefix_raw_pattern = '';
-	
-	/**
-	 * The regular expression fragments for the prefix pattern.
-	 * 
-	 * @var array(string => string)
-	 */
-	protected $prefix_regex_fragments = array();
-	
-	/**
 	 * Options to merge with matches from the pattern and return to the router.
 	 *
 	 * @var array(string => string)
@@ -78,21 +64,6 @@ class Mapping
 	 */
 	protected $constraints = array();
 	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function setPrefixedPath($path, array $regex_patterns = array())
-	{
-		$this->prefix_raw_pattern     = $path === '/' ? '' : $path;
-		$this->prefix_regex_fragments = $regex_patterns;
-	}
-	
-	// ------------------------------------------------------------------------
-
 	/**
 	 * TODO: Documentation
 	 * 
@@ -106,8 +77,8 @@ class Mapping
 		// Normalize the pattern
 		strpos($pattern, '/') === 0 OR $pattern = '/'.$pattern;
 		
-		$this->raw_pattern     = $this->prefix_raw_pattern.$pattern;
-		$this->regex_fragments = array_merge($this->prefix_regex_fragments, $regex_patterns);
+		$this->raw_pattern     = $this->raw_pattern.$pattern;
+		$this->regex_fragments = array_merge($this->regex_fragments, $regex_patterns);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -194,7 +165,7 @@ class Mapping
 			if(empty($data))
 			{
 				// TODO: Exception
-				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getRawPattern()));
+				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected "controller#action", "controller#" or "#action".', $this->getRawPattern()));
 			}
 			
 			$this->to = array_merge(array_intersect_key($this->to, array('controller' => 1, 'action' => 1)), $data);
@@ -230,12 +201,20 @@ class Mapping
 	/**
 	 * Sets the accepted request methods for this route, defaults to all.
 	 * 
-	 * @param  string|array  a request method or list of request methods this route accepts
+	 * @param  string|array|false  a request method or list of request methods
+	 *                             this route accepts, false to allow all (default).
 	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
 	public function via($request_method)
 	{
-		$this->via = array_merge($this->via, (Array)$request_method);
+		if($request_method === false)
+		{
+			$this->via = array();
+		}
+		else
+		{
+			$this->via = array_merge($this->via, (Array)$request_method);
+		}
 		
 		return $this;
 	}
@@ -327,30 +306,6 @@ class Mapping
 	public function getRegexFragments()
 	{
 		return $this->regex_fragments;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function getPrefixRawPattern()
-	{
-		return $this->prefix_raw_pattern;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function getPrefixRegexFragments()
-	{
-		return $this->prefix_regex_fragments;
 	}
 }
 
