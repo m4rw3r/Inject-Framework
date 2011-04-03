@@ -10,15 +10,13 @@ namespace Inject\Web\Router\Generator;
 use \Inject\Core\Engine;
 
 /**
- * A class creating routes based on a template, default route template
- * is an empty template.
+ * Base class creating routes, the routes are based on a template, default
+ * route template is an empty template.
  * 
  * 
  */
 class Scope
 {
-	// TODO: Implement resource()
-	
 	/**
 	 * The application engine.
 	 * 
@@ -206,6 +204,43 @@ class Scope
 		$this->definitions[] = $s = new Scope($this->engine, $this->base);
 		
 		return $s;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Creates a RESTful route.
+	 * 
+	 * It is essentially creating all the following routes:
+	 * - GET      $name        =>  #index
+	 * - POST     $name        =>  #create
+	 * - GET      $name/new    =>  #newform
+	 * - GET      $name/:id    =>  #show
+	 * - PUT      $name/:id    =>  #update
+	 * - DELETE   $name/:id    =>  #destroy
+	 * 
+	 * The Resource instance returned also acts as a Scope with the predefined
+	 * path $name/:id which makes it possible to nest both more routes and other
+	 * resources on this resource.
+	 * 
+	 * The :id capture is actually named ":$name"."_id" to avoid naming conflicts
+	 * when nesting resources (eg. resources('posts')->resources('comments')).
+	 * 
+	 * Options:
+	 * - controller: The controller name to route to, if different from $name
+	 * - path:       The path to use when routing, if different from $name
+	 * 
+	 * TODO: More documentation
+	 * 
+	 * @param  string
+	 * @param  array(string => string)
+	 * @return \Inject\Web\Router\Generator\Resource
+	 */
+	public function resources($name, array $options = array())
+	{
+		$this->definitions[] = $r = new Resource($this->engine, $this->base, $name, $options);
+		
+		return $r;
 	}
 	
 	// ------------------------------------------------------------------------
