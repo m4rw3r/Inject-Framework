@@ -21,6 +21,7 @@ class Mapping
 {
 	// TODO: Named Routes
 	// TODO: Implement another compiled class for routes without matches, ie. static routes
+	// TODO: cont. Is that really needed?
 	
 	/**
 	 * The input pattern.
@@ -63,6 +64,14 @@ class Mapping
 	 * @var array(string => string)
 	 */
 	protected $constraints = array();
+	
+	/**
+	 * The named regex captures in $constraints which should carry over to the
+	 * route parameters, specified by user.
+	 * 
+	 * @var array(string)
+	 */
+	protected $constraint_captures = array();
 	
 	/**
 	 * TODO: Documentation
@@ -184,14 +193,20 @@ class Mapping
 	/**
 	 * Sets the regular expression constraints for specified $env parameters.
 	 * 
+	 * TODO: Documentation
+	 * 
 	 * @param  array(string => mixed)  List of environment keys and their
 	 *         conditions, will usually be a regular expression, but can also
 	 *         be an integer, double, boolean or null value.
+	 * @param  array(string)  List of named captures used in the regexes,
+	 *                        if they are present on this list, they will be
+	 *                        included in the route parameters
 	 * @return \Inject\Web\Router\Generator\Mapping  self
 	 */
-	public function constraints(array $options)
+	public function constraints(array $options, $named_captures = array())
 	{
-		$this->constraints = array_merge($this->constraints, $options);
+		$this->constraints         = array_merge($this->constraints, $options);
+		$this->constraint_captures = array_merge($this->constraint_captures, (Array)$named_captures);
 		
 		return $this;
 	}
@@ -200,6 +215,8 @@ class Mapping
 
 	/**
 	 * Sets the accepted request methods for this route, defaults to all.
+	 * 
+	 * NOTE: Can be overridden by a constraint() on REQUEST_METHOD.
 	 * 
 	 * @param  string|array|false  a request method or list of request methods
 	 *                             this route accepts, false to allow all (default).
@@ -222,8 +239,8 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Specifies the default values for the optional captures, these will also be
-	 * passed on even if there are no captures with that name.
+	 * Specifies the default values for the captures, these will also be passed
+	 * on as route parameters even if there are no captures with that name.
 	 * 
 	 * @param  array(string => string)
 	 * @return \Inject\Web\Router\Generator\Mapping  self
@@ -269,6 +286,19 @@ class Mapping
 	public function getConstraints()
 	{
 		return $this->constraints;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns a list of regular expression captures in the constraint list which
+	 * should be preserved in the route parameters.
+	 * 
+	 * @return array(string)
+	 */
+	public function getConstraintsCaptures()
+	{
+		return $this->constraint_captures;
 	}
 	
 	// ------------------------------------------------------------------------

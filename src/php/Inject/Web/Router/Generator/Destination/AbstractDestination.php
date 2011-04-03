@@ -79,23 +79,19 @@ abstract class AbstractDestination
 		$raw_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->route->getRawPattern());
 		$tokenizer   = new Tokenizer($raw_pattern);
 		
-		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
-		
-		$this->doValidation($tokenizer);
-		
-		$this->constraints = array_merge(
-				$this->route->getConstraints(), 
-				array('PATH_INFO'      => $this->createRegex($tokenizer->getTokens(), $this->regex_fragments))
-			);
+		$this->constraints = $this->route->getConstraints();
 		
 		if( ! empty($via))
 		{
 			// Creates a regex matching the appropriate REQUEST_METHOD
-			$this->constraints = array_merge(
-					$this->constraints,
-					array('REQUEST_METHOD' => '/^(?:'.implode('|', array_map('strtoupper', $via)).')$/')
-				);
+			$this->constraints['REQUEST_METHOD'] = '/^(?:'.implode('|', array_map('strtoupper', $via)).')$/';
 		}
+		
+		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
+		
+		$this->doValidation($tokenizer);
+		
+		$this->constraints['PATH_INFO'] = $this->createRegex($tokenizer->getTokens(), $this->regex_fragments);
 		
 		$this->constraints = $this->cleanConstraints($this->constraints);
 		
@@ -117,7 +113,7 @@ abstract class AbstractDestination
 		}
 		
 		// TODO: Allow captures from constraints too:
-		$this->capture_intersect = array_flip($tokenizer->getCaptures());
+		$this->capture_intersect = array_flip(array_merge($this->route->getConstraintsCaptures(), $tokenizer->getCaptures()));
 		
 		$this->compiled = true;
 	}
