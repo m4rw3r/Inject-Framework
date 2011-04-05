@@ -7,10 +7,6 @@
 
 namespace Inject\Web\Router\Generator;
 
-use \Inject\Web\Router\CompiledRoute;
-use \Inject\Web\Router\CompiledApplicationRoute;
-use \Inject\Web\Router\CompiledCallbackRoute;
-
 /**
  * Object returned by the router's match() method, used to represent a route
  * before it is compiled and/or cached.
@@ -19,9 +15,12 @@ use \Inject\Web\Router\CompiledCallbackRoute;
  */
 class Mapping
 {
-	// TODO: Named Routes
-	// TODO: Implement another compiled class for routes without matches, ie. static routes
-	// TODO: cont. Is that really needed?
+	/**
+	 * The name of this route if it is named.
+	 * 
+	 * @var string
+	 */
+	protected $name = null;
 	
 	/**
 	 * The input pattern.
@@ -72,6 +71,20 @@ class Mapping
 	 * @var array(string)
 	 */
 	protected $constraint_captures = array();
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Resets the name of this route, to prevent multiple routes with the same name.
+	 * 
+	 * @return \Inject\Web\Route\Generator\Mapping
+	 */
+	public function __clone()
+	{
+		$this->name = null;
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Specifies a pattern to match to the PATH_INFO key of the $env variable.
@@ -344,6 +357,22 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Specifies the name of this specific route, if used in a Scope it won't
+	 * carry on to the scoped routes.
+	 * 
+	 * @param  string
+	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 */
+	public function name($value)
+	{
+		$this->name = $value;
+		
+		return $this;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns the destination of this route.
 	 * 
 	 * @return string|Object
@@ -426,6 +455,18 @@ class Mapping
 	public function getRegexFragments()
 	{
 		return $this->regex_fragments;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Returns the name of this route, if any.
+	 * 
+	 * @return string|null
+	 */
+	public function getName()
+	{
+		return $this->name;
 	}
 }
 

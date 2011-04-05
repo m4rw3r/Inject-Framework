@@ -242,6 +242,18 @@ abstract class AbstractDestination
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns the name of the route this destination leads to, null if no name.
+	 * 
+	 * @return string|null
+	 */
+	public function getName()
+	{
+		return $this->route->getName();
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Cleans a route literal from escape characters "\".
 	 * 
 	 * @param  string
@@ -273,7 +285,8 @@ abstract class AbstractDestination
 	 * Returns a string of PHP code which will create the compiled routes for
 	 * this mapping when run.
 	 * 
-	 * @param  string   The variable to assign the compiled routes to, must end with a []
+	 * @param  string   The variable to assign the compiled routes to,
+	 *                  must end with a []
 	 * @param  string   The variable name of the variable containing the array
 	 *                  of available controllers array(short_name => class)
 	 * @param  string   The variable name of the variable containing the current engine

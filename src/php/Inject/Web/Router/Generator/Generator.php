@@ -68,8 +68,6 @@ class Generator extends Scope
 		
 		$destinations = $this->getDestinations();
 		
-		// TODO: Replace count($this->definitions) with something which asks the Mappings,
-		// TODO: cont. to allow for multiple routes per destination (for eg. resources)
 		$code = '<?php
 /**
  * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router.
@@ -79,7 +77,7 @@ namespace Inject\Web\Router;
 
 $available_controllers = '.var_export($this->engine->getAvailableControllers(), true).';
 
-$definitions = new \SplFixedArray('.count($destinations).');
+$definitions = array();
 
 ';
 		$arr = array();
@@ -87,7 +85,8 @@ $definitions = new \SplFixedArray('.count($destinations).');
 		$i = 0;
 		foreach($destinations as $m)
 		{
-			$arr[] = $m->getCacheCode('$definitions['.$i++.']', '$available_controllers', '$engine');
+			$name  = $m->getName() ? var_export($m->getname(), true) : ''; 
+			$arr[] = $m->getCacheCode('$definitions['.$name.']', '$available_controllers', '$engine');
 		}
 		
 		$code = $code.implode("\n\n", $arr);
