@@ -2,7 +2,7 @@
 <package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.9.1" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0     http://pear.php.net/dtd/tasks-1.0.xsd     http://pear.php.net/dtd/package-2.0     http://pear.php.net/dtd/package-2.0.xsd">
 	<name>${project.name}</name>
 	<channel>${project.channel}</channel>
-	<summary>Summary goes here</summary>
+	<summary>A modular and lightweight stack-based framework based on ideas from Ruby's Rack and Ruby on Rails 3</summary>
 	<description>
     Description goes here
   </description>
@@ -45,7 +45,24 @@ ${contents}
 				<min>1.0.0</min>
 				<max>1.999.9999</max>
 			</package>
+			<extension>
+				<name>Reflection</name>
+			</extension>
+			<extension>
+				<name>tokenizer</name>
+			</extension>
+			<extension>
+				<name>SPL</name>
+			</extension>
+			<extension>
+				<name>pcre</name>
+			</extension>
 		</required>
+		<optional>
+			<extension>
+				<name>iconv</name>
+			</extension>
+		</optional>
 	</dependencies>
 	<phprelease/>
 	<changelog>

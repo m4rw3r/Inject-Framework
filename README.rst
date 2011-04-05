@@ -14,11 +14,13 @@ Requirements
 ============
 
 * PHP >= 5.3
-* Reflection Extension
 * PCRE Extension
-* Tokenizer Extension
 * PCRE with UTF-8 support (``--enable-utf8``)
+* Reflection Extension
+* Tokenizer Extension
 * Iconv Extension (for ``\Inject\Core\Middleware\Utf8Filter``)
+
+PCRE, Reflection and Tokenizer extensions are included in the default PHP configuration.
 
 Basic principles
 ================
