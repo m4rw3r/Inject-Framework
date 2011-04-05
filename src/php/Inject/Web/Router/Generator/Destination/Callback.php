@@ -28,7 +28,7 @@ class Callback extends AbstractDestination
 				if( ! $ref->isStatic())
 				{
 					// TODO: Exception
-					throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method must be static.', $this->route->getRawPattern(), $this->callback));
+					throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method must be static.', $this->route->getPathPattern(), $this->callback));
 				}
 			}
 			else
@@ -39,13 +39,13 @@ class Callback extends AbstractDestination
 		catch(\ReflectionException $e)
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The callback "%s" cannot be found for the route "%s".', $this->callback, $this->route->getRawPattern()));
+			throw new \Exception(sprintf('The callback "%s" cannot be found for the route "%s".', $this->callback, $this->route->getPathPattern()));
 		}
 		
 		if($ref->getNumberOfRequiredParameters() > 1)
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method/function requires too many parameters, only one required parameter is allowed.', $this->route->getRawPattern(), $this->route->getTo()));
+			throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method/function requires too many parameters, only one required parameter is allowed.', $this->route->getPathPattern(), $this->route->getTo()));
 		}
 		
 	}

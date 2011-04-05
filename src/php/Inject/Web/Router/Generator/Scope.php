@@ -64,7 +64,11 @@ class Scope
 	 * The parameters of this method is passed to the created Mapping's
 	 * path() method.
 	 * 
-	 * @param  string
+	 * If the $path parameter is empty, it will attempt to match the root of the
+	 * current scope (ie. not call path() on the Mapping).
+	 * 
+	 * @see \Inject\Web\Router\Generator\Mapping::path()
+	 * @param  string  If empty it tries to match the root of the current scope.
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
@@ -91,16 +95,13 @@ class Scope
 	 */
 	public function root()
 	{
-		$this->definitions[] = $m = clone $this->base;
-		$m->path('/');
-		
-		return $m;
+		return $this->match('/');
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Shorthand for match($path)->via('GET').
+	 * Shorthand for match($path, $segment_constraints)->via('GET').
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -109,17 +110,13 @@ class Scope
 	 */
 	public function get($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = clone $this->base;
-		empty($path) OR $m->path($path, $segment_constraints);
-		$m->via('GET');
-		
-		return $m;
+		return $this->match($path, $segment_constraints)->via('GET');
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Shorthand for match($path)->via('POST').
+	 * Shorthand for match($path, $segment_constraints)->via('POST').
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -128,17 +125,13 @@ class Scope
 	 */
 	public function post($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = clone $this->base;
-		empty($path) OR $m->path($path, $segment_constraints);
-		$m->via('POST');
-		
-		return $m;
+		return $this->match($path, $segment_constraints)->via('POST');
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Shorthand for match($path)->via('PUT').
+	 * Shorthand for match($path, $segment_constraints)->via('PUT').
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -147,17 +140,13 @@ class Scope
 	 */
 	public function put($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = clone $this->base;
-		empty($path) OR $m->path($path, $segment_constraints);
-		$m->via('PUT');
-		
-		return $m;
+		return $this->match($path, $segment_constraints)->via('PUT');
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Shorthand for match($path)->via('DELETE').
+	 * Shorthand for match($path, $segment_constraints)->via('DELETE').
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -166,27 +155,22 @@ class Scope
 	 */
 	public function delete($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = clone $this->base;
-		empty($path) OR $m->path($path, $segment_constraints);
-		$m->via('DELETE');
-		
-		return $m;
+		return $this->match($path, $segment_constraints)->via('DELETE');
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * TODO: Documentation
+	 * Shorthand for match($path, $segment_constraints)->via('HEAD').
 	 * 
+	 * @param  string
+	 * @param  array(string => regex_fragment)  List of regular expression
+	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function mount($path, $app_name, array $segment_constraints = array())
+	public function head($path, array $segment_constraints = array())
 	{
-		$this->definitions[] = $m = clone $this->base;
-		empty($path) OR $m->path($path, $segment_constraints);
-		$m->to($app_name);
-		
-		return $m;
+		return $this->match($path, $segment_constraints)->via('HEAD');
 	}
 	
 	// ------------------------------------------------------------------------
@@ -212,12 +196,13 @@ class Scope
 	 * Creates a RESTful route.
 	 * 
 	 * It is essentially creating all the following routes:
-	 * - GET      $name        =>  #index
-	 * - POST     $name        =>  #create
-	 * - GET      $name/new    =>  #newform
-	 * - GET      $name/:id    =>  #show
-	 * - PUT      $name/:id    =>  #update
-	 * - DELETE   $name/:id    =>  #destroy
+	 * - GET      $name          =>  #index
+	 * - POST     $name          =>  #create
+	 * - GET      $name/new      =>  #newform
+	 * - GET      $name/:id      =>  #show
+	 * - PUT      $name/:id      =>  #update
+	 * - DELETE   $name/:id      =>  #destroy
+	 * - GET      $name/:id/edit =>  #edit
 	 * 
 	 * The Resource instance returned also acts as a Scope with the predefined
 	 * path $name/:id which makes it possible to nest both more routes and other
@@ -249,8 +234,8 @@ class Scope
 	 * Creates a redirect destination with the URI/URL specified in $uri_pattern,
 	 * should be passed to to().
 	 * 
-	 * You can use the same syntax as mach() does, but optional parts are not
-	 * allowed. The captures will take the parameter read by match() and inject
+	 * You can use the same pattern syntax as mach() does, but optional parts are
+	 * not allowed. The captures will take the parameter read by match() and inject
 	 * that into the specified part of the URI/URL given to redirect().
 	 * 
 	 * Example:
@@ -330,8 +315,16 @@ class Scope
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Acts as a proxy for the template, modifies the template and then returns
-	 * the scope instance.
+	 * Acts as a proxy for the template, modifies the template of this scope and
+	 * then returns the scope instance to allow chaining.
+	 * 
+	 * Example:
+	 * <code>
+	 * // Create a new scope for a specific path:
+	 * $u = $this->scope()->path(':user_id');
+	 * $u->match(...)...;
+	 * // ...
+	 * </code>
 	 * 
 	 * @param  string  method name
 	 * @param  array   method parameters
@@ -346,7 +339,7 @@ class Scope
 			return $this;
 		}
 		
-		throw new \Exception(sprintf('Method %s::%s does not exist.', get_class($this), $method));
+		throw new \RuntimeException(sprintf('Method %s::%s does not exist.', get_class($this), $method));
 	}
 }
 

@@ -28,7 +28,7 @@ class Mapping
 	 * 
 	 * @var string
 	 */
-	protected $raw_pattern = '';
+	protected $path_pattern = '';
 	
 	/**
 	 * Regular expression pattern fragments for the pattern.
@@ -74,7 +74,79 @@ class Mapping
 	protected $constraint_captures = array();
 	
 	/**
-	 * TODO: Documentation
+	 * Specifies a pattern to match to the PATH_INFO key of the $env variable.
+	 * 
+	 * The pattern is constructed by three types of tokens:
+	 *   Capture:
+	 *     A colon (:) followed by one or more word characters
+	 *     ([a-zA-Z0-9_]+), the characters following the colon is interpreted
+	 *     as the name of the capture.
+	 *     
+	 *     This is a capture which by default will match anything from the
+	 *     PATH_INFO until the end of the string or until a slash ("/") is
+	 *     encountered.
+	 *     The value matched will be stored in a parameter array with the
+	 *     name of the capture which is reachable by all following middleware,
+	 *     controllers and actions.
+	 *     
+	 *     Example:
+	 *      :id, :user_id, :this_is_a_long_capture_name
+	 *   
+	 *   Not-limited capture:
+	 *     A star (*) followed by one or more word characters ([a-zA-Z0-9_]+).
+	 *     
+	 *     This behaves the same as a normal capture except that it does not
+	 *     stop matching at a slash ("/") but will continue until it has
+	 *     captured as much as possible.
+	 *     
+	 *     Example:
+	 *       *url, *extra_part_of_path_info
+	 *   
+	 *   Optional parts:
+	 *     Optional parts of the pattern is a part surrounded by parenthesis
+	 *     ("(", ")").
+	 *     
+	 *     The captures and literals within the optional part will only be
+	 *     matched if it is possible.
+	 *     
+	 *     Example:
+	 *       (id/:id)   will only match if the url contains "id/" followed by
+	 *                  another url segment or nothing at all
+	 *       (id/):id   :id will always be matched, but the "id/" part is
+	 *                  optional
+	 *   
+	 *   Literal:
+	 *     Literals are all the other parts of the pattern, and they will
+	 *     be matched as they are.
+	 *     
+	 *     If you want to match a colon (":"), star ("*") or parenthesis
+	 *     ("(", ")") in a literal match, prefix them with the backslash.
+	 *     
+	 *     Example:
+	 *       some/literal_part/of/path
+	 *       escaped\:colon
+	 * 
+	 * Example patterns: 
+	 *   'user/list'      will match "user/list".
+	 *   'user/:user_id'  will match "user/" followed by any non-empty path
+	 *                    segment which will be stored under the "user_id"
+	 *                    parameter.
+	 *   'user(/:id)'     will match "user" followed by an optional "/"
+	 *                    and then any non-empty path segment stored in "id"
+	 *   'user\::id'      will match "user:" followed by a non-empty path
+	 *                    segment.
+	 * 
+	 * To add constraints to the parameter captures, you can specify those
+	 * as regular expression fragments in the $regex_patterns array.
+	 * The key is the same as the name of the parameter capture and the
+	 * value is the regular expression fragment.
+	 * 
+	 * Example patterns with custom constraints:
+	 *   'user/:id', array('id' => '\d+')
+	 *     Will match "user/" followed by any digit
+	 *   'archive/:year/:month', array('year' => '\d{4}, 'month' => '\d{2}')
+	 *     Will match "archive/" followed by a 4 digit number and then a
+	 *     two digit number
 	 * 
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
@@ -86,7 +158,7 @@ class Mapping
 		// Normalize the pattern
 		strpos($pattern, '/') === 0 OR $pattern = '/'.$pattern;
 		
-		$this->raw_pattern     = $this->raw_pattern.$pattern;
+		$this->path_pattern     = $this->path_pattern.$pattern;
 		$this->regex_fragments = array_merge($this->regex_fragments, $regex_patterns);
 	}
 	
@@ -174,7 +246,7 @@ class Mapping
 			if(empty($data))
 			{
 				// TODO: Exception
-				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected "controller#action", "controller#" or "#action".', $this->getRawPattern()));
+				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected "controller#action", "controller#" or "#action".', $this->getPathPattern()));
 			}
 			
 			$this->to = array_merge(array_intersect_key($this->to, array('controller' => 1, 'action' => 1)), $data);
@@ -182,7 +254,7 @@ class Mapping
 		else
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getRawPattern()));
+			throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getPathPattern()));
 		}
 		
 		return $this;
@@ -193,7 +265,24 @@ class Mapping
 	/**
 	 * Sets the regular expression constraints for specified $env parameters.
 	 * 
-	 * TODO: Documentation
+	 * The key of the $options array is the key in $env you want to match the
+	 * regular expression against. The value is the regular expression or
+	 * an integer, double, boolean or null which is what should match.
+	 * 
+	 * The integer, double, boolean and null values will be converted into
+	 * appropriate regular expression automatically.
+	 * 
+	 * The second parameter specifies a list of named captures which will be
+	 * included in the route parameters in the same way as the path parameters
+	 * from path() are.
+	 * 
+	 * Example:
+	 * <code>
+	 * // Requires any localhost IP
+	 * $this->constraints(array('REMOTE_ADDR' => '/^127.0.0.\d{1,3}$/'));
+	 * // Requires a mozilla-based web browser and stores its version in "moz_version"
+	 * $this->constraints(array('HTTP_USER_AGENT' => '#^Mozilla/(?<moz_version>.+)#'));
+	 * </code>
 	 * 
 	 * @param  array(string => mixed)  List of environment keys and their
 	 *         conditions, will usually be a regular expression, but can also
@@ -304,9 +393,10 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns an array containing allowed HTTP request methods, empty if to
+	 * allow all request methods.
 	 * 
-	 * 
-	 * @return 
+	 * @return array(string)
 	 */
 	public function getVia()
 	{
@@ -316,13 +406,13 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the raw pattern for this route.
+	 * Returns the raw path pattern for this route.
 	 * 
 	 * @return string
 	 */
-	public function getRawPattern()
+	public function getPathPattern()
 	{
-		return $this->raw_pattern;
+		return $this->path_pattern;
 	}
 	
 	// ------------------------------------------------------------------------

@@ -157,9 +157,9 @@ class Tokenizer
 		$num_opt = 0;
 		
 		// Nowdoc to avoid PHP's \\ escaping occuring in string literals, only PHP 5.3
-		// TODO: UTF-8ize this regex, \w and \W does not match the proper characters
+		// TODO: UTF-8ize this regex, \w and \W does not match the proper characters for UTF-8
 		$regex = <<<'EOP'
-/^([\w\W]*?)(?:(?<!\\)(?:(:|\*)(\w*)|(\(|\))))([\w\W]*)$/u
+/^([\w\W]*?)(?:(?<!\\)(?:(:|\*)(\w+)|(\(|\))))([\w\W]*)$/u
 EOP;
 		
 		while(preg_match($regex, $pattern, $matches))

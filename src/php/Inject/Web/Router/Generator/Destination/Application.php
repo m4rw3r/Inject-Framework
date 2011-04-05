@@ -39,7 +39,7 @@ class Application extends AbstractDestination
 		if( ! isset($options['uri']) && ! in_array('uri', $tokenizer->getCaptures()))
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The route %s does not have an associated *uri capture or a uri option, this is required when mounting sub-applications.', $this->route->getRawPattern()));
+			throw new \Exception(sprintf('The route %s does not have an associated *uri capture or a uri option, this is required when mounting sub-applications.', $this->route->getPathPattern()));
 		}
 		
 		$tokens = $tokenizer->getTokens();
@@ -48,7 +48,7 @@ class Application extends AbstractDestination
 		if( ! isset($options['uri']) && ($tok[0] !== Tokenizer::CAPTURE OR $tok[1] !== 'uri'))
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The route %s must have its *uri capture at the end of the pattern as it routes to a sub-application.', $this->route->getRawPattern()));
+			throw new \Exception(sprintf('The route %s must have its *uri capture at the end of the pattern as it routes to a sub-application.', $this->route->getPathPattern()));
 		}
 	}
 	

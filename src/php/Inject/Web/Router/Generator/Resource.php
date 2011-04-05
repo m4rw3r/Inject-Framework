@@ -18,7 +18,6 @@ use \Inject\Core\Engine;
  */
 class Resource extends Scope
 {
-	
 	protected $name;
 	
 	// ------------------------------------------------------------------------
@@ -55,7 +54,6 @@ class Resource extends Scope
 		
 		$this->match('/edit')->to('#edit');
 	}
-	
 }
 
 

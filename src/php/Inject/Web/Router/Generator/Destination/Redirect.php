@@ -25,7 +25,7 @@ class Redirect extends AbstractDestination
 		
 		if( ! empty($diff))
 		{
-			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->route->getRawPattern(), current($diff)));
+			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->route->getPathPattern(), current($diff)));
 		}
 	}
 	

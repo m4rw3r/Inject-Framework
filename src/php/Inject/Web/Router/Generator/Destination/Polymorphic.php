@@ -41,7 +41,7 @@ class Polymorphic extends AbstractDestination
 		if( ! in_array('controller', $tokenizer->getRequiredCaptures()))
 		{
 			// TODO: Exception
-			throw new \Exception(sprintf('The route %s does not have an associated controller option, or the :controller capture is optional.', $this->route->getRawPattern()));
+			throw new \Exception(sprintf('The route %s does not have an associated controller option, or the :controller capture is optional.', $this->route->getPathPattern()));
 		}
 		
 		// Build a regex so the path fails faster:

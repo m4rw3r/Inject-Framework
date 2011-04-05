@@ -76,12 +76,12 @@ abstract class AbstractDestination
 		
 		$via         = $this->route->getVia();
 		// Clean regex from trailing slashes and duplicated ones
-		$raw_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->route->getRawPattern());
-		$tokenizer   = new Tokenizer($raw_pattern);
+		$path_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->route->getPathPattern());
+		$tokenizer   = new Tokenizer($path_pattern);
 		
 		$this->constraints = $this->route->getConstraints();
 		
-		if( ! empty($via))
+		if( ! empty($via) && empty($this->constraints['REQUEST_METHOD']))
 		{
 			// Creates a regex matching the appropriate REQUEST_METHOD
 			$this->constraints['REQUEST_METHOD'] = '/^(?:'.implode('|', array_map('strtoupper', $via)).')$/';
@@ -108,7 +108,7 @@ abstract class AbstractDestination
 			if(@preg_match($val, '') === false)
 			{
 				// TODO: Exception
-				throw new \Exception(sprintf('The route %s has a faulty regex for the constraint %s: "%s".', $this->route->getRawPattern(), $key, $val));
+				throw new \Exception(sprintf('The route %s has a faulty regex for the constraint %s: "%s".', $this->route->getPathPattern(), $key, $val));
 			}
 		}
 		
