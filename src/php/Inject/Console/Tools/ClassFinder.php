@@ -14,6 +14,13 @@ namespace Inject\Console\Tools;
 class ClassFinder
 {
 	/**
+	 * The list containing classes and their filenames.
+	 * 
+	 * @var array(string => string)  Class => filename
+	 */
+	protected $list = array();
+	
+	/**
 	 * The regex determining which files to search.
 	 * 
 	 * @var string

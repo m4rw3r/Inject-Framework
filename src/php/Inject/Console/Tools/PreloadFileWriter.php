@@ -94,16 +94,23 @@ class PreloadFileWriter
 		}
 		else
 		{
+			$files = array();
+			
 			foreach($this->classes as $class)
 			{
 				if(isset($this->files[$class]))
 				{
-					$str .= $this->getCleanFileContents($this->files[$class])."\n"; 
+					in_array($this->files[$class], $files) OR $files[] = $this->files[$class];
 				}
 				else
 				{
 					throw new \Exception(sprintf('Cannot find class "%s" in the declared paths.', $class));
 				}
+			}
+			
+			foreach($files as $file)
+			{
+				$str .= $this->getCleanFileContents($file)."\n"; 
 			}
 		}
 		
