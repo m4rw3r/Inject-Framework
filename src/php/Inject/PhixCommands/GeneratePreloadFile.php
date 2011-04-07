@@ -8,15 +8,16 @@
 namespace Inject\PhixCommands;
 
 use Phix_Project\Phix\Context;
-
 use Phix_Project\PhixExtensions\CommandBase;
 use Phix_Project\PhixExtensions\CommandInterface;
 
 use Gradwell\CommandLineLib\DefinedSwitches;
 use Gradwell\CommandLineLib\CommandLineParser;
-
 use Gradwell\ValidationLib\MustBeValidFile;
 use Gradwell\ValidationLib\MustBeWriteable;
+
+use \Inject\Tools\ClassFinder;
+use \Inject\Tools\PreloadFileWriter;
 
 /**
  * 
@@ -122,9 +123,9 @@ class GeneratePreloadFile extends CommandBase implements CommandInterface
 		empty($new_paths)   OR $paths   = array_merge($paths,   explode(';', $new_paths));
 		empty($new_classes) OR $classes = array_merge($classes, explode(';', $new_classes));
 		
-		$finder = new \Inject\Console\Tools\ClassFinder($paths);
+		$finder = new ClassFinder($paths);
 		
-		$writer = new \Inject\Console\Tools\PreloadFileWriter($classes, $finder->getClassFiles());
+		$writer = new PreloadFileWriter($classes, $finder->getClassFiles());
 		
 		$num = $writer->writeFile($file_param);
 		

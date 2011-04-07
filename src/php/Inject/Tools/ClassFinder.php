@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Console\Tools;
+namespace Inject\Tools;
 
 /**
  * Searches trough a set of paths for classes, returns a list of classes
@@ -171,4 +171,4 @@ class ClassFinder
 
 
 /* End of file CacheWriter.php */
-/* Location: src/php/Inject/Console/Tools */
+/* Location: src/php/Inject/Tools */

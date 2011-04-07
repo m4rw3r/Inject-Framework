@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Console\Tools;
+namespace Inject\Tools;
 
 /**
  * Creates a preload file which contains many of the commonly used classes
@@ -234,4 +234,4 @@ class PreloadFileWriter
 
 
 /* End of file PreloadFileWriter.php */
-/* Location: src/php/Inject/Console/Tools */
+/* Location: src/php/Inject/Tools */
