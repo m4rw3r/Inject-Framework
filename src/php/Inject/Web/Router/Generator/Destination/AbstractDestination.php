@@ -61,6 +61,15 @@ abstract class AbstractDestination
 	 */
 	protected $regex_fragments = array();
 	
+	/**
+	 * Code fragment assembling the URI.
+	 * 
+	 * The fragment will return null in the event that required parameters are missing.
+	 * 
+	 * @var string
+	 */
+	protected $uri_assembler;
+	
 	public function __construct(Mapping $route, Engine $engine)
 	{
 		$this->route  = $route;
@@ -114,6 +123,8 @@ abstract class AbstractDestination
 		
 		// TODO: Allow captures from constraints too:
 		$this->capture_intersect = array_flip(array_merge($this->route->getConstraintsCaptures(), $tokenizer->getCaptures()));
+		
+		$this->uri_assembler = $this->createUriAssembler($tokenizer);
 		
 		$this->compiled = true;
 	}
@@ -215,6 +226,130 @@ abstract class AbstractDestination
 	// ------------------------------------------------------------------------
 
 	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function createUriAssembler(Tokenizer $tokenizer)
+	{
+		$tokens = $tokenizer->getTokens();
+		$code   = '';
+		$end    = count($tokens);
+		$concat = false;
+		
+		for($i = 0; $i < $end; $i++)
+		{
+			list($type, $data) = $tokens[$i];
+			
+			switch($type)
+			{
+				case Tokenizer::LITERAL:
+					$code  .= ($concat ? '.' : '').var_export($data, true);
+					$concat = true;
+					break;
+					
+				case Tokenizer::CAPTURE:
+					$code  .= ($concat ? '.' : '').'$options['.var_export($data, true).']';
+					$concat = true;
+					break;
+					
+				case Tokenizer::OPTBEGIN:
+					$conds = array();
+					
+					// Check for nested captures
+					$ind = 1;
+					for($j = $i + 1; $j < $end && $ind > 0; $j++)
+					{
+						if($tokens[$j][0] == Tokenizer::CAPTURE && $ind == 1)
+						{
+							$conds[] = 'empty($options['.var_export($tokens[$j][1], true).'])';
+						}
+						elseif($tokens[$j][0] == Tokenizer::OPTBEGIN)
+						{
+							$ind++;
+						}
+						elseif($tokens[$j][0] == Tokenizer::OPTEND)
+						{
+							$ind--;
+						}
+					}
+					
+					// Do we have any nested conditions?
+					if( ! empty($conds))
+					{
+						$code  .= ($concat ? '.' : '').'('.implode(' OR ', $conds).' ? \'\' : ';
+						$concat = false;
+					}
+					else
+					{
+						// Nope, scroll past the conditional pattern
+						$indent = 1;
+						
+						for($j = 0;$j < $end && $indent > 0; $j++)
+						{
+							if($tokens[$j][0] == Tokenizer::OPTEND)
+							{
+								$indent--;
+							}
+							elseif($tokens[$j][0] == Tokenizer::OPTBEGIN)
+							{
+								$indent++;
+							}
+						}
+						
+						$i = $j;
+					}
+					
+					break;
+					
+				case Tokenizer::OPTEND:
+					$code  .= ')';
+					$concat = true;
+			}
+		}
+		
+		// Find required matches:
+		$required = array();
+		$captures = array();
+		$indent   = 0;
+		
+		foreach($tokens as $tok)
+		{
+			list($type, $data) = $tok;
+			
+			switch($type)
+			{
+				case Tokenizer::CAPTURE:
+					if($indent == 0)
+					{
+						$captures[] = $data;
+						$required[] = 'empty($options['.var_export($data, true).'])';
+					}
+					break;
+				
+				// Optional section start
+				case Tokenizer::OPTBEGIN:
+					$indent++;
+					break;
+				
+				// Optional section end
+				case Tokenizer::OPTEND:
+					$indent--;
+					break;
+			}
+		}
+		
+		if( ! empty($required))
+		{
+			$code = '('.implode(' OR ', $required).' ? '.var_export($captures, true).' : '.$code.')';
+		}
+		
+		return $code;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns the class name of the short name of the supplied controller.
 	 * 
 	 * @return string
@@ -237,6 +372,18 @@ abstract class AbstractDestination
 		}
 		
 		throw new \Exception(sprintf('The short controller name "%s" could not be translated into a fully qualified class name, check the return value of %s->getAvailableControllers().', $short_name, get_class($this->engine)));
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getUriGenerator()
+	{
+		return 'function($options) { return '.$this->uri_assembler.'; }';
 	}
 	
 	// ------------------------------------------------------------------------
@@ -275,9 +422,9 @@ abstract class AbstractDestination
 	abstract protected function doValidation(Tokenizer $tokenizer);
 	
 	/**
-	 * Returns a list of compiled routes for this mapping.
+	 * Returns a compiled route for this destination and mapping.
 	 * 
-	 * @return array(RouteInterface)
+	 * @return RouteInterface
 	 */
 	abstract public function getCompiled();
 	

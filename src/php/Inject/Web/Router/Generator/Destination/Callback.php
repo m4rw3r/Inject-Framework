@@ -54,14 +54,14 @@ class Callback extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->callback));
+		return new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->callback);
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->callback, true).');';
+		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.var_export($this->callback, true).');';
 	}
 }
 

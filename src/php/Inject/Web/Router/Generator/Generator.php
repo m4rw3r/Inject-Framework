@@ -46,13 +46,22 @@ class Generator extends Scope
 	 */
 	public function getCompiledRoutes()
 	{
-		$arr = array();
+		$def    = array();
+		$named  = array();
+		$noname = array();
+		
 		foreach($this->getDestinations() as $d)
 		{
-			$arr = array_merge($arr, $d->getCompiled());
+			$r     = $d->getCompiled();
+			$def[] = $r;
+			
+			if($d->getName())
+			{
+				$named[$d->getName()] = $r;
+			}
 		}
 		
-		return $arr;
+		return array($def, $named);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -70,14 +79,17 @@ class Generator extends Scope
 		
 		$code = '<?php
 /**
- * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router.
+ * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router
+ * (\Inject\Web\Router\Generator).
  */
 
 namespace Inject\Web\Router;
 
 $available_controllers = '.var_export($this->engine->getAvailableControllers(), true).';
 
-$definitions = array();
+$def    = array();
+$named  = array();
+$noname = array();
 
 ';
 		$arr = array();
@@ -85,14 +97,14 @@ $definitions = array();
 		$i = 0;
 		foreach($destinations as $m)
 		{
-			$name  = $m->getName() ? var_export($m->getname(), true) : ''; 
-			$arr[] = $m->getCacheCode('$definitions['.$name.']', '$available_controllers', '$engine');
+			$name  = $m->getName() ? '$named['.var_export($m->getname(), true).'] = ' : ''; 
+			$arr[] = $m->getCacheCode($name.'$def[]', '$available_controllers', '$engine');
 		}
 		
 		$code = $code.implode("\n\n", $arr);
 		$code .= '
 
-return $definitions;';
+return array($def, $named, $noname);';
 		
 		if(@file_put_contents($file, $code))
 		{
@@ -104,6 +116,7 @@ return $definitions;';
 			}
 		}
 		
+		// TODO: Exception
 		throw new \Exception(sprintf('Cannot write to the %s directory', basename($path)));
 	}
 }

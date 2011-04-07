@@ -56,14 +56,14 @@ class Application extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\ApplicationRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, $this->app_class));
+		return new Route\ApplicationRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->app_class);
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\ApplicationRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.var_export($this->app_class, true).');';
+		return $var_name.' = new Route\ApplicationRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.var_export($this->app_class, true).');';
 	}
 }
 

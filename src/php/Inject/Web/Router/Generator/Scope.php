@@ -108,7 +108,7 @@ class Scope
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function get($path, array $segment_constraints = array())
+	public function get($path = '', array $segment_constraints = array())
 	{
 		return $this->match($path, $segment_constraints)->via('GET');
 	}
@@ -123,7 +123,7 @@ class Scope
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function post($path, array $segment_constraints = array())
+	public function post($path = '', array $segment_constraints = array())
 	{
 		return $this->match($path, $segment_constraints)->via('POST');
 	}
@@ -138,7 +138,7 @@ class Scope
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function put($path, array $segment_constraints = array())
+	public function put($path = '', array $segment_constraints = array())
 	{
 		return $this->match($path, $segment_constraints)->via('PUT');
 	}
@@ -153,7 +153,7 @@ class Scope
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function delete($path, array $segment_constraints = array())
+	public function delete($path = '', array $segment_constraints = array())
 	{
 		return $this->match($path, $segment_constraints)->via('DELETE');
 	}
@@ -168,7 +168,7 @@ class Scope
 	 *                fragments used for the specified captures
 	 * @return \Inject\Web\Router\Generator\Mapping
 	 */
-	public function head($path, array $segment_constraints = array())
+	public function head($path = '', array $segment_constraints = array())
 	{
 		return $this->match($path, $segment_constraints)->via('HEAD');
 	}

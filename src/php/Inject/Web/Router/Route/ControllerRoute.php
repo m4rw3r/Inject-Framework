@@ -27,9 +27,9 @@ class ControllerRoute extends AbstractRoute
 	 *                                  the regex captures
 	 * @param  string    Fully qualified controller class name
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect, Engine $engine, $controller)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator, Engine $engine, $controller)
 	{
-		parent::__construct($constraints, $options, $capture_intersect);
+		parent::__construct($constraints, $options, $capture_intersect, $uri_generator);
 		
 		$this->engine     = $engine;
 		$this->controller = $controller;

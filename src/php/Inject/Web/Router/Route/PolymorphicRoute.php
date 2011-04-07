@@ -27,9 +27,9 @@ class PolymorphicRoute extends AbstractRoute
 	 *                                  the regex captures
 	 * @param  array(string => classname)  List of available controllers and their classnames
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect, Engine $engine, array $available_controllers)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator, Engine $engine, array $available_controllers)
 	{
-		parent::__construct($constraints, $options, $capture_intersect);
+		parent::__construct($constraints, $options, $capture_intersect, $uri_generator);
 		
 		$this->engine                = $engine;
 		$this->available_controllers = $available_controllers;

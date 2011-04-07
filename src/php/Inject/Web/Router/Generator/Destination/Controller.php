@@ -41,14 +41,14 @@ class Controller extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\ControllerRoute($this->constraints, $this->options, $this->capture_intersect, $this->engine, $this->controller));
+		return new Route\ControllerRoute($this->constraints, $this->options, $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->engine, $this->controller);
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\ControllerRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$engine_var.', '.var_export($this->controller, true).');';
+		return $var_name.' = new Route\ControllerRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.$engine_var.', '.var_export($this->controller, true).');';
 	}
 }
 

@@ -52,14 +52,14 @@ class Polymorphic extends AbstractDestination
 	{
 		$this->compile();
 		
-		return array(new Route\PolymorphicRoute($this->constraints, $this->options, $this->capture_intersect, $this->engine, $this->engine->getAvailableControllers()));
+		return new Route\PolymorphicRoute($this->constraints, $this->options, $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->engine, $this->engine->getAvailableControllers());
 	}
 	
 	public function getCacheCode($var_name, $controller_var, $engine_var)
 	{
 		$this->compile();
 		
-		return $var_name.' = new Route\PolymorphicRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$engine_var.', '.$controller_var.');';
+		return $var_name.' = new Route\PolymorphicRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.$engine_var.', '.$controller_var.');';
 	}
 }
 

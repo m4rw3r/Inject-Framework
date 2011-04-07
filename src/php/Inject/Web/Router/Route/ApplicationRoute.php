@@ -23,9 +23,9 @@ class ApplicationRoute extends AbstractRoute
 	 *                                  the regex captures
 	 * @param  string    Fully qualified Application/Engine class name
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect, $app_name)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator, $app_name)
 	{
-		parent::__construct($constraints, $options, $capture_intersect);
+		parent::__construct($constraints, $options, $capture_intersect, $uri_generator);
 		
 		$this->app_name = $app_name;
 	}

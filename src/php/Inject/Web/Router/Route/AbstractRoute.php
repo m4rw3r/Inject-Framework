@@ -54,11 +54,12 @@ abstract class AbstractRoute
 	 * @param  array(string => int)     List of keys to intersect to get the options from
 	 *                                  the regex captures
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator)
 	{
 		$this->constraints       = $constraints;
 		$this->options           = $options;
 		$this->capture_intersect = $capture_intersect;
+		$this->uri_generator     = $uri_generator;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -89,6 +90,19 @@ abstract class AbstractRoute
 		$env['web.route']->setMatchedParameters(array_merge($this->options, $this->filterRegexResult($capture_data)));
 		
 		return $this->dispatch($env);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function generate(array $options)
+	{
+		$c = $this->uri_generator;
+		return $c($options);
 	}
 	
 	// ------------------------------------------------------------------------

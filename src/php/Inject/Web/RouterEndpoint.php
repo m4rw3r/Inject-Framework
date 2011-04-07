@@ -20,6 +20,10 @@ use \Inject\Core\CascadeEndpoint;
  */
 class RouterEndpoint extends CascadeEndpoint
 {
+	protected $named_routes = array();
+	
+	protected $routes = array();
+	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -36,20 +40,60 @@ class RouterEndpoint extends CascadeEndpoint
 		if( ! $debug && file_exists($route_cache))
 		{
 			// Load cache
-			$this->apps = include $route_cache;
+			list($this->apps, $this->named_routes) = include $route_cache;
 		}
 		elseif(file_exists($route_config))
 		{
 			$g = new Router\Generator\Generator($engine);
 			$g->loadFile($route_config);
 			
-			$this->apps = $g->getCompiledRoutes();
+			list($this->apps, $this->named_routes) = $g->getCompiledRoutes();
 			
 			if( ! $debug)
 			{
 				$g->writeCache($route_cache);
 			}
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function __invoke($env)
+	{
+		$env['web.router'] = $this;
+		
+		return parent::__invoke($env);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function generate($route_name, array $options = array())
+	{
+		if(isset($this->named_routes[$route_name]))
+		{
+			// If return value is an array, then something went wrong and the array contains required captures
+			if(is_array($r = $this->named_routes[$route_name]->generate($options)))
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('Cannot generate URI, route "%s" requires the "%s" parameter(s).', $route_name, implode(', ', array_diff($r, array_keys($options)))));
+			}
+			else
+			{
+				return $r;
+			}
+		}
+		
+		return null;
 	}
 }
 

@@ -23,9 +23,9 @@ class CallbackRoute extends AbstractRoute
 	 *                                  the regex captures
 	 * @param  callback   Callback to call if it matches
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect, $callback)
+	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator, $callback)
 	{
-		parent::__construct($constraints, $options, $capture_intersect);
+		parent::__construct($constraints, $options, $capture_intersect, $uri_generator);
 		
 		$this->callback = $callback;
 	}
