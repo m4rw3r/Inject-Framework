@@ -1,0 +1,11 @@
+<?php
+/*
+ * Created by Inject Framework App Generator on <date>
+ */
+
+return array(
+	'debug' => false
+);
+
+/* End of file Config.php */
+/* Location: <folder>/<app_name>/Resources/Config */

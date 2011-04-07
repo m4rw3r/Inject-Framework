@@ -1,0 +1,18 @@
+<?php
+/*
+ * Created by Inject Framework App Generator on <date>
+ */
+
+namespace <namespace>\Model;
+
+/**
+ * 
+ */
+class Blog
+{
+	// TODO: Default example model code...
+}
+
+
+/* End of file Blog.php */
+/* Location: <folder>/<app_name>/Model */

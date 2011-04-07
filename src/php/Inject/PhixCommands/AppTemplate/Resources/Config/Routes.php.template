@@ -1,0 +1,15 @@
+<?php
+/*
+ * Created by Inject Framework App Generator on <date>
+ */
+
+$this->root()->to('blog#index');
+
+$this->match('archive/:year/:month', array('year' => '\d{4}', 'month' => '\d{2}'))
+	->to('Blog#archive')->name('blog_archive');
+
+// Default Route:
+$this->match(':controller(/:action(/:id))(.:format)');
+
+/* End of file Router.php */
+/* Location: <folder>/<app_name>/Resources/Config */

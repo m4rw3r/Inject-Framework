@@ -1,0 +1,33 @@
+<?php
+/*
+ * Created by Inject Framework App Generator on <date>
+ */
+
+namespace <namespace>;
+
+/**
+ * 
+ */
+class Application extends \Inject\Core\Application
+{
+	protected function registerRootDir()
+	{
+		return __DIR__;
+	}
+	public function initMiddleware()
+	{
+		return array(
+			new \Inject\Web\Middleware\ServerVarFilter(),
+			new \Inject\Web\Middleware\NotFoundCatcher(),
+			new \Inject\Web\Middleware\ExceptionCatcher($this)
+		);
+	}
+	public function initEndpoint()
+	{
+		return new \Inject\Web\RouterEndpoint($this, $this->config['debug']);
+	}
+}
+
+
+/* End of file Application.php */
+/* Location: <folder>/<app_name> */
