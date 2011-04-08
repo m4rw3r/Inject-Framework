@@ -42,8 +42,8 @@ ${contents}
 			<package>
 				<name>Autoloader</name>
 				<channel>pear.gradwell.com</channel>
-				<min>1.0.0</min>
-				<max>1.999.9999</max>
+				<min>2.0.0</min>
+				<max>2.999.9999</max>
 			</package>
 			<extension>
 				<name>Reflection</name>
@@ -59,6 +59,12 @@ ${contents}
 			</extension>
 		</required>
 		<optional>
+			<package>
+				<name>phix</name>
+				<channel>pear.gradwell.com</channel>
+				<min>0.1.0</min>
+				<max>0.999.9999</max>
+			</package>
 			<extension>
 				<name>iconv</name>
 			</extension>

@@ -13,15 +13,73 @@ Features
 Requirements
 ============
 
+Required
+--------
+
 * PHP >= 5.3
 * PCRE Extension
 * PCRE with UTF-8 support (``--enable-utf8``)
 * Reflection Extension
 * Tokenizer Extension
 * SPL (Standard PHP Library) Extension
-* Iconv Extension (for ``\Inject\Core\Middleware\Utf8Filter``)
 
-PCRE, Reflection, SPL and Tokenizer extensions are included in the default PHP configuration.
+Optional
+--------
+
+* Iconv Extension (for ``\Inject\Core\Middleware\Utf8Filter``)
+* Phix__ (for console commands, optional)
+
+PCRE (usually with UTF-8 support), Reflection, SPL and Tokenizer extensions are already
+included in the default PHP configuration.
+
+.. __: http://blog.stuartherbert.com/php/2011/03/21/introducing-phix/
+
+Getting started
+===============
+
+Install Phix (optional)
+-----------------------
+
+The recommended way to install Phix_ is to use the `PEAR Installer`_:
+
+::
+
+  sudo pear channel-discover pear.gradwell.com
+  sudo pear install --alldeps Gradwell/phix
+
+.. _Phix: http://github.com/Gradwell/phix
+.. _PEAR Installer: http://pear.php.net/
+
+Install InjectFramework
+-----------------------
+
+Currently no readily made PEAR package is provided, but you can build one yourself if
+you have the tools::
+
+  phing pear-package
+  cd dist
+  pear install InjectFramework-<version>.tgz
+
+If you do not want to install it via PEAR, just place the contents of the ``src/php/``
+directory somewhere in your PHP installation's include path.
+
+Creating your first application
+-------------------------------
+
+If you have  Phix installed you can just run::
+
+  phing inject:app <yourappname> <appfolder>
+
+This will generate an application skeleton with the name <yourappname> and place that
+in <appfolder>.
+
+This command requires that the ``src/php/Inject/`` folder is placed in a folder in your
+PHP installation's include path (automatically done by PEAR), or that you run the
+command in the InjectFramework project directory or that you use the
+``--include=<path/to/inject/frameworks/src/php/dir>`` switch for Phix.
+
+*Note:* This command does not yet generate a fully function application skeleton yet as
+many framework features are still missing.
 
 Basic principles
 ================
@@ -77,6 +135,10 @@ a 404 if it cannot find it::
           return $callback($env);
       }
   }
+
+For a simple middleware which does something more useful, look at
+``\Inject\Core\Middleware\RunTimer`` which times the execution of all the following
+middleware and endpoint(s) and code called by those.
 
 What is an endpoint?
 --------------------
