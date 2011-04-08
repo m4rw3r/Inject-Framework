@@ -8,7 +8,10 @@
 namespace Inject;
 
 /**
- * Basic autoloader for the Inject Framework
+ * Basic autoloader for the Inject Framework, allows a base path for generic
+ * classes and specific paths for different primary namespaces.
+ * 
+ * Adds Inject as a default package
  */
 class Autoloader
 {
@@ -65,10 +68,8 @@ class Autoloader
 	 */
 	public function load($class)
 	{
-		$ns = explode('\\', $class);
-		
-		$name = array_pop($ns);
-		$ns[] = strtr($name, '_', DIRECTORY_SEPARATOR).'.php';
+		$ns   = explode('\\', trim($class, '\\'));
+		$ns[] = strtr(array_pop($ns), '_', DIRECTORY_SEPARATOR).'.php';
 		
 		if(isset($ns[0]) && isset($this->packages[$ns[0]]))
 		{
@@ -94,9 +95,9 @@ class Autoloader
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Registers this autoloader with PHP.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	public function register()
 	{
@@ -106,9 +107,9 @@ class Autoloader
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Unregisters this autoloader with PHP.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	public function unregister()
 	{
