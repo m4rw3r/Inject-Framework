@@ -57,9 +57,12 @@ class Utf8Filter implements MiddlewareInterface
 				}
 				
 				// Inlined parts of cleanUtf8($v) for speed
-				if(is_string($v) && ! preg_match('/^.{1}/us', $v))
+				if(is_string($v))
 				{
-					$v = iconv('UTF-8', 'UTF-8//IGNORE', $v);
+					if( ! preg_match('/^.{1}/us', $v))
+					{
+						$v = iconv('UTF-8', 'UTF-8//IGNORE', $v);
+					}
 				}
 				elseif(is_array($v))
 				{
