@@ -13,17 +13,35 @@ namespace Inject\Core\Middleware;
  */
 class Utf8Filter implements MiddlewareInterface
 {
+	/**
+	 * The callback for the next middleware or the endpoint.
+	 * 
+	 * @var \Inject\Core\Middleware\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 */
 	protected $next;
 	
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * Tells this middleware which middleware or endpoint it should call if it
+	 * wants the call-chain to proceed.
+	 * 
+	 * @param  \Inject\Core\Middleware\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 */
 	public function setNext($next)
 	{
 		$this->next = $next;
 	}
 	
 	// ------------------------------------------------------------------------
-
+	
+	/**
+	 * Filters the whole $env variable for invalid UTF-8 characters before passing
+	 * it on to the next middleware/endpoint.
+	 * 
+	 * @param  array
+	 * @return array(int, array(string => string), string)
+	 */
 	public function __invoke($env)
 	{
 		$env = $this->cleanUtf8($env);
