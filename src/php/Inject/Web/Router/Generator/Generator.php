@@ -46,9 +46,8 @@ class Generator extends Scope
 	 */
 	public function getCompiledRoutes()
 	{
-		$def    = array();
-		$named  = array();
-		$noname = array();
+		$def   = array();
+		$named = array();
 		
 		foreach($this->getDestinations() as $d)
 		{
@@ -87,14 +86,12 @@ namespace Inject\Web\Router;
 
 $available_controllers = '.var_export($this->engine->getAvailableControllers(), true).';
 
-$def    = array();
-$named  = array();
-$noname = array();
+$def   = array();
+$named = array();
 
 ';
 		$arr = array();
 		
-		$i = 0;
 		foreach($destinations as $m)
 		{
 			$name  = $m->getName() ? '$named['.var_export($m->getname(), true).'] = ' : ''; 
@@ -104,7 +101,7 @@ $noname = array();
 		$code = $code.implode("\n\n", $arr);
 		$code .= '
 
-return array($def, $named, $noname);';
+return array($def, $named);';
 		
 		if(@file_put_contents($file, $code))
 		{

@@ -124,7 +124,7 @@ class Utf8Filter implements MiddlewareInterface
 		// modifier is used, then it's valid UTF-8. If the UTF-8 is somehow
 		// invalid, nothing at all will match, even if the string contains
 		// some valid sequences
-		return preg_match('/^.{1}/us', $str, $ar) == 1;
+		return preg_match('/^.{1}/us', $str) == 1;
 	}
 }
 

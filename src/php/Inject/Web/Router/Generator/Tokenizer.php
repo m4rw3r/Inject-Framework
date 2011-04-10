@@ -6,7 +6,6 @@
  */
 
 namespace Inject\Web\Router\Generator;
-use \Inject\Web\Router\CompiledRoute;
 
 /**
  * Object tokenizing the supplied pattern into parts.

@@ -73,8 +73,7 @@ class Autoloader
 		
 		if(isset($ns[0]) && isset($this->packages[$ns[0]]))
 		{
-			$p = array_shift($ns);
-			$file = $this->packages[$p].DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $ns);
+			$file = $this->packages[array_shift($ns)].DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $ns);
 			
 			if(file_exists($file))
 			{
