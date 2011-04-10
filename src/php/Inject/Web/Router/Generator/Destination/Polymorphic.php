@@ -22,8 +22,6 @@ class Polymorphic extends AbstractDestination
 	
 	protected function doValidation(Tokenizer $tokenizer)
 	{
-		$this->options = array_merge($this->defaults, $this->route->getOptions());
-		
 		$to = $this->route->getTo();
 		
 		if( ! empty($to['action']))

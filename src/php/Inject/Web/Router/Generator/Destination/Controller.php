@@ -21,8 +21,6 @@ class Controller extends AbstractDestination
 	
 	protected function doValidation(Tokenizer $tokenizer)
 	{
-		$this->options = array_merge($this->defaults, $this->route->getOptions());
-		
 		$to = $this->route->getTo();
 		
 		$this->controller = $this->translateShortControllerName($to['controller']);
