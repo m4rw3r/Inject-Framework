@@ -27,7 +27,7 @@ class RouterEndpoint extends CascadeEndpoint
 	// ------------------------------------------------------------------------
 
 	/**
-	 * @param  \Inject\Core\Engine  The engine used to create controller instances
+	 * @param  \Inject\Core\Engine  The engine passed on to controller instances
 	 * @param  boolean              If to generate a cache file or not
 	 * @param  string|false         Override for the default route config file
 	 * @param  string|false         Override for the default route cache file
@@ -81,19 +81,11 @@ class RouterEndpoint extends CascadeEndpoint
 	{
 		if(isset($this->named_routes[$route_name]))
 		{
-			// If return value is an array, then something went wrong and the array contains required captures
-			if(is_array($r = $this->named_routes[$route_name]->generate($options)))
-			{
-				// TODO: Exception
-				throw new \Exception(sprintf('Cannot generate URI, route "%s" requires the "%s" parameter(s).', $route_name, implode(', ', array_diff($r, array_keys($options)))));
-			}
-			else
-			{
-				return $r;
-			}
+			return $this->named_routes[$route_name]->generate($options);
 		}
 		
-		return null;
+		// TODO: Exception
+		throw new \Exception(sprintf('No route with the name "%s" can be found', $route_name));
 	}
 }
 

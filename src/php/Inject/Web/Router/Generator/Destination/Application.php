@@ -52,18 +52,26 @@ class Application extends AbstractDestination
 		}
 	}
 	
-	public function getCompiled()
+	protected function getClosureCode($engine_var, $controller_var)
 	{
-		$this->compile();
-		
-		return new Route\ApplicationRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->app_class);
-	}
+		$code = <<<'EOF'
+function($env)
+{
+	$uri  = $env['web.route']->param('uri', '/');
+	$path = $uri == '/' ? substr($env['PATH_INFO'], - strlen($uri)) : $env['PATH_INFO'];
 	
-	public function getCacheCode($var_name, $controller_var, $engine_var)
-	{
-		$this->compile();
+	// Move one step deeper in the directory structure
+	$env['SCRIPT_NAME']   = $env['SCRIPT_NAME'].$path;
+	$env['BASE_URI']      = $env['BASE_URI'].$path;
+	$env['REQUEST_URI']   = $uri; // TODO: Check REQUEST_URI and how it is used??
+	$env['PATH_INFO']     = $uri;
+	$env['web.old_route'] = $env['web.route'];
+	
+	return %s::instance()->stack()->run($env);
+}
+EOF;
 		
-		return $var_name.' = new Route\ApplicationRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.var_export($this->app_class, true).');';
+		return sprintf($code, $this->app_class);
 	}
 }
 

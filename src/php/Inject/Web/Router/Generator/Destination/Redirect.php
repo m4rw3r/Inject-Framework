@@ -29,18 +29,9 @@ class Redirect extends AbstractDestination
 		}
 	}
 	
-	public function getCompiled()
+	protected function getClosureCode($engine_var, $controller_var)
 	{
-		$this->compile();
-		
-		return new Route\CallbackRoute($this->constraints, $this->route->getOptions(), $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->redirect->getCallback());
-	}
-	
-	public function getCacheCode($var_name, $controller_var, $engine_var)
-	{
-		$this->compile();
-		
-		return $var_name.' = new Route\CallbackRoute('.var_export($this->constraints, true).', '.var_export($this->route->getOptions(), true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.$this->redirect->getCallbackCode().');';
+		return $this->redirect->getCallbackCode();
 	}
 }
 

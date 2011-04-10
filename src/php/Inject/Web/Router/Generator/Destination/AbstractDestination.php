@@ -8,6 +8,7 @@
 namespace Inject\Web\Router\Generator\Destination;
 
 use \Inject\Core\Engine;
+use \Inject\Web\Router\Route;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Tokenizer;
 
@@ -70,10 +71,33 @@ abstract class AbstractDestination
 	 */
 	protected $uri_assembler;
 	
+	/**
+	 * List of options passed on to the route.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $options = array();
+	
+	/**
+	 * List of default options, will be merged into $options together with $route->getOptions()
+	 * before the doValidation() method is called.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $options_default = array();
+	
+	/**
+	 * List of available controllers and mappings between short names and their class names.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $controllers = array();
+	
 	public function __construct(Mapping $route, Engine $engine)
 	{
-		$this->route  = $route;
-		$this->engine = $engine;
+		$this->route       = $route;
+		$this->engine      = $engine;
+		$this->controllers = $this->engine->getAvailableControllers();
 	}
 	
 	protected function compile()
@@ -83,10 +107,10 @@ abstract class AbstractDestination
 			return;
 		}
 		
-		$via         = $this->route->getVia();
+		$via          = $this->route->getVia();
 		// Clean regex from trailing slashes and duplicated ones
 		$path_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->route->getPathPattern());
-		$tokenizer   = new Tokenizer($path_pattern);
+		$tokenizer    = new Tokenizer($path_pattern);
 		
 		$this->constraints = $this->route->getConstraints();
 		
@@ -97,6 +121,7 @@ abstract class AbstractDestination
 		}
 		
 		$this->regex_fragments = array_merge($tokenizer->getRegexFragments(), $this->route->getRegexFragments());
+		$this->options         = array_merge($this->options_default, $this->route->getOptions());
 		
 		$this->doValidation($tokenizer);
 		
@@ -364,11 +389,9 @@ abstract class AbstractDestination
 		
 		$short_name = strtolower($short_name);
 		
-		$controllers = $this->engine->getAvailableControllers();
-		
-		if(isset($controllers[$short_name]))
+		if(isset($this->controllers[$short_name]))
 		{
-			return $controllers[$short_name];
+			return $this->controllers[$short_name];
 		}
 		
 		throw new \Exception(sprintf('The short controller name "%s" could not be translated into a fully qualified class name, check the return value of %s->getAvailableControllers().', $short_name, get_class($this->engine)));
@@ -381,7 +404,7 @@ abstract class AbstractDestination
 	 * 
 	 * @return 
 	 */
-	public function getUriGenerator()
+	public function getUriGeneratorCode()
 	{
 		return 'function($options) { return '.$this->uri_assembler.'; }';
 	}
@@ -421,12 +444,35 @@ abstract class AbstractDestination
 	 */
 	abstract protected function doValidation(Tokenizer $tokenizer);
 	
+	// ------------------------------------------------------------------------
+	
+	/**
+	 * Returns the closure code which will pass on the request to the route destination.
+	 * 
+	 * @param  string  The variable name of the current Engine
+	 * @param  string  The variable name of the varaible containing available controller mappings
+	 * @return string  The full closure code, including function($env)
+	 */
+	abstract protected function getClosureCode($engine_var, $controller_var);
+	
+	// ------------------------------------------------------------------------
+	
 	/**
 	 * Returns a compiled route for this destination and mapping.
 	 * 
 	 * @return RouteInterface
 	 */
-	abstract public function getCompiled();
+	public function getCompiled()
+	{
+		$this->compile();
+		
+		$engine      = $this->engine;
+		$controllers = $this->controllers;
+		
+		return new Route($this->constraints, $this->options, $this->capture_intersect, eval('return '.$this->getClosureCode('$engine', '$controllers').';'), eval('return '.$this->getUriGeneratorCode().';'));
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Returns a string of PHP code which will create the compiled routes for
@@ -439,7 +485,12 @@ abstract class AbstractDestination
 	 * @param  string   The variable name of the variable containing the current engine
 	 * @return string   PHP code
 	 */
-	abstract public function getCacheCode($var_name, $controller_var, $engine_var);
+	public function getCacheCode($var_name, $controller_var, $engine_var)
+	{
+		$this->compile();
+		
+		return $var_name.' = new Route('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$this->getClosureCode($engine_var, $controller_var).', '.$this->getUriGeneratorCode().');';
+	}
 }
 
 

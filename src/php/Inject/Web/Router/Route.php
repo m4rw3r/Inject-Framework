@@ -5,16 +5,13 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Route;
+namespace Inject\Web\Router;
 
 /**
  * A compiled route.
  */
-abstract class AbstractRoute
+class Route
 {
-	// TODO: Allow reverse routing
-	// TODO: Store result for a matched route to be able to reuse those matches in creating the new url
-	
 	/**
 	 * The list of constraints to use.
 	 * 
@@ -38,6 +35,13 @@ abstract class AbstractRoute
 	protected $capture_intersect;
 	
 	/**
+	 * The callback to trigger if this route matches.
+	 * 
+	 * @var callback
+	 */
+	protected $callback;
+	
+	/**
 	 * The list of parameters matched by this route when it has matched a route
 	 * 
 	 * @var array(string => string)
@@ -54,11 +58,12 @@ abstract class AbstractRoute
 	 * @param  array(string => int)     List of keys to intersect to get the options from
 	 *                                  the regex captures
 	 */
-	public function __construct(array $constraints, array $options, array $capture_intersect, $uri_generator)
+	public function __construct(array $constraints, array $options, array $capture_intersect, \Closure $callback, \Closure $uri_generator)
 	{
 		$this->constraints       = $constraints;
 		$this->options           = $options;
 		$this->capture_intersect = $capture_intersect;
+		$this->callback          = $callback;
 		$this->uri_generator     = $uri_generator;
 	}
 	
@@ -89,20 +94,29 @@ abstract class AbstractRoute
 		$env['web.route'] = clone $this;
 		$env['web.route']->setMatchedParameters(array_merge($this->options, $this->filterRegexResult($capture_data)));
 		
-		return $this->dispatch($env);
+		return call_user_func($this->callback, $env);
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates a route from the given parameters.
 	 * 
-	 * 
-	 * @return 
+	 * @param  array(string => string)
+	 * @return string
 	 */
 	public function generate(array $options)
 	{
 		$c = $this->uri_generator;
-		return $c($options);
+		
+		// If return value is an array, then something went wrong and the array contains required captures
+		if(is_array($uri = $c($options)))
+		{
+			// TODO: Exception
+			throw new \Exception(sprintf('Cannot generate URI, route "%s" requires the %s parameter(s).', $route_name, implode(', ', array_diff($uri, array_keys($options)))));
+		}
+		
+		return $uri;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -148,17 +162,6 @@ abstract class AbstractRoute
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Dispatches the request to the route destination, called by __invoke if
-	 * all the route conditions matches.
-	 * 
-	 * @param  mixed
-	 * @return callback
-	 */
-	abstract protected function dispatch($env);
-	
-	// ------------------------------------------------------------------------
-	
-	/**
 	 * Filters out the empty regex captures as well as the not used captures,
 	 * ie. numeric indices.
 	 * 
@@ -184,5 +187,5 @@ abstract class AbstractRoute
 }
 
 
-/* End of file AbstractRoute.php */
-/* Location: src/php/Inject/Web/Router/Route */
+/* End of file Route.php */
+/* Location: src/php/Inject/Web/Router */

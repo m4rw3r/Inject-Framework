@@ -15,17 +15,10 @@ use \Inject\Web\Router\Generator\Tokenizer;
  */
 class Polymorphic extends AbstractDestination
 {
-	/**
-	 * A list of default values for controller requests.
-	 * 
-	 * @var array(string => string)
-	 */
-	protected $defaults = array(
+	protected $options_default = array(
 			'action' => 'index',
 			'format' => 'html'
 		);
-	
-	protected $options;
 	
 	protected function doValidation(Tokenizer $tokenizer)
 	{
@@ -48,18 +41,25 @@ class Polymorphic extends AbstractDestination
 		empty($this->regex_fragments['controller']) && $this->regex_fragments['controller'] = implode('|', array_map('preg_quote', array_keys($this->engine->getAvailableControllers())));
 	}
 	
-	public function getCompiled()
+	protected function getClosureCode($engine_var, $controller_var)
 	{
-		$this->compile();
-		
-		return new Route\PolymorphicRoute($this->constraints, $this->options, $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->engine, $this->engine->getAvailableControllers());
+		$code = <<<'EOF'
+function($env) use(%s, %s)
+{
+	$short_name = strtolower($env['web.route']->param('controller'));
+	
+	if( ! isset(%s[$short_name]))
+	{
+		return array(404, array('X-Cascade' => 'pass'), '');
 	}
 	
-	public function getCacheCode($var_name, $controller_var, $engine_var)
-	{
-		$this->compile();
+	$class_name = %s[$short_name];
+	
+	return $class_name::stack(%s, $env['web.route']->param('action', 'index'))->run($env);
+}
+EOF;
 		
-		return $var_name.' = new Route\PolymorphicRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.$engine_var.', '.$controller_var.');';
+		return sprintf($code, $engine_var, $controller_var, $controller_var, $controller_var, $engine_var);
 	}
 }
 

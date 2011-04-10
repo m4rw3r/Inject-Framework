@@ -15,16 +15,9 @@ use \Inject\Web\Router\Generator\Tokenizer;
  */
 class Controller extends AbstractDestination
 {
-	/**
-	 * A list of default values for controller requests.
-	 * 
-	 * @var array(string => string)
-	 */
-	protected $defaults = array(
+	protected $options_default = array(
 			'action' => 'index'
 		);
-	
-	protected $options;
 	
 	protected function doValidation(Tokenizer $tokenizer)
 	{
@@ -37,18 +30,16 @@ class Controller extends AbstractDestination
 		empty($to['action']) OR $this->options['action'] = $to['action'];
 	}
 	
-	public function getCompiled()
+	protected function getClosureCode($engine_var, $controller_var)
 	{
-		$this->compile();
+		$code = <<<'EOF'
+function($env) use(%s)
+{
+	return %s::stack($engine, $env['web.route']->param('action', 'index'))->run($env);
+}
+EOF;
 		
-		return new Route\ControllerRoute($this->constraints, $this->options, $this->capture_intersect, eval('return '.$this->getUriGenerator().';'), $this->engine, $this->controller);
-	}
-	
-	public function getCacheCode($var_name, $controller_var, $engine_var)
-	{
-		$this->compile();
-		
-		return $var_name.' = new Route\ControllerRoute('.var_export($this->constraints, true).', '.var_export($this->options, true).', '.var_export($this->capture_intersect, true).', '.$this->getUriGenerator().', '.$engine_var.', '.var_export($this->controller, true).');';
+		return sprintf($code, $engine_var, $this->controller);
 	}
 }
 
