@@ -460,13 +460,14 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the name of this route, if any.
+	 * Returns the name of this route, if any, if this is the root route ("/")
+	 * then "root" will be returned if nothing else has been defined.
 	 * 
 	 * @return string|null
 	 */
 	public function getName()
 	{
-		return $this->name;
+		return empty($this->name) ? ($this->path_pattern == '/' ? 'root' : '') : $this->name;
 	}
 }
 
