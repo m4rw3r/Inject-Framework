@@ -82,6 +82,13 @@ abstract class Engine
 	 */
 	protected $endpoint = null;
 	
+	/**
+	 * A cached list of available controllers, short_name => classname.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $available_controllers = false;
+	
 	// ------------------------------------------------------------------------
 	
 	/**
@@ -211,10 +218,17 @@ abstract class Engine
 	 * Cache the result of this, this uses a directory iterator to iterate the
 	 * filesystem which makes it too slow to run on every request.
 	 * 
+	 * TODO: Move to a separate ControllerLocator class?
+	 * 
 	 * @return array(string => string)
 	 */
 	public function getAvailableControllers()
 	{
+		if($this->available_controllers !== false)
+		{
+			return $this->available_controllers;
+		}
+		
 		$controllers = array();
 		$path = $this->engine_root.'/Controller';
 		
@@ -237,7 +251,7 @@ abstract class Engine
 			}
 		}
 		
-		return $controllers;
+		return $this->available_controllers = $controllers;
 	}
 }
 
