@@ -39,9 +39,7 @@ class CLIEndpoint
 		{
 			$class = $controllers[$env['cli.controller']];
 			
-			$c = $class::stack($this->engine, $env['cli.action']);
-			
-			return $c->run($env);
+			return $class::stack($this->engine, $env['cli.action'])->run($env);
 		}
 		
 		return array(404, array('X-Cascade' => 'pass'), '
@@ -127,7 +125,7 @@ Controller not found.
 		// Do we have a path, or the help flags?
 		if(empty($run_path) OR count(array_intersect(array('h', 'help', '?'), array_keys($env['cli.parameters']))))
 		{
-			$this->showHelp($env);
+			return $this->showHelp($env);
 		}
 		
 		// Controller
@@ -171,8 +169,6 @@ Example:
 To print this help again, use the --help, -help, -h or -? options.
 
 ';
-		
-		exit;
 	}
 }
 
