@@ -1,6 +1,6 @@
-=========================
-Middleware Stack Protocol
-=========================
+===============================
+Middleware Stack Specifications
+===============================
 
 This protocol is almost a straight port of Ruby's Rack_ `Specifications
 <http://rack.rubyforge.org/doc/files/SPEC.html>`_.
@@ -12,12 +12,18 @@ Introduction
 
 The basic principle of the framework is a chain of layers — so called 
 middleware — which perform specific actions and then passes the request
-on to the next layer, ultimately reaching the controller's action method.
+on to the next layer, ultimately reaching a controller's action method.
+The action method might pass this on to another stack which leads to another
+controller's action, or something completely different... you get the idea.
+
+When an action is done executing, its response will be returned through all
+the middleware, enabling them to finish processing of the request and
+finally let the browser see the result.
 
 In more general terms, the execution is done using the ``MiddlewareStack`` 
 which contains a series of middlewares which will process the request
-before it is handed to the endpoint callback (which is either a closure
-or an object with ``__invoke()``).
+before and after it is handed to the endpoint callback (which is either a
+closure or an object with ``__invoke()``).
 
 What is middleware?
 -------------------
@@ -241,7 +247,7 @@ The header ``status`` is not allowed.
 
 All header values must either be strings or objects responding to
 ``__toString()``, and they must not contain ASCII character values
-below 0x28 (excepting newline ``== 0x0A == \n``).
+below 028 (excepting newline ``== 012 == \n``).
 
 If the response code is ``1xx``, ``204`` or ``304`` the ``Content-Type``
 header cannot exist. Otherwise it must be present.
@@ -256,3 +262,20 @@ Response Body
 
 The response body is a string or an object responding to ``__toString()``.
 It must be empty if the ``REQUEST_METHOD`` is ``HEAD``.
+
+Validating ``$env`` and the response
+====================================
+
+To validate ``$env`` and the response of your middleware/endpoints, you may
+use the ``\Inject\Core\Middleware\Lint`` middleware. This middleware will
+validate the ``$env`` var when it is received, and after the next 
+middleware/endpoint has processed the request, it will validate the response.
+
+It is recommended to add one instance before your middleware and one after
+to validate that the $env variable is passed on correctly.
+
+If any of the assertions fail, a ``LintException`` will be thrown, detailing
+the problem
+
+*Note*: Do not use this in production however, as all the checks will slow 
+down the request processing.
