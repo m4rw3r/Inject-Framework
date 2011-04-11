@@ -118,9 +118,14 @@ application and its components.
 
 ``$env`` is not a static hash, all components of the system are allowed
 to modify the environment to, for example add a global object, filter a
-specific header or change something like the ``REQUEST_TYPE``.
+specific header or change something like the ``REQUEST_TYPE``. This
+can be very useful when for example performing internal HMVC [#]_ requests.
 
 The environment must however conform to a few basic rules:
+
+.. [#] Hierarchical Model-View-Controller, see `Wikipedia about HMVC`_
+
+.. _`Wikipedia about HMVC`: http://en.wikipedia.org/wiki/Presentation-abstraction-control
 
 Required keys
 -------------
@@ -135,7 +140,7 @@ The Environment variable must always include these keys:
     The initial portion of the request URL's "path" that corresponds
     to the application object, so that the application knows its virtual
     "location". This may be an empty string, if the application
-    corresponds to the "root" of the server.
+    corresponds to the "root" of the server (in the case of URL rewriting).
     
     If it is not empty it must start with a ``/``, it may never contain
     ``/`` by itself.
@@ -149,6 +154,12 @@ The Environment variable must always include these keys:
     
     If it is not empty it must start with a ``/``, if ``SCRPT_NAME`` is
     empty, it must be ``/``.
+
+``BASE_URI``:
+    The URI prefix to be used when referring to static assets which are
+    not processed by the framework.
+    
+    This is usually the URI without the ``index.php`` file name.
 
 ``QUERY_STRING``:
     The portion of the request URL that follows the ?, if any. May be empty,
@@ -177,6 +188,10 @@ The framework's ``ServerAdapter`` s will include these keys:
 
 ``inject.url_scheme``:
     ``https`` or ``http``, depending on the request URL.
+
+``inject.adapter``:
+    The class name of the concrete class implementing
+    ``\Inject\Core\AdapterInterface`` which is used to run the application.
 
 ``inject.get``:
     Will contain the GET data
