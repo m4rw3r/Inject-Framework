@@ -86,16 +86,18 @@ Creating the ``index.php`` file
 
 To be able to run your application, you must have a PHP file which acts as
 an entry point. This entry point will set a few of PHP's configuration settings,
-load the Autoloader (`PSR-0`_ compliant) and finally call the ``ServerAdapter``
-which will initialize the ``$env`` variable, call your application's ``stack()``
-method to run it and finally it will pass on the information to the browser.
+load the Autoloader (`PSR-0`_ compliant) and finally call the ``ServerAdapter``.
+
+The ``ServerAdapter`` will initialize the ``$env`` variable, call your application's
+``stack()`` method, run the stack, and finally it will pass on the return value
+to the browser
 
 In ``src/php/www/`` you have a sample ``index.php.sample`` file. Copy this file
 to your document root of your web-server (or wherever your web-server's PHP
 environment will find and be able to execute it) and rename it to ``index.php``
 (recommended filename).
 
-Then you have to make two changes to this file:
+Then you have to make two or three changes to this file:
 
 1. Change the path to the autoloader, depending on if it is in PHP's include path
    or not, depending on where you have put it::
@@ -105,11 +107,12 @@ Then you have to make two changes to this file:
 2. Change the ``\Sample\Application`` class name to the application name of your
    application (``\<yourappname>\Application``)::
    
-     $r = \MyApp\Application::instance()->stack()->run($env);
+     \Inject\Web\ServerAdapter\Generic::run(\MyApp\Application::instance());
+
+3. If needed, change the ``ServerAdapter`` implementation depending on the
+   web-server you are using.
 
 .. _`PSR-0`: http://groups.google.com/group/php-standards/web/psr-0-final-proposal
-
-.. TODO: Change the paragraphs above to allow for the new ServerAdapter interface
 
 Basic principles
 ================
