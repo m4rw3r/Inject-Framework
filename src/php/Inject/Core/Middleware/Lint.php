@@ -11,6 +11,13 @@ namespace Inject\Core\Middleware;
  * Middleware performing checks on $env and return value to see that they conform
  * to the framework specifications.
  * 
+ * WARNING:
+ * ========
+ * 
+ * DO NOT USE IN A PRODUCTION ENVIRONMENT!!
+ * IT WILL SLOW YOUR APPLICATION GREATLY!!
+ * 
+ * 
  * Useful tool to use when testing new middleware, add a Lint middleware before
  * and after your middleware to see that it conforms to the standard.
  */
