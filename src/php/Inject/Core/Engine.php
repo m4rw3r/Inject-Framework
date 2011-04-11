@@ -13,6 +13,15 @@ namespace Inject\Core;
 abstract class Engine
 {
 	/**
+	 * Version of InjectFramework.
+	 * 
+	 * Compatible with php's version_compare().
+	 * 
+	 * @var string
+	 */
+	const VERSION = '0.1.0-dev';
+	
+	/**
 	 * List of loaded engines.
 	 * 
 	 * @var array(\Inject\Core\Engine)

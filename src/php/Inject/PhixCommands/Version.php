@@ -32,7 +32,7 @@ class Version implements CommandInterface
 	
 	public function validateAndExecute($args, $argsIndex, Context $context)
 	{
-		$context->stdout->outputLine(null, \Inject\Core\Application::VERSION);
+		$context->stdout->outputLine(null, \Inject\Core\Engine::VERSION);
 	}
 	
 	public function outputHelp(Context $context)
