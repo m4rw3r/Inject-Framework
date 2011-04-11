@@ -1,6 +1,6 @@
 <?php
 /*
- * Created by Martin Wernståhl on 2011-03-06.
+ * Created by Martin Wernståhl on 2011-04-11.
  * Copyright (c) 2011 Martin Wernståhl.
  * All rights reserved.
  */
@@ -8,11 +8,26 @@
 namespace Inject\Web;
 
 /**
- * Passes the response from the middleware stack to the browser, use on the
- * return value of \Inject\Core\MiddlewareStack->run().
+ * 
  */
-class Responder
+class Util
 {
+	/**
+	 * List of valid HTTP/1.1 request methods.
+	 * 
+	 * @var array(string)
+	 */
+	static protected $request_methods = array(
+			'CONNECT',
+			'DELETE',
+			'GET',
+			'HEAD',
+			'OPTIONS',
+			'POST',
+			'PUT',
+			'TRACE'
+		);
+	
 	/**
 	 * The HTTP status codes and their corresponding textual representation.
 	 * 
@@ -66,36 +81,51 @@ class Responder
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sends the response to the browser.
+	 * Returns the text representation of the supplied response code.
 	 * 
-	 * @param  array  array(response_code, array(header_title => header_content), content)
-	 * @return void
+	 * @param  int
+	 * @return string
 	 */
-	public static function respondWith(array $response)
+	public static function getHttpStatusText($response_code)
 	{
-		$response_code = $response[0];
-		$headers = $response[1];
-		$content = $response[2];
+		return self::$status_texts[$response_code];
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Validates the HTTP request method, so it contains a valid method, throws
+	 * exception if it is not valid.
+	 * 
+	 * @param  string
+	 * @param  boolean Set to true if this is from a post override, then the
+	 *                 exception will reflect that if it is thrown
+	 * @return string
+	 */
+	public static function checkRequestMethod($request_method, $post_override = false)
+	{
+		$request_method = strtoupper($request_method);
 		
-		header(sprintf('HTTP/1.1 %s %s', $response_code, self::$status_texts[$response_code]));
-		
-		if( ! isset($headers['Content-Type']))
+		if( ! in_array($request_method, self::$request_methods))
 		{
-			$headers['Content-Type'] = 'text/html';
+			$allowed_methods = implode(', ', array_slice(self::$request_methods, 0, -1)).(($m = end(self::$request_methods)) ? ' and '.$m : '');
+			
+			if($post_override)
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('Unknown HTTP request method %s specified by "_method" in POST data, accepted HTTP methods are: %s.', $request_method, $allowed_methods));
+			}
+			else
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('Unknown HTTP request method %s, accepted HTTP methods are: %s.', $request_method, $allowed_methods));
+			}
 		}
 		
-		// TODO: Enable length-less responses
-		$headers['Content-Length'] = strlen($content);
-		
-		foreach($headers as $k => $v)
-		{
-			header($k.': '.$v);
-		}
-		
-		echo $content;
+		return $request_method;
 	}
 }
 
 
-/* End of file Responder.php */
+/* End of file Util.php */
 /* Location: src/php/Inject/Web */

@@ -43,12 +43,12 @@ class Request
 		
 		if(isset($env['web.route']))
 		{
-			$this->params      = array_merge($env['GET'], $env['web.route']->params());
+			$this->params      = array_merge($env['inject.get'], $env['web.route']->params());
 			$this->path_params = $env['web.route']->params();
 		}
 		else
 		{
-			$this->params = $env['GET'];
+			$this->params = $env['inject.get'];
 		}
 	}
 	

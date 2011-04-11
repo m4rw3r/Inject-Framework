@@ -25,9 +25,13 @@ require '/Inject/Autoloader.php';
 $loader = new \Inject\Autoloader(__DIR__.'/../app/');
 $loader->register();
 
-$r = \Sample\Application::instance()->stack()->run($_SERVER);
-
-\Inject\Web\Responder::respondWith($r);
+/*
+ * Run your application.
+ * 
+ * Change the ServerAdapter below depending on which server and what
+ * configuration is used.
+ */
+\Inject\Web\ServerAdapter\Generic::run(\Sample\Application::instance());
 
 /* End of file index.php */
 /* Location: www */
