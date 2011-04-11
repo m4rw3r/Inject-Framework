@@ -99,21 +99,20 @@ class GeneratePreloadFile extends CommandBase implements CommandInterface
 				'Inject\Core\Engine',
 				'Inject\Core\Application',
 				'Inject\Core\MiddlewareStack',
+				'Inject\Core\AdapterInterface',
 				'Inject\Core\CascadeEndpoint',
 				'Inject\Core\Middleware\MiddlewareInterface',
 				'Inject\Core\Middleware\NoEndpointException',
+				'Inject\Core\Middleware\RunTimer',
 				'Inject\Core\Middleware\Utf8Filter',
 				'Inject\Core\Controller\AbstractController',
-				'Inject\Web\Middleware\ServerVarFilter',
 				'Inject\Web\Middleware\ExceptionCatcher',
+				'Inject\Web\Middleware\MethodOverride',
 				'Inject\Web\Middleware\NotFoundCatcher',
+				'Inject\Web\ServerAdapter\Generic',
 				'Inject\Web\RouterEndpoint',
-				'Inject\Web\Router\Route\AbstractRoute',
-				'Inject\Web\Router\Route\ApplicationRoute',
-				'Inject\Web\Router\Route\CallbackRoute',
-				'Inject\Web\Router\Route\ControllerRoute',
-				'Inject\Web\Router\Route\PolymorphicRoute',
-				'Inject\Web\Responder'
+				'Inject\Web\Router\Route',
+				'Inject\Web\Util'
 			));
 		}
 		
