@@ -44,11 +44,11 @@ class Mapping
 	protected $options = array();
 	
 	/**
-	 * The pre-compile representation of the routing destination.
+	 * The destination handler.
 	 * 
-	 * @var mixed
+	 * @var array(mixed)
 	 */
-	protected $to = array();
+	protected $to_arr = array(null);
 	
 	/**
 	 * A list of accepted HTTP request methods, empty equals all.
@@ -237,38 +237,7 @@ class Mapping
 	 */
 	public function to($to)
 	{
-		if(is_object($to) && $to instanceof Redirection)
-		{
-			$this->to = array('redirect' => $to);
-		}
-		elseif(is_callable($to))
-		{
-			$this->to = array('callback' => $to);
-		}
-		elseif(class_exists($to))
-		{
-			$this->to = array('engine'   => $to);
-		}
-		elseif(preg_match('/^((?:\\\\)?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)?#([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)?$/', $to, $matches))
-		{
-			$data = array();
-			
-			empty($matches[1]) OR $data['controller'] = $matches[1];
-			empty($matches[2]) OR $data['action']     = $matches[2];
-			
-			if(empty($data))
-			{
-				// TODO: Exception
-				throw new \Exception(sprintf('The route %s does not have a compatible To value, expected "controller#action", "controller#" or "#action".', $this->getPathPattern()));
-			}
-			
-			$this->to = array_merge(array_intersect_key($this->to, array('controller' => 1, 'action' => 1)), $data);
-		}
-		else
-		{
-			// TODO: Exception
-			throw new \Exception(sprintf('The route %s does not have a compatible To value, expected controller#action or controller#.', $this->getPathPattern()));
-		}
+		$this->to_arr[] = $to;
 		
 		return $this;
 	}
@@ -373,13 +342,13 @@ class Mapping
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the destination of this route.
+	 * Returns the destination handler for this route.
 	 * 
 	 * @return string|Object
 	 */
-	public function getTo()
+	public function getToArray()
 	{
-		return $this->to;
+		return $this->to_arr;
 	}
 	
 	// ------------------------------------------------------------------------

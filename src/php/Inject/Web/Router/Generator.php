@@ -14,7 +14,47 @@ use \Inject\Core\Engine;
  */
 class Generator extends Generator\Scope
 {
-	// TODO: Add route dumper
+	protected $dest_handlers = array();
+	
+	protected $generator;
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function __construct(Engine $engine, $mapping = null)
+	{
+		parent::__construct($engine, $mapping);
+		$this->generator = new Generator\CodeGenerator($this->engine);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function registerDestinationHandler($class)
+	{
+		$ref = new \ReflectionClass($class);
+		
+		if($ref->isSubclassOf('Inject\Web\Router\Generator\DestinationHandlerInterface'))
+		{
+			// Only allow a single instance per class
+			in_array($class, $this->dest_handlers) OR $this->dest_handlers[] = $class;
+		}
+		else
+		{
+			// TODO: Exception
+			throw new \Exception(sprintf('The class %s is not a valid route destination handler, it must implement \Inject\Web\Route\Generator\DestinationHandlerInterface', $class));
+		}
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Attempts to load a route configuration file and parse its contents.
@@ -39,6 +79,46 @@ class Generator extends Generator\Scope
 	// ------------------------------------------------------------------------
 
 	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function getDefinitions()
+	{
+		$defs = parent::getDefinitions();
+		
+		$arr = array();
+		
+		foreach($defs as $def)
+		{
+			$handler = null;
+			
+			foreach($def->getToArray() as $to_val)
+			{
+				foreach($this->dest_handlers as $dh)
+				{
+					if($tmp = $dh::parseTo($to_val, $def, $handler))
+					{
+						$handler = $tmp;
+					}
+				}
+			}
+			
+			if( ! $handler)
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('The route %s does not have a compatible to() value.', $def->getPathPattern()));
+			}
+			
+			$arr[] = $handler;
+		}
+		
+		return $arr;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns a list of instances of \Inject\Web\Router\Route\AbstractRoute
 	 * which route according to the loaded config files.
 	 * 
@@ -46,21 +126,8 @@ class Generator extends Generator\Scope
 	 */
 	public function getCompiledRoutes()
 	{
-		$def   = array();
-		$named = array();
-		
-		foreach($this->getDestinations() as $d)
-		{
-			$r     = $d->getCompiled();
-			$def[] = $r;
-			
-			if($d->getName())
-			{
-				$named[$d->getName()] = $r;
-			}
-		}
-		
-		return array($def, $named);
+		$engine = $this->engine;
+		return eval($this->generator->generateCode($this->getDefinitions()));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -74,8 +141,6 @@ class Generator extends Generator\Scope
 	{
 		$file = tempnam(dirname($path), basename($path));
 		
-		$destinations = $this->getDestinations();
-		
 		$code = '<?php
 /**
  * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router
@@ -84,24 +149,9 @@ class Generator extends Generator\Scope
 
 namespace Inject\Web\Router;
 
-$available_controllers = '.var_export($this->engine->getAvailableControllers(), true).';
-
-$def   = array();
-$named = array();
-
 ';
-		$arr = array();
 		
-		foreach($destinations as $m)
-		{
-			$name  = $m->getName() ? '$named['.var_export($m->getname(), true).'] = ' : ''; 
-			$arr[] = $m->getCacheCode($name.'$def[]', '$available_controllers', '$engine');
-		}
-		
-		$code = $code.implode("\n\n", $arr);
-		$code .= '
-
-return array($def, $named);';
+		$code .= $this->generator->generateCode($this->getDefinitions());
 		
 		if(@file_put_contents($file, $code))
 		{

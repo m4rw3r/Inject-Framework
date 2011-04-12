@@ -18,11 +18,11 @@ use \Inject\Core\CascadeEndpoint;
  * - Config:  $engine->paths['config'].'Routes.php'
  * - Cache:   $engine->paths['cache'] .'Routes.php'
  */
-class RouterEndpoint extends CascadeEndpoint
+class RouterEndpoint
 {
 	protected $named_routes = array();
 	
-	protected $routes = array();
+	protected $router = array();
 	
 	// ------------------------------------------------------------------------
 
@@ -40,14 +40,14 @@ class RouterEndpoint extends CascadeEndpoint
 		if( ! $debug && file_exists($route_cache))
 		{
 			// Load cache
-			list($this->apps, $this->named_routes) = include $route_cache;
+			list($this->router, $this->named_routes) = include $route_cache;
 		}
 		elseif(file_exists($route_config))
 		{
 			$generator = new Router\Generator($engine);
 			$generator->loadFile($route_config);
 			
-			list($this->apps, $this->named_routes) = $generator->getCompiledRoutes();
+			list($this->router, $this->named_routes) = $generator->getCompiledRoutes();
 			
 			if( ! $debug)
 			{
@@ -66,8 +66,9 @@ class RouterEndpoint extends CascadeEndpoint
 	public function __invoke($env)
 	{
 		$env['web.router'] = $this;
+		$router = $this->router;
 		
-		return parent::__invoke($env);
+		return $router($env);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -81,7 +82,9 @@ class RouterEndpoint extends CascadeEndpoint
 	{
 		if(isset($this->named_routes[$route_name]))
 		{
-			return $this->named_routes[$route_name]->generate($options);
+			$reverse = $this->named_routes[$route_name];
+			
+			return $reverse($options);
 		}
 		
 		// TODO: Exception

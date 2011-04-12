@@ -267,12 +267,11 @@ class Scope
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns all route generators (Destination\*) for this Scope instance and
-	 * also all sub-scopes.
+	 * Returns an array containing all route definitions.
 	 * 
-	 * @return array(\Inject\Web\Router\Generator\Destination\AbstractDestination)
+	 * @return array(\Inject\Web\Router\Generator\Mapping)
 	 */
-	public function getDestinations()
+	public function getDefinitions()
 	{
 		$arr = array();
 		
@@ -280,32 +279,11 @@ class Scope
 		{
 			if($d instanceof Scope)
 			{
-				$arr = array_merge($arr, $d->getDestinations());
+				$arr = array_merge($arr, $d->getDefinitions());
 			}
 			else
 			{
-				$to = $d->getTo();
-				
-				if(isset($to['redirect']))
-				{
-					$arr[] = new Destination\Redirect($d, $this->engine);
-				}
-				elseif(isset($to['callback']))
-				{
-					$arr[] = new Destination\Callback($d, $this->engine);
-				}
-				elseif(isset($to['engine']))
-				{
-					$arr[] = new Destination\Application($d, $this->engine);
-				}
-				elseif(isset($to['controller']))
-				{
-					$arr[] = new Destination\Controller($d, $this->engine);
-				}
-				else
-				{
-					$arr[] = new Destination\Polymorphic($d, $this->engine);
-				}
+				$arr[] = $d;
 			}
 		}
 		

@@ -5,20 +5,51 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator\Destination;
+namespace Inject\Web\Router\Generator\DestinationHandler;
+
+use \Inject\Core\Engine;
 
 use \Inject\Web\Router\Route;
 use \Inject\Web\Router\Generator\Tokenizer;
 
+use \Inject\Web\Router\Generator\Mapping;
+use \Inject\Web\Router\Generator\DestinationHandlerInterface;
+
 /**
  * 
  */
-class Callback extends AbstractDestination
+class Callback extends Base implements DestinationHandlerInterface
 {
-	protected function doValidation(Tokenizer $tokenizer)
+	public static function parseTo($new, Mapping $mapping, $old)
 	{
-		$this->callback = current($this->route->getTo());
-		
+		if(is_string($new) && is_callable($new))
+		{
+			$ret = new Callback($mapping);
+			$ret->setCallback($new);
+			
+			return $ret;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	protected $callback = null;
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setCallback($value)
+	{
+		$this->callback = $value;
+	}
+	public function validate(Engine $engine)
+	{
 		try
 		{
 			if(strpos($this->callback, '::'))
@@ -47,19 +78,11 @@ class Callback extends AbstractDestination
 			// TODO: Exception
 			throw new \Exception(sprintf('The route "%s" has an invalid callback "%s", the method/function requires too many parameters, only one required parameter is allowed.', $this->route->getPathPattern(), $this->route->getTo()));
 		}
-		
 	}
 	
-	public function getClosureCode($engine_var, $controller_var)
+	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
-		$code = <<<'EOF'
-function($env)
-{
-	return call_user_func('%s', $env);
-}
-EOF;
-		
-		return sprintf($code, $this->callback);
+		return 'call_user_func('.var_export($this->callback).", $env_var);";
 	}
 }
 
