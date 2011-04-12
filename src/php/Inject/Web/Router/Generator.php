@@ -5,14 +5,14 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\Web\Router;
 
 use \Inject\Core\Engine;
 
 /**
  * 
  */
-class Generator extends Scope
+class Generator extends Generator\Scope
 {
 	// TODO: Add route dumper
 	

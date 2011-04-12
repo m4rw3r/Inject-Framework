@@ -44,7 +44,7 @@ class RouterEndpoint extends CascadeEndpoint
 		}
 		elseif(file_exists($route_config))
 		{
-			$generator = new Router\Generator\Generator($engine);
+			$generator = new Router\Generator($engine);
 			$generator->loadFile($route_config);
 			
 			list($this->apps, $this->named_routes) = $generator->getCompiledRoutes();
