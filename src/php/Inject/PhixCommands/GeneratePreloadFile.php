@@ -75,8 +75,8 @@ class GeneratePreloadFile extends CommandBase implements CommandInterface
 			// validation failed
 			foreach ($errors as $errorMsg)
 			{
-				$se->output($context->errorStyle, $context->errorPrefix);
-				$se->outputLine(null, $errorMsg);
+				$context->stderr->output($context->errorStyle, $context->errorPrefix);
+				$context->stderr->outputLine(null, $errorMsg);
 			}
 			
 			return 1;
