@@ -111,7 +111,6 @@ class GeneratePreloadFile extends CommandBase implements CommandInterface
 				'Inject\Web\Middleware\NotFoundCatcher',
 				'Inject\Web\ServerAdapter\Generic',
 				'Inject\Web\RouterEndpoint',
-				'Inject\Web\Router\Route',
 				'Inject\Web\Util'
 			));
 		}
