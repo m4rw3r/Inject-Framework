@@ -122,7 +122,7 @@ class Redirection
 	 * 
 	 * @return string
 	 */
-	public function getCallbackCode()
+	public function getCallbackCode($env_var)
 	{
 		$path = array();
 		foreach($this->tokenizer->getTokens() as $tok)
@@ -131,21 +131,19 @@ class Redirection
 			{
 				case Tokenizer::CAPTURE:
 					// PATH_INFO is not urlencoded, so no need to encode
-					$path[] = '$env[\'web.route\']->param(\''.addcslashes($tok[1], '\'').'\')';
+					$path[] = $env_var.'[\'web.route_params\'][\''.addcslashes($tok[1], '\'').']';
 					break;
 				case Tokenizer::LITERAL:
 					$path[] = '\''.addcslashes($tok[1], '\'').'\'';
 			}
 		}
 		
-		return 'function($env)
-{
-	// TODO: How to inject class used for Request->getDefaultUrlOptions()?
-	$req = new \Inject\Web\Request($env);
-	$url = \Inject\Web\Request::urlFor(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
-	
-	return array('.$this->redirect_code.', array(\'Location\' => $url), \'\');
-}';
+		return '// TODO: How to inject class used for Request->getDefaultUrlOptions()?
+// TODO: Remove the lines below if the generated path is a full URL
+$req = new \Inject\Web\Request('.$env_var.');
+$url = \Inject\Web\Request::urlFor(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
+
+return array('.$this->redirect_code.', array(\'Location\' => $url), \'\');';
 	}
 }
 

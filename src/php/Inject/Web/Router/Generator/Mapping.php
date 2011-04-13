@@ -11,7 +11,7 @@ namespace Inject\Web\Router\Generator;
  * Object returned by the router's match() method, used to represent a route
  * before it is compiled and/or cached.
  * 
- * Syntax for the patterns is the same as Ruby on Rails 3.0
+ * Syntax for the patterns is almost the same as Ruby on Rails 3.0
  */
 class Mapping
 {
@@ -44,7 +44,8 @@ class Mapping
 	protected $options = array();
 	
 	/**
-	 * The destination handler.
+	 * The values sent to to(), in order, to be parsed by DestinationHandlers
+	 * when generating the cache file.
 	 * 
 	 * @var array(mixed)
 	 */
@@ -156,7 +157,7 @@ class Mapping
 	 * 
 	 * Example patterns with custom constraints:
 	 *   'user/:id', array('id' => '\d+')
-	 *     Will match "user/" followed by any digit
+	 *     Will match "user/" followed by one or more digits
 	 *   'archive/:year/:month', array('year' => '\d{4}, 'month' => '\d{2}')
 	 *     Will match "archive/" followed by a 4 digit number and then a
 	 *     two digit number
@@ -237,6 +238,8 @@ class Mapping
 	 */
 	public function to($to)
 	{
+		// Append to array, DestinationHandlers will go through this array
+		// in order and construct a proper destination from the list
 		$this->to_arr[] = $to;
 		
 		return $this;
@@ -334,6 +337,7 @@ class Mapping
 	 */
 	public function name($value)
 	{
+		// TODO: Append?
 		$this->name = $value;
 		
 		return $this;

@@ -31,6 +31,10 @@ class Resource extends Scope
 	{
 		parent::__construct($engine, $parent);
 		
+		// TODO: Check default route names
+		// TODO: Make the route names customizable
+		// TODO: How to do with REQUEST_METHOD for reverse routing?
+		
 		$this->name = $name;
 		$path       = empty($options['path'])       ? $name : $options['path'];
 		$controller = empty($options['controller']) ? $name : $options['controller'];
@@ -39,20 +43,18 @@ class Resource extends Scope
 		$this->path($path);
 		$this->to($controller.'#');
 		
-		$this->match()->via('GET') ->to('#index');
-		$this->match()->via('POST')->to('#create');
-		$this->match('new')        ->to('#newform');
+		$this->match()->via('GET') ->to('#index')  ->name($name);
+		$this->match()->via('POST')->to('#create') ->name('create_'.$name);
+		$this->match('new')        ->to('#newform')->name('new_'.$name);
 		
 		// With :id capture, will cascade down to the sub-resources
 		$this->path('/:'.$name.'_id');
 		
-		// TODO: Merge into a larger route to prevent running preg_match for the same PATH_INFO multiple times?
-		// TODO: cont. requires a specific route or controller class :(
-		$this->match()->via('GET')   ->to('#show');
-		$this->match()->via('PUT')   ->to('#update');
-		$this->match()->via('DELETE')->to('#destroy');
+		$this->match()->via('GET')   ->to('#show')   ->name('show_'.$name);
+		$this->match()->via('PUT')   ->to('#update') ->name('update_'.$name);
+		$this->match()->via('DELETE')->to('#destroy')->name('delete_'.$name);
 		
-		$this->match('/edit')->to('#edit');
+		$this->match('/edit')->to('#edit')->name('edit_'.$name);
 	}
 }
 

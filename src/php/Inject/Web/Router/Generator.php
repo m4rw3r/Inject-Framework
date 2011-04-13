@@ -14,29 +14,42 @@ use \Inject\Core\Engine;
  */
 class Generator extends Generator\Scope
 {
-	protected $dest_handlers = array();
+	/**
+	 * List of associated DestinationHandlerInterface classes.
+	 * 
+	 * @var array(string)
+	 */
+	protected $dest_handlers = array(
+			'Inject\Web\Router\Generator\DestinationHandler\Controller',
+			'Inject\Web\Router\Generator\DestinationHandler\Callback',
+			'Inject\Web\Router\Generator\DestinationHandler\Engine',
+			'Inject\Web\Router\Generator\DestinationHandler\Redirect'
+		);
 	
+	/**
+	 * The CodeGenerator instance used by this Generator.
+	 * 
+	 * @var \Inject\Web\Router\Generator\CodeGenerator
+	 */
 	protected $generator;
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function __construct(Engine $engine, $mapping = null)
 	{
 		parent::__construct($engine, $mapping);
+		
 		$this->generator = new Generator\CodeGenerator($this->engine);
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Registers a specific destination handler class which will generate code
+	 * for routing based on the Mapping objects created by the user.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string  Class implementing Inject\Web\Router\Generator\DestinationHandlerInterface
+	 * @return void
 	 */
 	public function registerDestinationHandler($class)
 	{
@@ -52,6 +65,19 @@ class Generator extends Generator\Scope
 			// TODO: Exception
 			throw new \Exception(sprintf('The class %s is not a valid route destination handler, it must implement \Inject\Web\Route\Generator\DestinationHandlerInterface', $class));
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Will clear the list of classes for DestinationHandlers, useful when
+	 * overriding default DestinationHandlers.
+	 * 
+	 * @return void
+	 */
+	public function clearDestinationHandlers()
+	{
+		$this->dest_handlers = array();
 	}
 	
 	// ------------------------------------------------------------------------
@@ -79,13 +105,14 @@ class Generator extends Generator\Scope
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Returns an array of compiled DestinationHandlers which wrap the Mapping
+	 * objects of this generator.
 	 * 
-	 * 
-	 * @return 
+	 * @return array(Inject\Web\Router\Generator\DestinationHandlerInterface)
 	 */
-	public function getDefinitions()
+	public function getDestinationHandlers()
 	{
-		$defs = parent::getDefinitions();
+		$defs = $this->getDefinitions();
 		
 		$arr = array();
 		
@@ -110,6 +137,11 @@ class Generator extends Generator\Scope
 				throw new \Exception(sprintf('The route %s does not have a compatible to() value.', $def->getPathPattern()));
 			}
 			
+			// Compile the contents of the DestinationHandlers
+			$handler->prepare();
+			$handler->validate($this->engine);
+			$handler->compile();
+			
 			$arr[] = $handler;
 		}
 		
@@ -119,15 +151,16 @@ class Generator extends Generator\Scope
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns a list of instances of \Inject\Web\Router\Route\AbstractRoute
-	 * which route according to the loaded config files.
+	 * Returns an array containing the router closure and an array with reverse
+	 * router closures.
 	 * 
-	 * @return array(\Inject\Web\Router\Route\AbstractRoute)
+	 * @return array(Closure, array(string => Closure))
 	 */
 	public function getCompiledRoutes()
 	{
 		$engine = $this->engine;
-		return eval($this->generator->generateCode($this->getDefinitions()));
+		
+		return eval($this->generator->generateCode($this->getDestinationHandlers()));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -136,6 +169,7 @@ class Generator extends Generator\Scope
 	 * Writes the router cache file.
 	 * 
 	 * @param  string   The file to write to
+	 * @return void
 	 */
 	public function writeCache($path)
 	{
@@ -144,14 +178,14 @@ class Generator extends Generator\Scope
 		$code = '<?php
 /**
  * Route cache file generated on '.date('Y-m-d H:i:s').' by Inject Framework Router
- * (\Inject\Web\Router\Generator).
+ * ('.__CLASS__.').
  */
 
 namespace Inject\Web\Router;
 
 ';
 		
-		$code .= $this->generator->generateCode($this->getDefinitions());
+		$code .= $this->generator->generateCode($this->getDestinationHandlers());
 		
 		if(@file_put_contents($file, $code))
 		{

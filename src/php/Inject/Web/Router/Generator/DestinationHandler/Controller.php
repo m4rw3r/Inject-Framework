@@ -78,7 +78,7 @@ class Controller extends Base implements DestinationHandlerInterface
 			if( ! in_array('controller', $this->tokenizer->getRequiredCaptures()))
 			{
 				// TODO: Exception
-				throw new \Exception(sprintf('The route %s does not have an associated controller option, or the :controller capture is optional.', $this->route->getPathPattern()));
+				throw new \Exception(sprintf('The route %s does not have an associated controller option or capture, or the :controller capture is optional.', $this->route->getPathPattern()));
 			}
 			
 			// Build a regex so the path fails faster:
@@ -117,28 +117,6 @@ class Controller extends Base implements DestinationHandlerInterface
 		throw new \Exception(sprintf('The short controller name "%s" could not be translated into a fully qualified class name, check the return value of %s->getAvailableControllers().', $short_name, get_class($engine)));
 	}
 	
-	public function getConditions($env_var, $capture_dest_array, $controller_var)
-	{
-		$conds = parent::getConditions($env_var, $capture_dest_array, $controller_var);
-		
-		if(empty($this->controller))
-		{
-			// Insert controller existance check
-			if(preg_match('/^preg_match.*\'PATH_INFO\'\]/', $conds[0]))
-			{
-				// Only a regex
-				$conds = array_merge(array($conds[0], "isset({$controller_var}[strtolower({$capture_dest_array}['controller'])])"), array_slice($conds, 1));
-			}
-			elseif(preg_match('/^preg_match.*\'PATH_INFO\'\]/', $conds[1]))
-			{
-				// stripos + regex
-				$conds = array_merge(array($conds[0], $conds[1], "isset({$controller_var}[strtolower({$capture_dest_array}['controller'])])"), array_slice($conds, 2));
-			}
-		}
-		
-		return $conds;
-	}
-	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
 		$action = var_export($this->action, true);
@@ -146,14 +124,8 @@ class Controller extends Base implements DestinationHandlerInterface
 		if(empty($this->controller))
 		{
 			$code = <<<EOF
-\$short_name = strtolower({$matches_var}['controller']);
-
-if( ! isset({$controller_var}[\$short_name]))
-{
-	return array(404, array('X-Cascade' => 'pass'), '');
-}
-
-\$class_name = {$controller_var}[\$short_name];
+// No need to check if the index exists, the regex only matches available controllers
+\$class_name = {$controller_var}[strtolower({$matches_var}['controller'])];
 
 return \$class_name::stack($engine_var, empty({$env_var}['web.route_params']['action']) ? $action : {$env_var}['web.route_params']['action'])->run($env_var);
 EOF;

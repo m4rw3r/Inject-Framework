@@ -14,13 +14,17 @@ use \Inject\Core\Engine;
  */
 class CodeGenerator
 {
+	/**
+	 * The engine sent to DestinationHandlers to determine controllers etc.
+	 * 
+	 * @var \Inject\Core\Engine
+	 */
 	protected $engine;
+	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * @param  \Inject\Core\Engine
 	 */
 	public function __construct(Engine $engine)
 	{
@@ -29,14 +33,25 @@ class CodeGenerator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates the routing code, to be put in a cache file or eval()'d to get
+	 * the route closure and the reverse routing closure list.
 	 * 
-	 * 
-	 * @return 
+	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
+	 * @return string
 	 */
 	public function generateCode(array $definitions)
 	{
 		$tree = $this->constructRouteTree($definitions);
 		
+		// TODO: How to do with route_parameters "leaking" from one regex to the next?
+		// If you have routes 1 and 2, 1 has a regex and a match vs REQUEST_METHOD,
+		// 2 has only a regex, generated structure makes 1's regex match first and then
+		// it has a nested if for the REQUEST_METHOD, if the regexes for 1 and 2 are similar
+		// enough (so 1 and 2 matches on specific urls), then it might match 1 and put
+		// its parameters in the $matches var, then fail on the REQUEST_METHOD match
+		// and proceed and match regex 2, which might not match fully, but has a named capture
+		// with the same name as one in regex 1, then that match in regex 1 might not be
+		// overwritten with "" as it might not have come that far => faulty parameters
 		$code = '$controllers = '.var_export($this->engine->getAvailableControllers(), true).';
 $router = function($env) use($engine, $controllers)
 {
@@ -46,7 +61,25 @@ $router = function($env) use($engine, $controllers)
 	
 	return array(404, array(\'X-Cascade\' => \'pass\'), \'\');
 };';
-		$code .= "\n\n\$reverse = array(\n\t";
+		$code .= "\n\n\$reverse = ".$this->createReverseRouter($definitions);
+		
+		$code .= "\n\nreturn array(\$router, \$reverse);";
+		
+		return $code;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Creates a PHP code array containing closures which will each create the
+	 * URI for their respective keys in the array.
+	 * 
+	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
+	 * @return string
+	 */
+	public function createReverseRouter(array $definitions)
+	{
+		$code = "array(\n\t";
 		
 		$uris = array();
 		
@@ -63,17 +96,17 @@ $router = function($env) use($engine, $controllers)
 		
 		$code .= implode(",\n\t", $uris)."\n);";
 		
-		$code .= "\n\nreturn array(\$router, \$reverse);";
-		
 		return $code;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Constructs a tree of the routes so they group by their conditions like
+	 * PATH_INFO, REQUEST_URI etc.
 	 * 
-	 * 
-	 * @return 
+	 * @param  array
+	 * @return array
 	 */
 	public function constructRouteTree(array $definitions)
 	{
@@ -84,13 +117,7 @@ $router = function($env) use($engine, $controllers)
 		{
 			$current =& $tree;
 			
-			$def->prepare();
-			$def->validate($this->engine);
-			$def->compile();
-			
 			$conditions = $def->getConditions('$env', '$match', '$controllers');
-			
-			//sort($conditions);
 			
 			foreach($conditions as $cond)
 			{
@@ -111,9 +138,13 @@ $router = function($env) use($engine, $controllers)
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Creates a tree of If-constructs which will match parts of the $env and
+	 * automatically group the conditions by URI, REQUEST_METHOD, etc.
 	 * 
-	 * 
-	 * @return 
+	 * @param  array  A tree containing the routes and their conditions
+	 *         format: key = condition, value = DestinationHandler or a nested
+	 *                 array in this format, numeric keys are no conditions
+	 * @return string
 	 */
 	public function constructIfTree(array $tree)
 	{
@@ -161,9 +192,11 @@ EOF;
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Creates code which will run a route, will put the matched route parameters
+	 * (if any) into $env['web.route_params'].
 	 * 
-	 * 
-	 * @return 
+	 * @param  \Inject\Web\Router\Generator\DestinationHandlerInterface
+	 * @return string
 	 */
 	public function createRunCode(DestinationHandlerInterface $dh)
 	{
@@ -171,7 +204,7 @@ EOF;
 		
 		if( ! count($dh->getCaptureIntersect()))
 		{
-			$code .= 'array();';
+			$code .= var_export($dh->getOptions(), true).';';
 		}
 		else
 		{
@@ -186,12 +219,15 @@ EOF;
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates a one-liner generating the URI for the supplied tokens,
+	 * will return an array with the required keys if at least one is missing.
 	 * 
-	 * 
-	 * @return 
+	 * @param  array   Tokens from the Tokenizer
+	 * @return string
 	 */
 	public function createUriAssembler(array $tokens)
 	{
+		// TODO: Split into smaller parts?
 		$code   = '';
 		$end    = count($tokens);
 		$concat = false;
@@ -309,9 +345,11 @@ EOF;
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Indents code with tabs, does not work on code which contains Heredoc,
+	 * Nowdoc or multiline strings as they will get tabs in them.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return string
 	 */
 	public function indentCode($code, $indent = 1)
 	{

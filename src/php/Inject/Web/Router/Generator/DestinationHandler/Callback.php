@@ -9,9 +9,6 @@ namespace Inject\Web\Router\Generator\DestinationHandler;
 
 use \Inject\Core\Engine;
 
-use \Inject\Web\Router\Route;
-use \Inject\Web\Router\Generator\Tokenizer;
-
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\DestinationHandlerInterface;
 
@@ -82,7 +79,7 @@ class Callback extends Base implements DestinationHandlerInterface
 	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
-		return 'call_user_func('.var_export($this->callback).", $env_var);";
+		return 'call_user_func('.var_export($this->callback, true).", $env_var);";
 	}
 }
 

@@ -48,8 +48,6 @@ class Engine extends Base implements DestinationHandlerInterface
 	}
 	public function validate(CoreEngine $engine)
 	{
-		$this->app_class = current($this->route->getTo());
-		
 		try
 		{
 			$ref = new \ReflectionClass($this->engine);
@@ -88,8 +86,8 @@ class Engine extends Base implements DestinationHandlerInterface
 \$path = empty(\$uri) ? {$env_var}['PATH_INFO'] : substr({$env_var}['PATH_INFO'], - strlen(\$uri));
 
 // Move one step deeper in the directory structure
-{$env_var}['SCRIPT_NAME']   = {$env_var}['SCRIPT_NAME'].$path;
-{$env_var}['BASE_URI']      = {$env_var}['BASE_URI'].$path;
+{$env_var}['SCRIPT_NAME']   = {$env_var}['SCRIPT_NAME'].\$path;
+{$env_var}['BASE_URI']      = {$env_var}['BASE_URI'].\$path;
 {$env_var}['PATH_INFO']     = '/'.trim(\$uri, '/');
 {$env_var}['web.old_route_params'] = {$env_var}['web.route_params'];
 

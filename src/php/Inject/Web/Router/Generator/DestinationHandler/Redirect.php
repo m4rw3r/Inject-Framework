@@ -9,11 +9,8 @@ namespace Inject\Web\Router\Generator\DestinationHandler;
 
 use \Inject\Core\Engine as CoreEngine;
 
-use \Inject\Web\Router\Route;
-use \Inject\Web\Router\Generator\Tokenizer;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Redirection;
-
 use \Inject\Web\Router\Generator\DestinationHandlerInterface;
 
 /**
@@ -49,25 +46,20 @@ class Redirect extends Base implements DestinationHandlerInterface
 	{
 		$this->redirect = $value;
 	}
+	
 	public function validate(CoreEngine $engine)
 	{
-		
-	}
-	protected function doValidation(Tokenizer $tokenizer)
-	{
-		$this->redirect = current($this->route->getTo());
-		
-		$diff = array_diff($this->redirect->getRequiredCaptures(), $tokenizer->getRequiredCaptures());
+		$diff = array_diff($this->redirect->getRequiredCaptures(), $this->tokenizer->getRequiredCaptures());
 		
 		if( ! empty($diff))
 		{
-			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->route->getPathPattern(), current($diff)));
+			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->mapping->getPathPattern(), current($diff)));
 		}
 	}
 	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
-		return $this->redirect->getCallbackCode();
+		return $this->redirect->getCallbackCode($env_var);
 	}
 }
 

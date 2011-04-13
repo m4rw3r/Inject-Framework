@@ -30,46 +30,33 @@ abstract class Base implements DestinationHandlerInterface
 	protected $capture_intersect = array();
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function __construct(Mapping $mapping)
 	{
 		$this->mapping = $mapping;
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function getName()
 	{
 		return $this->mapping->getName();
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function getTokens()
 	{
 		return $this->tokenizer->getTokens();
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	public function prepare()
 	{
-		$via          = $this->mapping->getVia();
+		$via             = $this->mapping->getVia();
 		// Clean regex from trailing slashes and duplicated ones
-		$path_pattern = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->mapping->getPathPattern());
+		$path_pattern    = preg_replace('#(?<!^)/$|(/)/+#', '$1', $this->mapping->getPathPattern());
 		$this->tokenizer = new Tokenizer($path_pattern);
 		
 		$this->constraints = $this->mapping->getConstraints();
@@ -84,10 +71,11 @@ abstract class Base implements DestinationHandlerInterface
 		$this->regex_fragments = array_merge($this->tokenizer->getRegexFragments(), $this->mapping->getRegexFragments());
 		$this->options         = array_merge($this->options, $this->mapping->getOptions());
 	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function compile()
 	{
-		//$this->constraints = $this->cleanConstraints($this->constraints);
-		
 		// Make the longest match the first one, then it will usually be faster as
 		// the longer the match, the more likely it is to fail
 		uasort($this->constraints, function($a, $b)
@@ -155,31 +143,28 @@ abstract class Base implements DestinationHandlerInterface
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function getCaptureIntersect()
 	{
 		return $this->capture_intersect;
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
+	
 	public function getOptions()
 	{
 		return $this->options;
 	}
 	
+	// ------------------------------------------------------------------------
 	
-	abstract public function validate(Engine $engine);
+	/* abstract */ public function validate(Engine $engine)
+	{
+		throw new \RuntimeException('Not implemented method '.__METHOD__);
+	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function getConditions($env_var, $capture_dest_array, $controller_var)
 	{
 		$conds  = array();
@@ -226,7 +211,12 @@ abstract class Base implements DestinationHandlerInterface
 		return $conds;
 	}
 	
-	abstract public function getCallCode($env_var, $engine_var, $matches_var, $controller_var);
+	// ------------------------------------------------------------------------
+	
+	/* abstract */ public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
+	{
+		throw new \RuntimeException('Not implemented method '.__METHOD__);
+	}
 }
 
 
