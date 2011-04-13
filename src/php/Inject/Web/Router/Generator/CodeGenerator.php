@@ -43,6 +43,7 @@ class CodeGenerator
 	{
 		$tree = $this->constructRouteTree($definitions);
 		
+		// TODO: How to detect match conflicts? ie. routes which will never match because another always match instead
 		// TODO: How to do with route_parameters "leaking" from one regex to the next?
 		// If you have routes 1 and 2, 1 has a regex and a match vs REQUEST_METHOD,
 		// 2 has only a regex, generated structure makes 1's regex match first and then

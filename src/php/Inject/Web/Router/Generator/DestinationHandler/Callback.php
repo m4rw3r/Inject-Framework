@@ -17,6 +17,14 @@ use \Inject\Web\Router\Generator\DestinationHandlerInterface;
  */
 class Callback extends Base implements DestinationHandlerInterface
 {
+	/**
+	 * Matches on string callbacks, must be valid callbacks.
+	 * 
+	 * @param  mixed
+	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  mixed
+	 * @return DestinationHandlerInterface|false
+	 */
 	public static function parseTo($new, Mapping $mapping, $old)
 	{
 		if(is_string($new) && is_callable($new))
@@ -32,19 +40,28 @@ class Callback extends Base implements DestinationHandlerInterface
 		}
 	}
 	
+	/**
+	 * The callback to call when the route matches.
+	 * 
+	 * @var string
+	 */
 	protected $callback = null;
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the callback to call for a match.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setCallback($value)
 	{
 		$this->callback = $value;
 	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function validate(Engine $engine)
 	{
 		try
@@ -77,9 +94,11 @@ class Callback extends Base implements DestinationHandlerInterface
 		}
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
-		return 'call_user_func('.var_export($this->callback, true).", $env_var);";
+		return 'return call_user_func('.var_export($this->callback, true).", $env_var);";
 	}
 }
 

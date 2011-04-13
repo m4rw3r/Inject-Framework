@@ -16,6 +16,14 @@ use \Inject\Web\Router\Generator\DestinationHandlerInterface;
  */
 class Controller extends Base implements DestinationHandlerInterface
 {
+	/**
+	 * Will match on null, "controller#action", "controller#" and "#action".
+	 * 
+	 * @param  mixed
+	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  mixed
+	 * @return DestinationHandlerInterface|false
+	 */
 	public static function parseTo($new, Mapping $mapping, $old)
 	{
 		if(is_null($new))
@@ -44,16 +52,36 @@ class Controller extends Base implements DestinationHandlerInterface
 		}
 	}
 	
+	/**
+	 * Default options.
+	 * 
+	 * @var array(string => string)
+	 */
+	protected $options = array(
+			'action' => 'index'
+		);
+	
+	/**
+	 * The controller to call.
+	 * 
+	 * @var string|null
+	 */
 	protected $controller = null;
 	
+	/**
+	 * The action to call.
+	 * 
+	 * @var string|null
+	 */
 	protected $action = 'index';
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the controller to be called by the generated code, empty if dynamic.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setController($value)
 	{
@@ -63,14 +91,18 @@ class Controller extends Base implements DestinationHandlerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the action to be called by the generated code, empty if dynamic.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setAction($value)
 	{
 		$this->action = $value;
 	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function validate(Engine $engine)
 	{
 		if(empty($this->controller))
@@ -116,6 +148,8 @@ class Controller extends Base implements DestinationHandlerInterface
 		
 		throw new \Exception(sprintf('The short controller name "%s" could not be translated into a fully qualified class name, check the return value of %s->getAvailableControllers().', $short_name, get_class($engine)));
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{

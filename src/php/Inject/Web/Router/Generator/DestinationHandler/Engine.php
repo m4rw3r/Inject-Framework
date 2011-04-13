@@ -18,6 +18,15 @@ use \Inject\Web\Router\Generator\DestinationHandlerInterface;
  */
 class Engine extends Base implements DestinationHandlerInterface
 {
+	/**
+	 * Matches on class names, the class must be an instance of \Inject\Core\Engine
+	 * or an exception will be thrown on validate().
+	 * 
+	 * @param  mixed
+	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  mixed
+	 * @return DestinationHandlerInterface|false
+	 */
 	public static function parseTo($new, Mapping $mapping, $old)
 	{
 		if(is_string($new) && class_exists($new))
@@ -33,19 +42,28 @@ class Engine extends Base implements DestinationHandlerInterface
 		}
 	}
 	
+	/**
+	 * The engine class to call.
+	 * 
+	 * @var string
+	 */
 	protected $engine = null;
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the engine class to call when the route matches.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setEngine($value)
 	{
 		$this->engine = $value;
 	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function validate(CoreEngine $engine)
 	{
 		try
@@ -79,6 +97,9 @@ class Engine extends Base implements DestinationHandlerInterface
 			throw new \Exception(sprintf('The route %s must have its *uri capture at the end of the pattern as it routes to a sub-application.', $this->mapping->getPathPattern()));
 		}
 	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
 		$code = <<<EOF

@@ -17,16 +17,48 @@ use \Inject\Web\Router\Generator\DestinationHandlerInterface;
  */
 abstract class Base implements DestinationHandlerInterface
 {
+	/**
+	 * The wrapped Mapping instance.
+	 * 
+	 * @var \Inject\Web\Router\Generator\Mapping
+	 */
 	protected $mapping;
 	
+	/**
+	 * The list of final constraints to be included in the output from
+	 * getConditions().
+	 * 
+	 * @var array(string => mixed)  value can be: regex, string or any other scalar
+	 */
 	protected $constraints = array();
 	
+	/**
+	 * The list of default options to merge with the captures.
+	 * 
+	 * @var array(string => scalar)
+	 */
 	protected $options = array();
 	
+	/**
+	 * The tokenizer instance tokenizing the path pattern from the mapping.
+	 * 
+	 * @var \Inject\Web\Router\Generator\Tokenizer
+	 */
 	protected $tokenizer = null;
 	
+	/**
+	 * A list of regex fragments related to the captures in the path pattern.
+	 * 
+	 * @var array(string => string)
+	 */
 	protected $regex_fragments = array();
 	
+	/**
+	 * The capture intersection array to dump into the compiled code which will
+	 * filter the regex data.
+	 * 
+	 * @var array(string => int)
+	 */
 	protected $capture_intersect = array();
 	
 	// ------------------------------------------------------------------------
@@ -76,7 +108,7 @@ abstract class Base implements DestinationHandlerInterface
 	
 	public function compile()
 	{
-		// Make the longest match the first one, then it will usually be faster as
+		// Make the longest matcher the first one, then it will usually be faster as
 		// the longer the match, the more likely it is to fail
 		uasort($this->constraints, function($a, $b)
 		{
@@ -191,6 +223,7 @@ abstract class Base implements DestinationHandlerInterface
 			$conds[] = 'preg_match('.var_export($this->createRegex($this->tokenizer->getTokens(), $this->regex_fragments), true).", {$env_var}['PATH_INFO'], $capture_dest_array)";
 		}
 		
+		// PATH_INFO first, then the other constraints
 		foreach($this->constraints as $variable => $pattern)
 		{
 			$cond = "isset({$env_var}[".var_export($variable, true)."]) && ";

@@ -18,6 +18,14 @@ use \Inject\Web\Router\Generator\DestinationHandlerInterface;
  */
 class Redirect extends Base implements DestinationHandlerInterface
 {
+	/**
+	 * Matches on a Redirection object.
+	 * 
+	 * @param  mixed
+	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  mixed
+	 * @return DestinationHandlerInterface|false
+	 */
 	public static function parseTo($new, Mapping $mapping, $old)
 	{
 		if(is_object($new) && $new instanceof Redirection)
@@ -38,14 +46,17 @@ class Redirect extends Base implements DestinationHandlerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the redirection object to use.
 	 * 
-	 * 
-	 * @return 
+	 * @param  \Inject\Web\Router\Generator\Redirection
+	 * @return void
 	 */
 	public function setRedirect($value)
 	{
 		$this->redirect = $value;
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function validate(CoreEngine $engine)
 	{
@@ -56,6 +67,8 @@ class Redirect extends Base implements DestinationHandlerInterface
 			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->mapping->getPathPattern(), current($diff)));
 		}
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
 	{
