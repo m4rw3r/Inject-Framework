@@ -131,7 +131,7 @@ class ExceptionCatcher implements MiddlewareInterface
 	 */
 	public function highlight($string)
 	{
-		$tokens = token_get_all('<?php '.$string);
+		$tokens = @token_get_all('<?php '.$string);
 		
 		$result = array();
 		
