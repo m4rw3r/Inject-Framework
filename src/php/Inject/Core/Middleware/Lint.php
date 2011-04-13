@@ -185,7 +185,7 @@ class Lint implements MiddlewareInterface
 			
 			foreach(explode("\n", $hval) as $line)
 			{
-				$this->assert(sprintf('Header %s value contains invalid characters', $hkey), ! preg_match('/[\000-\027]/', $hval));
+				$this->assert(sprintf('Header %s value contains invalid characters', $hkey), ! preg_match('/[\000-\027]/', $line));
 			}
 		}
 		
