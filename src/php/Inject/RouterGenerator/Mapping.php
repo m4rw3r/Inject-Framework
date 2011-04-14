@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * Object returned by the router's match() method, used to represent a route
@@ -165,7 +165,7 @@ class Mapping
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function path($pattern, array $regex_patterns = array())
 	{
@@ -230,11 +230,11 @@ class Mapping
 	 *     $this->redirect('some_destination', 301)
 	 *     
 	 *     Will perform a redirect with a HTTP header, see
-	 *     \Inject\Web\Router\Generator\Generator->redirect()
+	 *     \Inject\RouterGenerator\Generator->redirect()
 	 *     for more information on usage.
 	 * 
 	 * @param  string|Redirect
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function to($to)
 	{
@@ -275,7 +275,7 @@ class Mapping
 	 * @param  array(string)  List of named captures used in the regexes,
 	 *                        if they are present on this list, they will be
 	 *                        included in the route parameters
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function constraints(array $options, $named_captures = array())
 	{
@@ -294,7 +294,7 @@ class Mapping
 	 * 
 	 * @param  string|array|false  a request method or list of request methods
 	 *                             this route accepts, false to allow all (default).
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function via($request_method)
 	{
@@ -317,7 +317,7 @@ class Mapping
 	 * on as route parameters even if there are no captures with that name.
 	 * 
 	 * @param  array(string => string)
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function defaults(array $defaults)
 	{
@@ -333,7 +333,7 @@ class Mapping
 	 * carry on to the scoped routes.
 	 * 
 	 * @param  string
-	 * @return \Inject\Web\Router\Generator\Mapping  self
+	 * @return \Inject\RouterGenerator\Mapping  self
 	 */
 	public function name($value)
 	{

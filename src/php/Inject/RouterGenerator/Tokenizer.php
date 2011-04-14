@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * Object tokenizing the supplied pattern into parts.

@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * Handles the parsing of a Mapping's to() method and also the code generation
@@ -32,7 +32,7 @@ abstract class DestinationHandler
 	/**
 	 * The wrapped Mapping instance.
 	 * 
-	 * @var \Inject\Web\Router\Generator\Mapping
+	 * @var \Inject\RouterGenerator\Mapping
 	 */
 	protected $mapping;
 	
@@ -54,7 +54,7 @@ abstract class DestinationHandler
 	/**
 	 * The tokenizer instance tokenizing the path pattern from the mapping.
 	 * 
-	 * @var \Inject\Web\Router\Generator\Tokenizer
+	 * @var \Inject\RouterGenerator\Tokenizer
 	 */
 	protected $tokenizer = null;
 	

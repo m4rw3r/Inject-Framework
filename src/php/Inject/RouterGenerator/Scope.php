@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * Base class creating routes, the routes are based on a template, default
@@ -19,7 +19,7 @@ class Scope
 	 * Contains the template with the default options for the routes
 	 * created by this scope.
 	 * 
-	 * @var \Inject\Web\Router\Generator\Mapping
+	 * @var \Inject\RouterGenerator\Mapping
 	 */
 	protected $base;
 	
@@ -31,7 +31,7 @@ class Scope
 	protected $definitions = array();
 	
 	/**
-	 * @param  \Inject\Web\Router\Generator\Mapping  Initial template
+	 * @param  \Inject\RouterGenerator\Mapping  Initial template
 	 */
 	public function __construct($parent = null)
 	{
@@ -78,11 +78,11 @@ class Scope
 	 * If the $path parameter is empty, it will attempt to match the root of the
 	 * current scope (ie. not call path() on the Mapping).
 	 * 
-	 * @see \Inject\Web\Router\Generator\Mapping::path()
+	 * @see \Inject\RouterGenerator\Mapping::path()
 	 * @param  string  If empty it tries to match the root of the current scope.
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function match($path = '', array $segment_constraints = array())
 	{
@@ -102,7 +102,7 @@ class Scope
 	 * is the most popular route of the site.
 	 * 
 	 * @param  string
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function root()
 	{
@@ -117,7 +117,7 @@ class Scope
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function get($path = '', array $segment_constraints = array())
 	{
@@ -132,7 +132,7 @@ class Scope
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function post($path = '', array $segment_constraints = array())
 	{
@@ -147,7 +147,7 @@ class Scope
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function put($path = '', array $segment_constraints = array())
 	{
@@ -162,7 +162,7 @@ class Scope
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function delete($path = '', array $segment_constraints = array())
 	{
@@ -177,7 +177,7 @@ class Scope
 	 * @param  string
 	 * @param  array(string => regex_fragment)  List of regular expression
 	 *                fragments used for the specified captures
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function head($path = '', array $segment_constraints = array())
 	{
@@ -192,7 +192,7 @@ class Scope
 	 * 
 	 * TODO: Documentation
 	 * 
-	 * @return \Inject\Web\Router\Generator\Scope
+	 * @return \Inject\RouterGenerator\Scope
 	 */
 	public function scope()
 	{
@@ -230,7 +230,7 @@ class Scope
 	 * 
 	 * @param  string
 	 * @param  array(string => string)
-	 * @return \Inject\Web\Router\Generator\Resource
+	 * @return \Inject\RouterGenerator\Resource
 	 */
 	public function resources($name, array $options = array())
 	{
@@ -256,7 +256,7 @@ class Scope
 	 * 
 	 * @param  string  A uri, url and/or pattern
 	 * @param  int     The redirect code
-	 * @return \Inject\Web\Router\Generator\Redirect
+	 * @return \Inject\RouterGenerator\Redirect
 	 */
 	public function redirect($uri_pattern, $redirect_code = 301)
 	{
@@ -268,7 +268,7 @@ class Scope
 	/**
 	 * Returns the Mapping template of this Scope instance.
 	 * 
-	 * @return \Inject\Web\Router\Generator\Mapping
+	 * @return \Inject\RouterGenerator\Mapping
 	 */
 	public function getTemplate()
 	{
@@ -280,7 +280,7 @@ class Scope
 	/**
 	 * Returns an array containing all route definitions.
 	 * 
-	 * @return array(\Inject\Web\Router\Generator\Mapping)
+	 * @return array(\Inject\RouterGenerator\Mapping)
 	 */
 	public function getDefinitions()
 	{
@@ -317,7 +317,7 @@ class Scope
 	 * 
 	 * @param  string  method name
 	 * @param  array   method parameters
-	 * @return \Inject\Web\Router\Generator\Scope  self
+	 * @return \Inject\RouterGenerator\Scope  self
 	 */
 	public function __call($method, array $args)
 	{

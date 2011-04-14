@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * Object returned by the router's resource() method, used to represent a route

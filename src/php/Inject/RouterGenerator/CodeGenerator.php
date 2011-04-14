@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
+namespace Inject\RouterGenerator;
 
 /**
  * 
@@ -79,7 +79,7 @@ class CodeGenerator
 	 * An object returning variable names for the different variables used
 	 * in the router.
 	 * 
-	 * @var \Inject\Web\Router\Generator\VariableNameContainerInterface
+	 * @var \Inject\RouterGenerator\VariableNameContainerInterface
 	 */
 	protected $vars;
 	
@@ -89,7 +89,7 @@ class CodeGenerator
 	 * Registers a specific destination handler class which will generate code
 	 * for routing based on the Mapping objects created by the user.
 	 * 
-	 * @param  string  Class implementing Inject\Web\Router\Generator\DestinationHandlerInterface
+	 * @param  string  Class implementing Inject\RouterGenerator\DestinationHandlerInterface
 	 * @return void
 	 */
 	public function registerDestinationHandlers($class)
@@ -98,7 +98,7 @@ class CodeGenerator
 		{
 			$ref = new \ReflectionClass($klass);
 			
-			if($ref->isSubclassOf('Inject\Web\Router\Generator\DestinationHandler'))
+			if($ref->isSubclassOf('Inject\RouterGenerator\DestinationHandler'))
 			{
 				// Only allow a single instance per class
 				in_array($klass, $this->dest_handlers) OR $this->dest_handlers[] = $klass;
@@ -142,7 +142,7 @@ class CodeGenerator
 	/**
 	 * Takes a list of Mapping objects and compiles them and stores internally.
 	 * 
-	 * @param  array(\Inject\Web\Router\Generator\Mapping)
+	 * @param  array(\Inject\RouterGenerator\Mapping)
 	 * @return void
 	 */
 	public function compileDefinitions(array $definitions, array $validation_params = array())
@@ -246,7 +246,7 @@ class CodeGenerator
 	 * Creates code which will run a route, will put the matched route parameters
 	 * (if any) into $env['web.route_params'].
 	 * 
-	 * @param  \Inject\Web\Router\Generator\DestinationHandler
+	 * @param  \Inject\RouterGenerator\DestinationHandler
 	 * @return string
 	 */
 	public function createRunCode(DestinationHandler $handler)
@@ -277,7 +277,7 @@ class CodeGenerator
 	 * 
 	 * TODO: Move to separate class
 	 * 
-	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
+	 * @param  array(\Inject\RouterGenerator\DestinationHandler)
 	 * @return string
 	 */
 	public function createReverseRouter()

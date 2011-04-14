@@ -5,9 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator;
-
-use \Inject\Web\Request;
+namespace Inject\RouterGenerator;
 
 /**
  * Object representing a route destination which results in a redirect.
@@ -75,43 +73,6 @@ class Redirection
 	public function getRequiredCaptures()
 	{
 		return $this->tokenizer->getRequiredCaptures();
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Returns the callback which will perform the redirect, used when the routes
-	 * are regenerated on each request.
-	 * 
-	 * @return Closure
-	 */
-	public function getCallback()
-	{
-		$tokens = $this->tokenizer->getTokens();
-		$code   = $this->redirect_code;
-		
-		return function($env) use($tokens, $code)
-		{
-			$path = '';
-			foreach($tokens as $tok)
-			{
-				switch($tok[0])
-				{
-					case Tokenizer::CAPTURE:
-						// PATH_INFO is not urlencoded, so no need to encode
-						$path .= $env['web.route']->getParameter($tok[1]);
-						break;
-					case Tokenizer::LITERAL:
-						$path .= $tok[1];
-				}
-			}
-			
-			// TODO: How to inject class
-			$req = new Request($env);
-			$url = Request::toUrl(array_merge($req->getDefaultUrlOptions(), array('path' => $path)));
-			
-			return array($code, array('Location' => $url), '');
-		};
 	}
 	
 	// ------------------------------------------------------------------------
