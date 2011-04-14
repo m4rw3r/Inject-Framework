@@ -10,6 +10,7 @@ namespace Inject\Web\Router\Generator\DestinationHandler;
 use \Inject\Core\Engine;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\DestinationHandler;
+use \Inject\Web\Router\Generator\VariableNameContainerInterface;
 
 /**
  * 
@@ -151,10 +152,10 @@ class Controller extends DestinationHandler
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
+	public function getCallCode(VariableNameContainerInterface $vars, $matches_var)
 	{
-		$env_var    = reset($params_vars);
-		$engine_var = $use_vars['engine_var'];
+		$env_var    = $vars->getEnvVar();
+		$engine_var = $vars->getEngineVar();
 		$action     = var_export($this->action, true);
 		
 		if(empty($this->controller))

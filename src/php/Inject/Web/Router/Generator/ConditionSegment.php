@@ -65,10 +65,14 @@ class ConditionSegment implements \ArrayAccess
 		return $ret;
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	public function setDestination($dest)
 	{
 		$this->destination = $dest;
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Returns the destination code.
@@ -80,6 +84,8 @@ class ConditionSegment implements \ArrayAccess
 		return $this->destination;
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	/**
 	 * Returns true if it has a destination.
 	 * 
@@ -90,15 +96,21 @@ class ConditionSegment implements \ArrayAccess
 		return ! empty($this->destination);
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	public function offsetExists($key)
 	{
 		return isset($this->children[$key]);
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	public function offsetGet($key)
 	{
 		return $this->children[$key];
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function offsetSet($key, $value)
 	{
@@ -109,6 +121,8 @@ class ConditionSegment implements \ArrayAccess
 		
 		$this->children[$key] = $value;
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public function offsetUnset($key)
 	{

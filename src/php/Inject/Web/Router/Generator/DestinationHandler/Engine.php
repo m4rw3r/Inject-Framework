@@ -12,6 +12,7 @@ use \Inject\Core\Engine as CoreEngine;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Tokenizer;
 use \Inject\Web\Router\Generator\DestinationHandler;
+use \Inject\Web\Router\Generator\VariableNameContainerInterface;
 
 /**
  * 
@@ -100,10 +101,10 @@ class Engine extends DestinationHandler
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
+	public function getCallCode(VariableNameContainerInterface $vars, $matches_var)
 	{
-		$env_var    = reset($params_vars);
-		$engine_var = $use_vars['engine'];
+		$env_var    = $vars->getEnvVar();
+		$engine_var = $vars->getEngineVar();
 		
 		$code = <<<EOF
 \$uri  = {$env_var}['web.route_params']['uri'];

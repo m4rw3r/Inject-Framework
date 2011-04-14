@@ -42,7 +42,7 @@ class GeneratorWrapper
 	{
 		$this->engine        = $engine;
 		$this->mapping_scope = new Generator\Scope();
-		$this->generator     = new Generator\CodeGenerator($this->engine);
+		$this->generator     = new Generator\CodeGenerator();
 		
 		$this->generator->registerDestinationHandlers(array(
 			'Inject\Web\Router\Generator\DestinationHandler\Controller',
@@ -51,9 +51,8 @@ class GeneratorWrapper
 			'Inject\Web\Router\Generator\DestinationHandler\Redirect'
 			));
 		
-		$this->generator->setClosureParameters('$env');
-		$this->generator->setUseVariables(array('engine_var' => '$engine', 'controller_var' => '$controllers'));
-		$this->generator->setPathParamsVar('$env[\'web.route_params\'] = ');
+		$this->generator->setVariableNameContainer(new VariableNameContainer());
+		
 		$this->generator->setFailCode('return array(404, array(\'X-Cascade\' => \'pass\'), \'\');');
 	}
 	

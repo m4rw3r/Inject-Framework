@@ -8,7 +8,8 @@
 namespace Inject\Web\Router\Generator;
 
 /**
- * 
+ * Handles the parsing of a Mapping's to() method and also the code generation
+ * for most of the code to match and execute the target destination.
  */
 abstract class DestinationHandler
 {
@@ -21,7 +22,10 @@ abstract class DestinationHandler
 	 * @param  mixed    The old to() value
 	 * @return DestinationHandlerInterface
 	 */
-	abstract public static function parseTo($new, Mapping $mapping, $old);
+	public static function parseTo($new, Mapping $mapping, $old)
+	{
+		throw new \Exception(sprintf('The method %s::parseTo has not been implemented.', get_called_class()));
+	}
 	
 	// ------------------------------------------------------------------------
 	
@@ -250,53 +254,55 @@ abstract class DestinationHandler
 	 * 
 	 * TODO: Document more thoroughly?
 	 * 
-	 * @param  string  Variable name of the Environment variable ($env)
+	 * @param
 	 * @param  string  Variable the preg captures should be placed in, no need to
 	 *                 consider existing keys, this variable will be merged into
 	 *                 another anyway
-	 * @param  array   Array containing variables passed into the routing closure
-	 *                 via use()
 	 * @return array(string)  Array of condition strings, to be inserted into if():s
 	 */
-	public function getConditions($match_var, $capture_dest_array, array $use_variables)
+	public function getConditions(VariableNameContainerInterface $vars, $capture_dest_array)
 	{
 		$conds  = array();
 		$tokens = $this->tokenizer->getTokens();
+		$path   = $vars->getPathVariable();
 		
 		if(count($tokens) == 1 && $tokens[0][0] == Tokenizer::LITERAL)
 		{
 			if(preg_match('/^[^a-zA-Z]$/', $tokens[0][1]))
 			{
-				$conds[] = "{$match_var}['PATH_INFO'] == ".var_export($tokens[0][1], true);
+				$conds[] = "$path == ".var_export($tokens[0][1], true);
 			}
 			else
 			{
-				$conds[] = "strtolower({$match_var}['PATH_INFO']) == ".var_export(strtolower($tokens[0][1]), true);
+				// TODO: How to prevent multiple strtolower()s?
+				$conds[] = "strtolower($path) == ".var_export(strtolower($tokens[0][1]), true);
 			}
 		}
 		else
 		{
 			if($tokens[0][0] == Tokenizer::LITERAL && $tokens[0][1] != '/')
 			{
-				$conds[] = "stripos({$match_var}['PATH_INFO'], ".var_export($tokens[0][1], true).") === 0";
+				$conds[] = "stripos($path, ".var_export($tokens[0][1], true).") === 0";
 			}
 			
-			$conds[] = 'preg_match('.var_export($this->createRegex($this->tokenizer->getTokens(), $this->regex_fragments), true).", {$match_var}['PATH_INFO'], $capture_dest_array)";
+			$conds[] = 'preg_match('.var_export($this->createRegex($this->tokenizer->getTokens(), $this->regex_fragments), true).", $path, $capture_dest_array)";
 		}
 		
 		// PATH_INFO first, then the other constraints
 		foreach($this->constraints as $variable => $pattern)
 		{
-			$cond = "isset({$match_var}[".var_export($variable, true)."]) && ";
+			$cond = $vars->getIssetParamCode($variable);
+			
+			empty($cond) OR $cond .=' && ';
 			
 			if(@preg_match($pattern, '') !== false)
 			{
 				// Regex compiles
-				$cond .= "preg_match(".var_export($pattern, true).", {$match_var}[".var_export($variable, true)."], $capture_dest_array)";
+				$cond .= "preg_match(".var_export($pattern, true).", ".$vars->getParamCode($variable).", $capture_dest_array)";
 			}
 			else
 			{
-				$cond .= "{$match_var}[".var_export($variable, true)."] === ".var_export($pattern, true);
+				$cond .= $vars->getParamCode($variable).' === '.var_export($pattern, true);
 			}
 			
 			$conds[] = $cond;
@@ -311,7 +317,7 @@ abstract class DestinationHandler
 	 * Validates the settings supplied on the Mapping object, check with the supplied params
 	 * if controllers exist etc. , run after prepare() but before compile().
 	 * 
-	 * @param  array(mixed)
+	 * @param  array(mixed)  Array of passed parameters from CodeGenerator
 	 * @return void
 	 */
 	abstract public function validate(array $validation_params);
@@ -328,7 +334,7 @@ abstract class DestinationHandler
 	 * @param  string  The variable containing a hash with short_controller_name => class_name
 	 * @return string
 	 */
-	abstract public function getCallCode(array $params_var, array $use_variables_var, $matches_var);
+	abstract public function getCallCode(VariableNameContainerInterface $variable_names, $matches_var);
 }
 
 

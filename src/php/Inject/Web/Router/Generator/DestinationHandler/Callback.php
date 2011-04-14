@@ -11,6 +11,7 @@ use \Inject\Core\Engine;
 
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\DestinationHandler;
+use \Inject\Web\Router\Generator\VariableNameContainerInterface;
 
 /**
  * 
@@ -96,9 +97,9 @@ class Callback extends DestinationHandler
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
+	public function getCallCode(VariableNameContainerInterface $vars, $matches_var)
 	{
-		$env_var = reset($params_vars);
+		$env_var = $vars->getEnvVar();
 		
 		return 'return call_user_func('.var_export($this->callback, true).", $env_var);";
 	}

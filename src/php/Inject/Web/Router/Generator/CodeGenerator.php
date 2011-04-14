@@ -9,6 +9,26 @@ namespace Inject\Web\Router\Generator;
 
 /**
  * 
+ * Usage:
+ * <code>
+ * $mapping_scope = new RouterGenerator\Scope();
+ * $mapping_scope->loadFile(...) // or $mapping_scope->match(....
+ * 
+ * $generator = new CodeGenerator();
+ * $generator->registerDestinationHandlers(array(
+ *     'Some\DestinationHandler'
+ *     // ...
+ *     ));
+ * 
+ * // Add a concrete implementation of the interface
+ * $generator->setVariableNameContainer(new ConcreteImplementation());
+ * $generator->setFailCode('return "FAILURE!";');
+ * 
+ * $generator->compileDefinitions($mapping_scope->getDefinitions() /*,
+ *      optional array with extra params to the destination handlers /);
+ * 
+ * $code = '$some_var = '.$generator->generateRouterCode().';';
+ * </code>
  */
 class CodeGenerator
 {
@@ -55,6 +75,14 @@ class CodeGenerator
 	 */
 	protected $definitions = array();
 	
+	/**
+	 * An object returning variable names for the different variables used
+	 * in the router.
+	 * 
+	 * @var \Inject\Web\Router\Generator\VariableNameContainerInterface
+	 */
+	protected $vars;
+	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -86,45 +114,23 @@ class CodeGenerator
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the container object containing logic on how to construct variablenames.
 	 * 
-	 * 
-	 * @return 
+	 * @param  VariableNameContainerInterface
+	 * @return void
 	 */
-	public function setClosureParameters($params)
+	public function setVariableNameContainer(VariableNameContainerInterface $container)
 	{
-		$this->params = (Array) $params;
+		$this->vars = $container;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Sets the code stub to be run when the routing fails.
 	 * 
-	 * 
-	 * @return 
-	 */
-	public function setUseVariables($vars)
-	{
-		$this->use_variables = (Array) $vars;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
-	 */
-	public function setPathParamsVar($var)
-	{
-		$this->path_params_var = $var;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * 
-	 * 
-	 * @return 
+	 * @param  string
+	 * @return void
 	 */
 	public function setFailCode($code)
 	{
@@ -182,7 +188,7 @@ class CodeGenerator
 	{
 		$tree = $this->constructRouteTree($this->definitions);
 		
-		return 'function('.implode(', ', $this->params).') use('.implode(', ', $this->use_variables).')
+		return 'function('.implode(', ', $this->vars->getClosureParamsList()).') use('.implode(', ', $this->vars->getClosureUseList()).')
 {
 	$matches = array();
 
@@ -210,7 +216,7 @@ class CodeGenerator
 		{
 			$current = $tree;
 			
-			$conditions = $def->getConditions(reset($this->params), '$match', $this->use_variables);
+			$conditions = $def->getConditions($this->vars, '$match');
 			
 			foreach($conditions as $cond)
 			{
@@ -245,7 +251,7 @@ class CodeGenerator
 	 */
 	public function createRunCode(DestinationHandler $handler)
 	{
-		$code = $this->path_params_var.'$merged = ';
+		$code = '$merged = ';
 		
 		if( ! count($handler->getCaptureIntersect()))
 		{
@@ -253,10 +259,12 @@ class CodeGenerator
 		}
 		else
 		{
-			$code .= 'array_intersect_key(array_merge('.var_export($handler->getOptions(), true).', array_reduce($matches, \'array_merge\', array())), '.var_export($handler->getCaptureIntersect(), true).');';
+			$code .= 'array_intersect_key(array_merge('.var_export($handler->getOptions(), true).', array_reduce($matches, \'array_merge\', array())), '.var_export($handler->getCaptureIntersect(), true).')';
 		}
 		
-		$code .= "\n".$handler->getCallCode($this->params, $this->use_variables, '$merged');
+		$code = $this->vars->wrapInPathParamsVarAssignment($code);
+		
+		$code .= "\n".$handler->getCallCode($this->vars, '$merged');
 		
 		return $code;
 	}

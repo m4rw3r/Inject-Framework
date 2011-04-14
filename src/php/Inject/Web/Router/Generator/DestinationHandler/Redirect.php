@@ -12,6 +12,7 @@ use \Inject\Core\Engine as CoreEngine;
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Redirection;
 use \Inject\Web\Router\Generator\DestinationHandler;
+use \Inject\Web\Router\Generator\VariableNameContainerInterface;
 
 /**
  * 
@@ -70,9 +71,9 @@ class Redirect extends DestinationHandler
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
+	public function getCallCode(VariableNameContainerInterface $vars, $matches_var)
 	{
-		return $this->redirect->getCallbackCode(reset($params_vars));
+		return $this->redirect->getCallbackCode($vars->getEnvVar());
 	}
 }
 
