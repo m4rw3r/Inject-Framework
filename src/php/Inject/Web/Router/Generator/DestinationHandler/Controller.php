@@ -9,12 +9,12 @@ namespace Inject\Web\Router\Generator\DestinationHandler;
 
 use \Inject\Core\Engine;
 use \Inject\Web\Router\Generator\Mapping;
-use \Inject\Web\Router\Generator\DestinationHandlerInterface;
+use \Inject\Web\Router\Generator\DestinationHandler;
 
 /**
  * 
  */
-class Controller extends Base implements DestinationHandlerInterface
+class Controller extends DestinationHandler
 {
 	/**
 	 * Will match on null, "controller#action", "controller#" and "#action".
@@ -73,7 +73,7 @@ class Controller extends Base implements DestinationHandlerInterface
 	 * 
 	 * @var string|null
 	 */
-	protected $action = 'index';
+	protected $action = null;
 	
 	// ------------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ class Controller extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function validate(Engine $engine)
+	public function validate(array $validation_params)
 	{
 		if(empty($this->controller))
 		{
@@ -114,11 +114,11 @@ class Controller extends Base implements DestinationHandlerInterface
 			}
 			
 			// Build a regex so the path fails faster:
-			empty($this->regex_fragments['controller']) && $this->regex_fragments['controller'] = implode('|', array_map('preg_quote', array_keys($engine->getAvailableControllers())));
+			empty($this->regex_fragments['controller']) && $this->regex_fragments['controller'] = implode('|', array_map('preg_quote', array_keys($validation_params['engine']->getAvailableControllers())));
 		}
 		else
 		{
-			$this->controller = $this->translateShortControllerName($engine, $this->controller);
+			$this->controller = $this->translateShortControllerName($validation_params['engine'], $this->controller);
 		}
 	}
 	
@@ -151,9 +151,11 @@ class Controller extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
+	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
 	{
-		$action = var_export($this->action, true);
+		$env_var    = reset($params_vars);
+		$engine_var = $use_vars['engine_var'];
+		$action     = var_export($this->action, true);
 		
 		if(empty($this->controller))
 		{

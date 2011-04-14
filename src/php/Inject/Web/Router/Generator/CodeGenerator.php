@@ -7,97 +7,189 @@
 
 namespace Inject\Web\Router\Generator;
 
-use \Inject\Core\Engine;
-
 /**
  * 
  */
 class CodeGenerator
 {
 	/**
-	 * The engine sent to DestinationHandlers to determine controllers etc.
+	 * A list of parameter variables to be set as the parameter list of the
+	 * generated closure, the first one is the only one used for matching.
 	 * 
-	 * @var \Inject\Core\Engine
+	 * @var array(string)
 	 */
-	protected $engine;
+	protected $params = array();
+	
+	/**
+	 * A list of variables to be put in the Closure's use() statement.
+	 * 
+	 * @var array(string)
+	 */
+	protected $use_variables = array();
+	
+	/**
+	 * The path parameter set code, needs equal sign on end (can be empty though).
+	 * 
+	 * @var string
+	 */
+	protected $path_params_var = '';
+	
+	/**
+	 * The code to run if the routing fails.
+	 * 
+	 * @var string
+	 */
+	protected $fail_code = 'return false;';
+	
+	/**
+	 * List of associated DestinationHandlerInterface classes.
+	 * 
+	 * @var array(string)
+	 */
+	protected $dest_handlers = array();
+	
+	/**
+	 * A list of compiled definitions.
+	 * 
+	 * @var array
+	 */
+	protected $definitions = array();
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * @param  \Inject\Core\Engine
-	 */
-	public function __construct(Engine $engine)
-	{
-		$this->engine = $engine;
-	}
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Generates the routing code, to be put in a cache file or eval()'d to get
-	 * the route closure and the reverse routing closure list.
+	 * Registers a specific destination handler class which will generate code
+	 * for routing based on the Mapping objects created by the user.
 	 * 
-	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
-	 * @return string
+	 * @param  string  Class implementing Inject\Web\Router\Generator\DestinationHandlerInterface
+	 * @return void
 	 */
-	public function generateCode(array $definitions)
+	public function registerDestinationHandlers($class)
 	{
-		$tree = $this->constructRouteTree($definitions);
-		
-		// TODO: How to detect match conflicts? ie. routes which will never match because another always match instead
-		// TODO: How to do with route_parameters "leaking" from one regex to the next?
-		// If you have routes 1 and 2, 1 has a regex and a match vs REQUEST_METHOD,
-		// 2 has only a regex, generated structure makes 1's regex match first and then
-		// it has a nested if for the REQUEST_METHOD, if the regexes for 1 and 2 are similar
-		// enough (so 1 and 2 matches on specific urls), then it might match 1 and put
-		// its parameters in the $matches var, then fail on the REQUEST_METHOD match
-		// and proceed and match regex 2, which might not match fully, but has a named capture
-		// with the same name as one in regex 1, then that match in regex 1 might not be
-		// overwritten with "" as it might not have come that far => faulty parameters
-		$code = '$controllers = '.var_export($this->engine->getAvailableControllers(), true).';
-$router = function($env) use($engine, $controllers)
-{
-	$matches = array();
-	
-'.$this->indentCode($this->constructIfTree($tree)).'
-	
-	return array(404, array(\'X-Cascade\' => \'pass\'), \'\');
-};';
-		$code .= "\n\n\$reverse = ".$this->createReverseRouter($definitions);
-		
-		$code .= "\n\nreturn array(\$router, \$reverse);";
-		
-		return $code;
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Creates a PHP code array containing closures which will each create the
-	 * URI for their respective keys in the array.
-	 * 
-	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
-	 * @return string
-	 */
-	public function createReverseRouter(array $definitions)
-	{
-		$code = "array(\n\t";
-		
-		$uris = array();
-		
-		foreach($definitions as $def)
+		foreach((Array)$class as $klass)
 		{
-			if($def->getName())
+			$ref = new \ReflectionClass($klass);
+			
+			if($ref->isSubclassOf('Inject\Web\Router\Generator\DestinationHandler'))
 			{
-				$uris[] = var_export($def->getName(), true).' => function($options)
-	{
-'.$this->indentCode('return '.$this->createUriAssembler($def->getTokens()).';', 2).'
-	}';
+				// Only allow a single instance per class
+				in_array($klass, $this->dest_handlers) OR $this->dest_handlers[] = $klass;
+			}
+			else
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('The class %s is not a valid route destination handler, it must implement \Inject\Web\Route\Generator\DestinationHandler', $klass));
 			}
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setClosureParameters($params)
+	{
+		$this->params = (Array) $params;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setUseVariables($vars)
+	{
+		$this->use_variables = (Array) $vars;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setPathParamsVar($var)
+	{
+		$this->path_params_var = $var;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * 
+	 * 
+	 * @return 
+	 */
+	public function setFailCode($code)
+	{
+		$this->fail_code = $code;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Takes a list of Mapping objects and compiles them and stores internally.
+	 * 
+	 * @param  array(\Inject\Web\Router\Generator\Mapping)
+	 * @return void
+	 */
+	public function compileDefinitions(array $definitions, array $validation_params = array())
+	{
+		foreach($definitions as $def)
+		{
+			$handler = null;
+			
+			foreach($def->getToArray() as $to_val)
+			{
+				foreach($this->dest_handlers as $handler_class)
+				{
+					if($tmp = $handler_class::parseTo($to_val, $def, $handler))
+					{
+						$handler = $tmp;
+					}
+				}
+			}
+			
+			if( ! $handler)
+			{
+				// TODO: Exception
+				throw new \Exception(sprintf('The route %s does not have a compatible to() value.', $def->getPathPattern()));
+			}
+			
+			// Compile the contents of the DestinationHandlers
+			$handler->prepare();
+			$handler->validate($validation_params);
+			$handler->compile();
+			
+			$this->definitions[] = $handler;
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Generates router code for the compiled mappings.
+	 * 
+	 * @return 
+	 */
+	public function generateRouterCode()
+	{
+		$tree = $this->constructRouteTree($this->definitions);
 		
-		$code .= implode(",\n\t", $uris)."\n);";
-		
-		return $code;
+		return 'function('.implode(', ', $this->params).') use('.implode(', ', $this->use_variables).')
+{
+	$matches = array();
+
+'.self::indentCode($tree->createCode()).'
+
+	'.$this->fail_code.'
+}';
 	}
 	
 	// ------------------------------------------------------------------------
@@ -112,25 +204,31 @@ $router = function($env) use($engine, $controllers)
 	public function constructRouteTree(array $definitions)
 	{
 		// Routing tree
-		$tree = array();
+		$tree = new ConditionSegment();
 		
 		foreach($definitions as $def)
 		{
-			$current =& $tree;
+			$current = $tree;
 			
-			$conditions = $def->getConditions('$env', '$match', '$controllers');
+			$conditions = $def->getConditions(reset($this->params), '$match', $this->use_variables);
 			
 			foreach($conditions as $cond)
 			{
 				if( ! isset($current[$cond]))
 				{
-					$current[$cond] = array();
+					$current[$cond] = new ConditionSegment($cond);
 				}
 				
-				$current =& $current[$cond];
+				$current = $current[$cond];
 			}
 			
-			$current[] = $def;
+			if($current->hasDestination())
+			{
+				// TODO: Proper error
+				throw new \Exception('Conflicting conditions');
+			}
+			
+			$current->setDestination($this->createRunCode($def));
 		}
 		
 		return $tree;
@@ -139,80 +237,59 @@ $router = function($env) use($engine, $controllers)
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Creates a tree of If-constructs which will match parts of the $env and
-	 * automatically group the conditions by URI, REQUEST_METHOD, etc.
+	 * Creates code which will run a route, will put the matched route parameters
+	 * (if any) into $env['web.route_params'].
 	 * 
-	 * @param  array  A tree containing the routes and their conditions
-	 *         format: key = condition, value = DestinationHandler or a nested
-	 *                 array in this format, numeric keys are no conditions
+	 * @param  \Inject\Web\Router\Generator\DestinationHandler
 	 * @return string
 	 */
-	public function constructIfTree(array $tree)
+	public function createRunCode(DestinationHandler $handler)
 	{
-		$arr = array();
+		$code = $this->path_params_var.'$merged = ';
 		
-		foreach($tree as $condition => $data)
+		if( ! count($handler->getCaptureIntersect()))
 		{
-			if( ! is_array($data))
-			{
-				$code = $this->createRunCode($data);
-			}
-			elseif(is_array($data) && count($data) == 1 && isset($data[0]))
-			{
-				$code = $this->createRunCode($data[0]);
-			}
-			else
-			{
-				$code = $this->constructIfTree($data);
-			}
-			
-			$code = $this->indentCode($code);
-			
-			if( ! is_numeric($condition))
-			{
-				if(preg_match('/\bpreg_match\b/u', $condition))
-				{
-					$code = "\t".'$matches = array_merge($matches, $match);
-'.$code;
-				}
-				
-				$code = <<<EOF
-if($condition)
-{
-$code
-}
-EOF;
-			}
-			
-			$arr[] = $code;
+			$code .= var_export($handler->getOptions(), true).';';
+		}
+		else
+		{
+			$code .= 'array_intersect_key(array_merge('.var_export($handler->getOptions(), true).', array_reduce($matches, \'array_merge\', array())), '.var_export($handler->getCaptureIntersect(), true).');';
 		}
 		
-		return implode("\n\n", $arr);
+		$code .= "\n".$handler->getCallCode($this->params, $this->use_variables, '$merged');
+		
+		return $code;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Creates code which will run a route, will put the matched route parameters
-	 * (if any) into $env['web.route_params'].
+	 * Creates a PHP code array containing closures which will each create the
+	 * URI for their respective keys in the array.
 	 * 
-	 * @param  \Inject\Web\Router\Generator\DestinationHandlerInterface
+	 * TODO: Move to separate class
+	 * 
+	 * @param  array(\Inject\Web\Router\Generator\DestinationHandler)
 	 * @return string
 	 */
-	public function createRunCode(DestinationHandlerInterface $dh)
+	public function createReverseRouter()
 	{
-		$code = '$env[\'web.route_params\'] = ';
+		$code = "array(\n\t";
 		
-		if( ! count($dh->getCaptureIntersect()))
+		$uris = array();
+		
+		foreach($this->definitions as $def)
 		{
-			$code .= var_export($dh->getOptions(), true).';';
-		}
-		else
-		{
-			$code .= 'array_intersect_key(array_merge('.var_export($dh->getOptions(), true).', $matches), '.var_export($dh->getCaptureIntersect(), true).');';
+			if($def->getName())
+			{
+				$uris[] = var_export($def->getName(), true).' => function($options)
+	{
+'.self::indentCode('return '.$this->createUriAssembler($def->getTokens()).';', 2).'
+	}';
+			}
 		}
 		
-		$code .= "\n".$dh->getCallCode('$env', '$engine', '$matches', '$controller');
+		$code .= implode(",\n\t", $uris)."\n);";
 		
 		return $code;
 	}
@@ -222,6 +299,8 @@ EOF;
 	/**
 	 * Generates a one-liner generating the URI for the supplied tokens,
 	 * will return an array with the required keys if at least one is missing.
+	 * 
+	 * TODO: Move to separate class
 	 * 
 	 * @param  array   Tokens from the Tokenizer
 	 * @return string
@@ -352,7 +431,7 @@ EOF;
 	 * @param  string
 	 * @return string
 	 */
-	public function indentCode($code, $indent = 1)
+	public static function indentCode($code, $indent = 1)
 	{
 		$lines = explode("\n", $code);
 		

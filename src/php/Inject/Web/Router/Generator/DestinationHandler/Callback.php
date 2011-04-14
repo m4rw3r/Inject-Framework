@@ -10,12 +10,12 @@ namespace Inject\Web\Router\Generator\DestinationHandler;
 use \Inject\Core\Engine;
 
 use \Inject\Web\Router\Generator\Mapping;
-use \Inject\Web\Router\Generator\DestinationHandlerInterface;
+use \Inject\Web\Router\Generator\DestinationHandler;
 
 /**
  * 
  */
-class Callback extends Base implements DestinationHandlerInterface
+class Callback extends DestinationHandler
 {
 	/**
 	 * Matches on string callbacks, must be valid callbacks.
@@ -62,7 +62,7 @@ class Callback extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function validate(Engine $engine)
+	public function validate(array $validation_params)
 	{
 		try
 		{
@@ -96,8 +96,10 @@ class Callback extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
+	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
 	{
+		$env_var = reset($params_vars);
+		
 		return 'return call_user_func('.var_export($this->callback, true).", $env_var);";
 	}
 }

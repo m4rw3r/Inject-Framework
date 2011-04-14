@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\Generator;
 
-use \Inject\Core\Engine;
-
 /**
  * Base class creating routes, the routes are based on a template, default
  * route template is an empty template.
@@ -17,13 +15,6 @@ use \Inject\Core\Engine;
  */
 class Scope
 {
-	/**
-	 * The application engine.
-	 * 
-	 * @var \Inject\Core\Engine
-	 */
-	protected $engine;
-	
 	/**
 	 * Contains the template with the default options for the routes
 	 * created by this scope.
@@ -40,19 +31,39 @@ class Scope
 	protected $definitions = array();
 	
 	/**
-	 * @param  \Inject\Core\Engine  The engine instance which is responsible for
-	 *                              the controllers in the routes
 	 * @param  \Inject\Web\Router\Generator\Mapping  Initial template
 	 */
-	public function __construct(Engine $engine, $parent = null)
+	public function __construct($parent = null)
 	{
 		if( ! (is_object($parent) && $parent instanceof Mapping))
 		{
 			$parent = new Mapping();
 		}
 		
-		$this->engine = $engine;
 		$this->base   = clone $parent;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	/**
+	 * Attempts to load a route configuration file and parse its contents into
+	 * this Scope object.
+	 * 
+	 * @param  string
+	 * @return void
+	 */
+	public function loadFile($route_config)
+	{
+		if(file_exists($route_config))
+		{
+			// Load routes:
+			include $route_config;
+		}
+		else
+		{
+			// TODO: Exception
+			throw new \Exception(sprintf('Router generator cannot load the file %s.', $route_config));
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -185,7 +196,7 @@ class Scope
 	 */
 	public function scope()
 	{
-		$this->definitions[] = $s = new Scope($this->engine, $this->base);
+		$this->definitions[] = $s = new Scope($this->base);
 		
 		return $s;
 	}
@@ -223,7 +234,7 @@ class Scope
 	 */
 	public function resources($name, array $options = array())
 	{
-		$this->definitions[] = $r = new Resource($this->engine, $this->base, $name, $options);
+		$this->definitions[] = $r = new Resource($this->base, $name, $options);
 		
 		return $r;
 	}

@@ -44,7 +44,7 @@ class RouterEndpoint
 		}
 		elseif(file_exists($route_config))
 		{
-			$generator = new Router\Generator($engine);
+			$generator = new Router\GeneratorWrapper($engine);
 			$generator->loadFile($route_config);
 			
 			list($this->router, $this->named_routes) = $generator->getCompiledRoutes();

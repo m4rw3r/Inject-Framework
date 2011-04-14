@@ -11,12 +11,12 @@ use \Inject\Core\Engine as CoreEngine;
 
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Redirection;
-use \Inject\Web\Router\Generator\DestinationHandlerInterface;
+use \Inject\Web\Router\Generator\DestinationHandler;
 
 /**
  * 
  */
-class Redirect extends Base implements DestinationHandlerInterface
+class Redirect extends DestinationHandler
 {
 	/**
 	 * Matches on a Redirection object.
@@ -58,7 +58,7 @@ class Redirect extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function validate(CoreEngine $engine)
+	public function validate(array $validation_params)
 	{
 		$diff = array_diff($this->redirect->getRequiredCaptures(), $this->tokenizer->getRequiredCaptures());
 		
@@ -70,9 +70,9 @@ class Redirect extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
+	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
 	{
-		return $this->redirect->getCallbackCode($env_var);
+		return $this->redirect->getCallbackCode(reset($params_vars));
 	}
 }
 

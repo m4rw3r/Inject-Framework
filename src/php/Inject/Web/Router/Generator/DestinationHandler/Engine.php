@@ -11,12 +11,12 @@ use \Inject\Core\Engine as CoreEngine;
 
 use \Inject\Web\Router\Generator\Mapping;
 use \Inject\Web\Router\Generator\Tokenizer;
-use \Inject\Web\Router\Generator\DestinationHandlerInterface;
+use \Inject\Web\Router\Generator\DestinationHandler;
 
 /**
  * 
  */
-class Engine extends Base implements DestinationHandlerInterface
+class Engine extends DestinationHandler
 {
 	/**
 	 * Matches on class names, the class must be an instance of \Inject\Core\Engine
@@ -64,7 +64,7 @@ class Engine extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function validate(CoreEngine $engine)
+	public function validate(array $validation_params)
 	{
 		try
 		{
@@ -100,8 +100,11 @@ class Engine extends Base implements DestinationHandlerInterface
 	
 	// ------------------------------------------------------------------------
 	
-	public function getCallCode($env_var, $engine_var, $matches_var, $controller_var)
+	public function getCallCode(array $params_vars, array $use_vars, $matches_var)
 	{
+		$env_var    = reset($params_vars);
+		$engine_var = $use_vars['engine'];
+		
 		$code = <<<EOF
 \$uri  = {$env_var}['web.route_params']['uri'];
 \$path = empty(\$uri) ? {$env_var}['PATH_INFO'] : substr({$env_var}['PATH_INFO'], - strlen(\$uri));

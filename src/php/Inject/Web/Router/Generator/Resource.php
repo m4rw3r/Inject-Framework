@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\Generator;
 
-use \Inject\Core\Engine;
-
 /**
  * Object returned by the router's resource() method, used to represent a route
  * before it is compiled and/or cached.
@@ -27,9 +25,9 @@ class Resource extends Scope
 	 * 
 	 * @return 
 	 */
-	public function __construct(Engine $engine, $parent, $name, array $options = array())
+	public function __construct($parent, $name, array $options = array())
 	{
-		parent::__construct($engine, $parent);
+		parent::__construct($parent);
 		
 		// TODO: Check default route names
 		// TODO: Make the route names customizable
