@@ -255,7 +255,7 @@ class CodeGenerator
 		
 		if( ! count($handler->getCaptureIntersect()))
 		{
-			$code .= var_export($handler->getOptions(), true).';';
+			$code .= var_export($handler->getOptions(), true);
 		}
 		else
 		{
