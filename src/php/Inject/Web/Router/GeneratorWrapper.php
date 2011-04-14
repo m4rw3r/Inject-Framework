@@ -9,6 +9,8 @@ namespace Inject\Web\Router;
 
 use \Inject\Core\Engine;
 
+use \Inject\RouterGenerator;
+
 /**
  * 
  */
@@ -41,14 +43,14 @@ class GeneratorWrapper
 	public function __construct(Engine $engine)
 	{
 		$this->engine        = $engine;
-		$this->mapping_scope = new Generator\Scope();
-		$this->generator     = new Generator\CodeGenerator();
+		$this->mapping_scope = new RouterGenerator\Scope();
+		$this->generator     = new RouterGenerator\CodeGenerator();
 		
 		$this->generator->registerDestinationHandlers(array(
-			'Inject\Web\Router\Generator\DestinationHandler\Controller',
-			'Inject\Web\Router\Generator\DestinationHandler\Callback',
-			'Inject\Web\Router\Generator\DestinationHandler\Engine',
-			'Inject\Web\Router\Generator\DestinationHandler\Redirect'
+			'Inject\Web\Router\DestinationHandler\Controller',
+			'Inject\Web\Router\DestinationHandler\Callback',
+			'Inject\Web\Router\DestinationHandler\Engine',
+			'Inject\Web\Router\DestinationHandler\Redirect'
 			));
 		
 		$this->generator->setVariableNameContainer(new VariableNameContainer());

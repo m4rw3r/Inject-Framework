@@ -7,10 +7,12 @@
 
 namespace Inject\Web\Router;
 
+use \Inject\RouterGenerator\VariableNameContainerInterface;
+
 /**
  * 
  */
-class VariableNameContainer implements Generator\VariableNameContainerInterface
+class VariableNameContainer implements VariableNameContainerInterface
 {
 	public function getPathVariable()
 	{

@@ -5,12 +5,13 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator\DestinationHandler;
+namespace Inject\Web\Router\DestinationHandler;
 
 use \Inject\Core\Engine;
-use \Inject\Web\Router\Generator\Mapping;
-use \Inject\Web\Router\Generator\DestinationHandler;
-use \Inject\Web\Router\Generator\VariableNameContainerInterface;
+
+use \Inject\RouterGenerator\Mapping;
+use \Inject\RouterGenerator\DestinationHandler;
+use \Inject\RouterGenerator\VariableNameContainerInterface;
 
 /**
  * 
@@ -21,7 +22,7 @@ class Controller extends DestinationHandler
 	 * Will match on null, "controller#action", "controller#" and "#action".
 	 * 
 	 * @param  mixed
-	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  \Inject\RouterGenerator\Mapping
 	 * @param  mixed
 	 * @return DestinationHandlerInterface|false
 	 */

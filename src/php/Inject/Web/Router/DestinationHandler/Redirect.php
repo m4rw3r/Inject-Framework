@@ -5,14 +5,14 @@
  * All rights reserved.
  */
 
-namespace Inject\Web\Router\Generator\DestinationHandler;
+namespace Inject\Web\Router\DestinationHandler;
 
 use \Inject\Core\Engine as CoreEngine;
 
-use \Inject\Web\Router\Generator\Mapping;
-use \Inject\Web\Router\Generator\Redirection;
-use \Inject\Web\Router\Generator\DestinationHandler;
-use \Inject\Web\Router\Generator\VariableNameContainerInterface;
+use \Inject\RouterGenerator\Mapping;
+use \Inject\RouterGenerator\Redirection;
+use \Inject\RouterGenerator\DestinationHandler;
+use \Inject\RouterGenerator\VariableNameContainerInterface;
 
 /**
  * 
@@ -23,7 +23,7 @@ class Redirect extends DestinationHandler
 	 * Matches on a Redirection object.
 	 * 
 	 * @param  mixed
-	 * @param  \Inject\Web\Router\Generator\Mapping
+	 * @param  \Inject\RouterGenerator\Mapping
 	 * @param  mixed
 	 * @return DestinationHandlerInterface|false
 	 */
@@ -49,7 +49,7 @@ class Redirect extends DestinationHandler
 	/**
 	 * Sets the redirection object to use.
 	 * 
-	 * @param  \Inject\Web\Router\Generator\Redirection
+	 * @param  \Inject\RouterGenerator\Redirection
 	 * @return void
 	 */
 	public function setRedirect($value)
