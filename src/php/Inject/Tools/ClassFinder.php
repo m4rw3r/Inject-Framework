@@ -26,7 +26,7 @@ namespace Inject\Tools;
  * catch(\Inject\Tools\ClassConflictException $e)
  * {
  *     // Take note of the error:
- *     echo "Conflicting classes!"
+ *     echo "Conflicting classes!";
  *     
  *     // Let the operation continue, but might contain the wrong class-file:
  *     $classes = $finder->getClassFiles();

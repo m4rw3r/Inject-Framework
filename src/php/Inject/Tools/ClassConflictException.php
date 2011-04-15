@@ -40,13 +40,13 @@ class ClassConflictException extends \RuntimeException implements \Inject\Except
 		// TODO: Is this threshold good?
 		if(strlen($classlist) > 40)
 		{
-			$classlist = substr($classlist, 0, 60).'...';
+			$classlist = substr($classlist, 0, 40).'...';
 		}
 		
 		// TODO: Is this threshold good?
 		if(strlen($filelist) > 40)
 		{
-			$filelist = substr($filelist, 0, 60).'...';
+			$filelist = substr($filelist, 0, 40).'...';
 		}
 		
 		parent::__construct('ClassFinder: Found conflicting class(es): '.$classlist.' in files: '.$filelist);
