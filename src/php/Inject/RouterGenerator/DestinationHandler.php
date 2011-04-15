@@ -328,10 +328,9 @@ abstract class DestinationHandler
 	 * Returns the code to be run which will return the response from the attached destination,
 	 * run after prepare().
 	 * 
-	 * @param  string  The variable name of the $env var  (contains Environment hash)
-	 * @param  string  The variable name of the $engine var (contains Engine instance)
+	 * @param  string  The variable name container, use this to generate appropriate
+	 *                 variable names in the generated code
 	 * @param  string  The variable containing the regular expression matches from preg_match
-	 * @param  string  The variable containing a hash with short_controller_name => class_name
 	 * @return string
 	 */
 	abstract public function getCallCode(VariableNameContainerInterface $variable_names, $matches_var);

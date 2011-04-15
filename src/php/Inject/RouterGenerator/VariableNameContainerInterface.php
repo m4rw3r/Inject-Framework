@@ -38,6 +38,22 @@ interface VariableNameContainerInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates the return code stub for a match, $statement is the generated
+	 * statement (Without ending semicolon) which will contain/generate the return value.
+	 * 
+	 * Usually this is only:
+	 * <code>
+	 * return "return $statement;";
+	 * </code>
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+	public function wrapInReturnCodeStub($statement);
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Returns a list of parameters to be put in the parameter list of the closure.
 	 * 
 	 * @return array(string)

@@ -54,9 +54,7 @@ class ConditionSegment implements \ArrayAccess
 		{
 			if(preg_match('/\bpreg_match\(/u', $this->condition))
 			{
-				$ret = "\t\$matches[] = \$match;\n$ret";
-				
-				empty($this->destination) && $ret .= "\n\tarray_pop(\$matches);";
+				$ret = "\t\$matches[] = \$match;\n$ret\n\tarray_pop(\$matches);";
 			}
 			
 			$ret = "if({$this->condition})\n{\n{$ret}\n}";

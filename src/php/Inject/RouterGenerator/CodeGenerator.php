@@ -192,7 +192,7 @@ class CodeGenerator
 {
 	$matches = array();
 
-'.self::indentCode($tree->createCode()).'
+'.$tree->createCode().'
 
 	'.$this->fail_code.'
 }';
@@ -263,6 +263,8 @@ class CodeGenerator
 		}
 		
 		$code = $this->vars->wrapInPathParamsVarAssignment($code);
+		
+		$code .= "\n";
 		
 		$code .= "\n".$handler->getCallCode($this->vars, '$merged');
 		
