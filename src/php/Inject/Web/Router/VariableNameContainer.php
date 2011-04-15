@@ -28,6 +28,18 @@ class VariableNameContainer implements VariableNameContainerInterface
 	
 	// ------------------------------------------------------------------------
 	
+	public function wrapInReturnCodeStub($statement)
+	{
+		return '$ret = '.$statement.';
+
+if(empty($ret[1][\'X-Cascade\']) OR $ret[1][\'X-Cascade\'] !== \'pass\')
+{
+	return $ret;
+}';
+	}
+	
+	// ------------------------------------------------------------------------
+	
 	public function getClosureParamsList()
 	{
 		return array('$env');

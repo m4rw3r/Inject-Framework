@@ -107,7 +107,7 @@ class Engine extends DestinationHandler
 		$engine_var = $vars->getEngineVar();
 		
 		$code = <<<EOF
-\$uri  = {$env_var}['web.route_params']['uri'];
+\$uri  = {$matches_var}['uri'];
 \$path = empty(\$uri) ? {$env_var}['PATH_INFO'] : substr({$env_var}['PATH_INFO'], - strlen(\$uri));
 
 // Move one step deeper in the directory structure
@@ -116,10 +116,9 @@ class Engine extends DestinationHandler
 {$env_var}['PATH_INFO']     = '/'.trim(\$uri, '/');
 {$env_var}['web.old_route_params'] = {$env_var}['web.route_params'];
 
-return $this->engine::instance()->stack()->run($env_var);
 EOF;
 		
-		return $code;
+		return $code.$vars->wrapInReturnCodeStub("$this->engine::instance()->stack()->run($env_var)");
 	}
 }
 

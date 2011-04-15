@@ -157,31 +157,36 @@ class Controller extends DestinationHandler
 	{
 		$env_var    = $vars->getEnvVar();
 		$engine_var = $vars->getEngineVar();
-		$action     = var_export($this->action, true);
+		$cont_list  = $vars->getAvailableControllersVar();
+		$action     = var_export(empty($this->action) ? $this->options['action'] : $this->action, true);
+		$pre_code   = '';
 		
 		if(empty($this->controller))
 		{
-			$code = <<<EOF
+			$pre_code = <<<EOF
 // No need to check if the index exists, the regex only matches available controllers
-\$class_name = {$controller_var}[strtolower({$matches_var}['controller'])];
+\$class_name = {$cont_list}[strtolower({$matches_var}['controller'])];
 
-return \$class_name::stack($engine_var, empty({$env_var}['web.route_params']['action']) ? $action : {$env_var}['web.route_params']['action'])->run($env_var);
+EOF;
+			
+			$code = <<<EOF
+\$class_name::stack($engine_var, empty({$matches_var}['action']) ? $action : {$matches_var}['action'])->run($env_var)
 EOF;
 		}
 		elseif(empty($this->action))
 		{
 			$code = <<<EOF
-return $this->controller::stack($engine_var, empty({$env_var}['web.route_params']['action']) ? $action : {$env_var}['web.route_params']['action'])->run($env_var);
+$this->controller::stack($engine_var, empty({$matches_var}['action']) ? $action : {$matches_var}['action'])->run($env_var)
 EOF;
 		}
 		else
 		{
 			$code = <<<EOF
-return $this->controller::stack($engine_var, $action)->run($env_var);
+$this->controller::stack($engine_var, $action)->run($env_var)
 EOF;
 		}
 		
-		return $code;
+		return $pre_code.$vars->wrapInReturnCodeStub($code);
 	}
 }
 

@@ -101,7 +101,7 @@ class Callback extends DestinationHandler
 	{
 		$env_var = $vars->getEnvVar();
 		
-		return 'return call_user_func('.var_export($this->callback, true).", $env_var);";
+		return $vars->wrapInReturnCodeStub('call_user_func('.var_export($this->callback, true).", $env_var)");
 	}
 }
 
