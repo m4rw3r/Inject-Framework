@@ -105,8 +105,6 @@ abstract class Engine
 	 */
 	protected function __construct()
 	{
-		self::$engines[]   = $this;
-		
 		$this->engine_root = $this->registerRootDir();
 		$this->paths       = $this->initPaths();
 		$this->config      = $this->initConfig();
