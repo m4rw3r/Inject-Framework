@@ -31,15 +31,11 @@ class Scope
 	protected $definitions = array();
 	
 	/**
-	 * @param  \Inject\RouterGenerator\Mapping  Initial template
+	 * @param  \Inject\RouterGenerator\Mapping  Initial template, usually just
+	 *         an unmodified instance of Mapping.
 	 */
-	public function __construct($parent = null)
+	public function __construct(Mapping $parent)
 	{
-		if( ! (is_object($parent) && $parent instanceof Mapping))
-		{
-			$parent = new Mapping();
-		}
-		
 		$this->base   = clone $parent;
 	}
 	

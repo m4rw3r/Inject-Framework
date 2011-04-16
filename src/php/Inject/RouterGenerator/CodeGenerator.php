@@ -11,7 +11,7 @@ namespace Inject\RouterGenerator;
  * 
  * Usage:
  * <code>
- * $mapping_scope = new RouterGenerator\Scope();
+ * $mapping_scope = new RouterGenerator\Scope(new RouterGenerator\Mapping());
  * $mapping_scope->loadFile(...) // or $mapping_scope->match(....
  * 
  * $generator = new CodeGenerator();
