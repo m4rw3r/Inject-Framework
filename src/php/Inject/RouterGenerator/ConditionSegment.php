@@ -8,22 +8,37 @@
 namespace Inject\RouterGenerator;
 
 /**
- * 
+ * Represents an if() condition in the generated router code.
  */
 class ConditionSegment implements \ArrayAccess
 {
+	/**
+	 * The raw PHP code for the condition.
+	 * 
+	 * @var string
+	 */
 	protected $condition;
 	
+	/**
+	 * The raw PHP destination code, run if this ConditionSegment matches and
+	 * no sub-segments matches.
+	 * 
+	 * @var string
+	 */
 	protected $destination;
 	
+	/**
+	 * A list of sub-segments ConditionSegment:s, will be nested inside this
+	 * if() and before this segment's destination, if any.
+	 * 
+	 * @var array(ConditionSegment)
+	 */
 	protected $children = array();
 	
 	// ------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * 
-	 * @return 
+	 * @param  string  The raw PHP code for the condition inside the if()
 	 */
 	public function __construct($condition = null)
 	{
@@ -33,7 +48,7 @@ class ConditionSegment implements \ArrayAccess
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Creates the code for this condition.
+	 * Creates the PHP code for this condition.
 	 * 
 	 * @return string
 	 */
@@ -65,6 +80,12 @@ class ConditionSegment implements \ArrayAccess
 	
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * Sets the destination code for this condition.
+	 * 
+	 * @param  string  Raw PHP code to be run if this condition matches and no
+	 *                 sub-conditions does
+	 */
 	public function setDestination($dest)
 	{
 		$this->destination = $dest;
@@ -96,6 +117,11 @@ class ConditionSegment implements \ArrayAccess
 	
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * Accessor to interact with sub-segments.
+	 * 
+	 * @return boolean
+	 */
 	public function offsetExists($key)
 	{
 		return isset($this->children[$key]);
@@ -103,6 +129,11 @@ class ConditionSegment implements \ArrayAccess
 	
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * Accessor to interact with sub-segments.
+	 * 
+	 * @return ConditionSegment
+	 */
 	public function offsetGet($key)
 	{
 		return $this->children[$key];
@@ -110,6 +141,13 @@ class ConditionSegment implements \ArrayAccess
 	
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * Accessor to interact with sub-segments.
+	 * 
+	 * @param  string
+	 * @param  ConditionSegment
+	 * @return void
+	 */
 	public function offsetSet($key, $value)
 	{
 		if( ! $value instanceof ConditionSegment)

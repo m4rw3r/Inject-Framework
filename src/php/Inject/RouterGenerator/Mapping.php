@@ -181,6 +181,11 @@ class Mapping
 	/**
 	 * Sets the destination for this route.
 	 * 
+	 * The destination is matched by the DestinationHandlers which are registered
+	 * with the CodeGenerator instance.
+	 * 
+	 * TODO: Move PHPdoc and elaborate on how DestinationHandlers work
+	 * 
 	 * Possible destinations:
 	 * 
 	 * - Controller and action:
