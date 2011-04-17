@@ -203,8 +203,6 @@ abstract class DestinationHandler
 		});
 		
 		$this->capture_intersect = array_flip(array_merge($this->mapping->getConstraintsCaptures(), $this->tokenizer->getCaptures()));
-		
-		$this->compiled = true;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -234,7 +232,6 @@ abstract class DestinationHandler
 					break;
 				
 				case Tokenizer::CAPTURE:
-					// Normal captures: \w+, _uri special capture: .*
 					$rule = '\w+';
 					
 					// Override the capture rule if constraint is present
@@ -265,7 +262,7 @@ abstract class DestinationHandler
 	
 	/**
 	 * Returns an array of PHP-code conditions in their order of importance all of
-	 * which must match for the route to match, run after prepare().
+	 * which must match for the route to match, run after compile().
 	 * 
 	 * TODO: Document more thoroughly?
 	 * 
@@ -352,5 +349,5 @@ abstract class DestinationHandler
 }
 
 
-/* End of file Base.php */
-/* Location: lib/Inject/Web/Router/Generator/Destination */
+/* End of file DestinationHandler.php */
+/* Location: lib/Inject/RouterGenerator */

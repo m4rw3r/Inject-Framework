@@ -33,28 +33,6 @@ namespace Inject\RouterGenerator;
 class CodeGenerator
 {
 	/**
-	 * A list of parameter variables to be set as the parameter list of the
-	 * generated closure, the first one is the only one used for matching.
-	 * 
-	 * @var array(string)
-	 */
-	protected $params = array();
-	
-	/**
-	 * A list of variables to be put in the Closure's use() statement.
-	 * 
-	 * @var array(string)
-	 */
-	protected $use_variables = array();
-	
-	/**
-	 * The path parameter set code, needs equal sign on end (can be empty though).
-	 * 
-	 * @var string
-	 */
-	protected $path_params_var = '';
-	
-	/**
 	 * The code to run if the routing fails.
 	 * 
 	 * @var string
@@ -282,7 +260,7 @@ class CodeGenerator
 	 * @param  array(\Inject\RouterGenerator\DestinationHandler)
 	 * @return string
 	 */
-	public function createReverseRouter()
+	public function generateReverseRouterCode()
 	{
 		$code = "array(\n\t";
 		

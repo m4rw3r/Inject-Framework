@@ -1,6 +1,6 @@
 <?php
 /*
- * Created by Martin Wernståhl on 2011-05-14.
+ * Created by Martin Wernståhl on 2011-04-14.
  * Copyright (c) 2011 Martin Wernståhl.
  * All rights reserved.
  */

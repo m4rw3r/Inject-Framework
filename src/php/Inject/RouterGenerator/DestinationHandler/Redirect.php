@@ -67,7 +67,9 @@ class Redirect extends DestinationHandler
 	public function validate(array $validation_params)
 	{
 		// Validate that we have all the needed parameters to be able to create the URL/URI
-		$diff = array_diff(array_merge($this->options, $this->redirect->getRequiredCaptures()), $this->tokenizer->getRequiredCaptures());
+		// All required parameters from the redirect must be either captured by the
+		// path pattern or contained in the options array (default data for the path pattern captures)
+		$diff = array_diff($this->redirect->getRequiredCaptures(), array_merge($this->tokenizer->getRequiredCaptures(), array_keys($this->options)));
 		
 		if( ! empty($diff))
 		{
