@@ -92,7 +92,7 @@ class GeneratorWrapper
 			$code = '$controllers = '.var_export($this->engine->getAvailableControllers(), true).';
 $router 	= '.$this->generator->generateRouterCode().';';
 			
-			$code .= "\n\n\$reverse = ".$this->generator->createReverseRouter();
+			$code .= "\n\n\$reverse = ".$this->generator->generateReverseRouterCode();
 			
 			$this->code = $code."\n\nreturn array(\$router, \$reverse);";
 		}
