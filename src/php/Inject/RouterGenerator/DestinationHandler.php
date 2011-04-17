@@ -181,9 +181,24 @@ abstract class DestinationHandler
 	{
 		// Make the longest matcher the first one, then it will usually be faster as
 		// the longer the match, the more likely it is to fail
-		// TODO: Sort so non-regex constraints will be ordered first
+		// Also sort so non-regex matches are fisrt, as they are faster to match
 		uasort($this->constraints, function($a, $b)
 		{
+			$amatch = @preg_match($a, '');
+			$bmatch = @preg_match($b, '');
+			
+			if( ! $amatch && $bmatch)
+			{
+				// $a not a regex, sort that before
+				return -1;
+			}
+			elseif($amatch && ! $bmatch)
+			{
+				// $b not a regex, sort that before
+				return 1;
+			}
+			
+			// Both regexes or both non-regex, normal sortion
 			return strlen($b) - strlen($a);
 		});
 		
