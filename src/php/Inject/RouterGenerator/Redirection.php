@@ -9,6 +9,12 @@ namespace Inject\RouterGenerator;
 
 /**
  * Object representing a route destination which results in a redirect.
+ * 
+ * Requires a DestinationHandler which handles this type of object and
+ * generates the appropriate response.
+ * 
+ * See Inject\RouterGenerator\DestinationHandler\Redirect for an example
+ * which redirects to specific URLs or a relative URI.
  */
 class Redirection
 {
@@ -78,33 +84,25 @@ class Redirection
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns a PHP code representation of the callback returned in getCallback(),
-	 * used for compiling the routes cache.
+	 * Returns the tokens from the tokenization of the redirect URI/URL pattern.
 	 * 
-	 * @return string
+	 * @return array(mixed, string)  List of tokens from Tokenizer
 	 */
-	public function getCallbackCode($env_var)
+	public function getTokens()
 	{
-		$path = array();
-		foreach($this->tokenizer->getTokens() as $tok)
-		{
-			switch($tok[0])
-			{
-				case Tokenizer::CAPTURE:
-					// PATH_INFO is not urlencoded, so no need to encode
-					$path[] = $env_var.'[\'web.route_params\'][\''.addcslashes($tok[1], '\'').']';
-					break;
-				case Tokenizer::LITERAL:
-					$path[] = '\''.addcslashes($tok[1], '\'').'\'';
-			}
-		}
-		
-		return '// TODO: How to inject class used for Request->getDefaultUrlOptions()?
-// TODO: Remove the lines below if the generated path is a full URL
-$req = new \Inject\Web\Request('.$env_var.');
-$url = \Inject\Web\Request::urlFor(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
+		return $this->tokenizer->getTokens();
+	}
+	
+	// ------------------------------------------------------------------------
 
-return array('.$this->redirect_code.', array(\'Location\' => $url), \'\');';
+	/**
+	 * Returns the HTTP code used by this redirect.
+	 * 
+	 * @return int
+	 */
+	public function getRedirectCode()
+	{
+		return $this->redirect_code;
 	}
 }
 
