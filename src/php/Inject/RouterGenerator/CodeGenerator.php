@@ -89,7 +89,7 @@ class CodeGenerator
 	 * Registers a specific destination handler class which will generate code
 	 * for routing based on the Mapping objects created by the user.
 	 * 
-	 * @param  string  Class implementing Inject\RouterGenerator\DestinationHandlerInterface
+	 * @param  string  Class extending Inject\RouterGenerator\DestinationHandler
 	 * @return void
 	 */
 	public function registerDestinationHandlers($class)
@@ -106,7 +106,7 @@ class CodeGenerator
 			else
 			{
 				// TODO: Exception
-				throw new \Exception(sprintf('The class %s is not a valid route destination handler, it must implement \Inject\Web\Route\Generator\DestinationHandler', $klass));
+				throw new \Exception(sprintf('The class %s is not a valid route destination handler, it must extend \Inject\RouterGenerator\DestinationHandler', $klass));
 			}
 		}
 	}
