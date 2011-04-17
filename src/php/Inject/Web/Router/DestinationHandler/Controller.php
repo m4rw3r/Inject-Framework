@@ -7,7 +7,7 @@
 
 namespace Inject\Web\Router\DestinationHandler;
 
-use \Inject\Core\Engine;
+use \Inject\Core\Engine as CoreEngine;
 
 use \Inject\RouterGenerator\Mapping;
 use \Inject\RouterGenerator\DestinationHandler;
@@ -131,7 +131,7 @@ class Controller extends DestinationHandler
 	 * 
 	 * @return string
 	 */
-	public function translateShortControllerName(Engine $engine, $short_name)
+	public function translateShortControllerName(CoreEngine $engine, $short_name)
 	{
 		if(strpos($short_name, '\\') === 0)
 		{

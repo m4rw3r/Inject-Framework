@@ -43,7 +43,7 @@ class GeneratorWrapper
 	public function __construct(Engine $engine)
 	{
 		$this->engine        = $engine;
-		$this->mapping_scope = new RouterGenerator\Scope();
+		$this->mapping_scope = new RouterGenerator\Scope(new RouterGenerator\Mapping());
 		$this->generator     = new RouterGenerator\CodeGenerator();
 		
 		$this->generator->registerDestinationHandlers(array(
@@ -61,21 +61,27 @@ class GeneratorWrapper
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Loads a routing config file.
 	 * 
-	 * 
-	 * @return 
+	 * @param  string  A path to the router configuration file
+	 * @return void
 	 */
 	public function loadFile($file)
 	{
+		if( ! empty($this->code))
+		{
+			throw new \RuntimeException('Router has already been generated.');
+		}
+		
 		$this->mapping_scope->loadFile($file);
 	}
 	
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates the routing code.
 	 * 
-	 * 
-	 * @return 
+	 * @return string  The routing code
 	 */
 	public function generateCode()
 	{

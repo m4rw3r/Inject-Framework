@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\DestinationHandler;
 
-use \Inject\Core\Engine;
-
 use \Inject\RouterGenerator\Mapping;
 use \Inject\RouterGenerator\DestinationHandler;
 use \Inject\RouterGenerator\VariableNameContainerInterface;

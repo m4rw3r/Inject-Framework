@@ -7,76 +7,41 @@
 
 namespace Inject\Web\Router\DestinationHandler;
 
-use \Inject\Core\Engine as CoreEngine;
-
-use \Inject\RouterGenerator\Mapping;
-use \Inject\RouterGenerator\Redirection;
-use \Inject\RouterGenerator\DestinationHandler;
 use \Inject\RouterGenerator\VariableNameContainerInterface;
+use \Inject\RouterGenerator\DestinationHandler\Redirect as BaseRedirect;
 
 /**
- * 
+ * Modified redirect DestinationHandler which uses the framework request
+ * class to create an absolute URL relative to the application root if not
+ * starting with "[a-z]+://".
  */
-class Redirect extends DestinationHandler
+class Redirect extends BaseRedirect
 {
-	/**
-	 * Matches on a Redirection object.
-	 * 
-	 * @param  mixed
-	 * @param  \Inject\RouterGenerator\Mapping
-	 * @param  mixed
-	 * @return DestinationHandlerInterface|false
-	 */
-	public static function parseTo($new, Mapping $mapping, $old)
-	{
-		if(is_object($new) && $new instanceof Redirection)
-		{
-			$ret = new Redirect($mapping);
-			$ret->setRedirect($new);
-			
-			return $ret;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	protected $redirect;
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Sets the redirection object to use.
-	 * 
-	 * @param  \Inject\RouterGenerator\Redirection
-	 * @return void
-	 */
-	public function setRedirect($value)
-	{
-		$this->redirect = $value;
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	public function validate(array $validation_params)
-	{
-		$diff = array_diff($this->redirect->getRequiredCaptures(), $this->tokenizer->getRequiredCaptures());
-		
-		if( ! empty($diff))
-		{
-			throw new \Exception(sprintf('The route %s does not contain the required capture :%s which is required by the redirect destination.', $this->mapping->getPathPattern(), current($diff)));
-		}
-	}
-	
-	// ------------------------------------------------------------------------
-	
 	public function getCallCode(VariableNameContainerInterface $vars, $matches_var)
 	{
-		return $this->redirect->getCallbackCode($vars->getEnvVar());
+		$path = array();
+		foreach($this->redirect->getTokens() as $tok)
+		{
+			switch($tok[0])
+			{
+				case Tokenizer::CAPTURE:
+					// PATH_INFO is not urlencoded, so no need to encode
+					$path[] = $matches_var.'['.var_export($tok[1], true).']';
+					break;
+				case Tokenizer::LITERAL:
+					$path[] = var_export($tok[1], true);
+			}
+		}
+		
+		return '// TODO: How to inject class used for Request->getDefaultUrlOptions()?
+// TODO: Remove the lines below if the generated path is a full URL
+$req = new \Inject\Web\Request('.$vars->getEnvVar().');
+$url = \Inject\Web\Request::urlFor(array_merge($req->getDefaultUrlOptions(), array(\'path\' => '.implode('.', $path).')));
+
+return array('.$this->redirect->getRedirectCode().', array(\'Location\' => $url), \'\');';
 	}
 }
 
 
-/* End of file Callback.php */
-/* Location: src/php/Inject/Web/Router/Generator/Destination */
+/* End of file Redirect.php */
+/* Location: src/php/Inject/Web/Router/DestinationHandler */

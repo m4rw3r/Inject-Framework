@@ -7,8 +7,6 @@
 
 namespace Inject\Web\Router\DestinationHandler;
 
-use \Inject\Core\Engine as CoreEngine;
-
 use \Inject\RouterGenerator\Mapping;
 use \Inject\RouterGenerator\Tokenizer;
 use \Inject\RouterGenerator\DestinationHandler;
@@ -116,9 +114,11 @@ class Engine extends DestinationHandler
 {$env_var}['PATH_INFO']     = '/'.trim(\$uri, '/');
 {$env_var}['web.old_route_params'] = {$env_var}['web.route_params'];
 
+\$engine = new {$this->engine}();
+
 EOF;
 		
-		return $code.$vars->wrapInReturnCodeStub("$this->engine::instance()->stack()->run($env_var)");
+		return $code.$vars->wrapInReturnCodeStub("\$engine->stack()->run($env_var)");
 	}
 }
 
